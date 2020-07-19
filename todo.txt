@@ -1,0 +1,23 @@
+build a test suite
+
+things to test
+error handling / robustness
+    setreadtimeout (test with unplug test too)
+    closing from other thread (test with unplug test too)
+    sending to unopen port
+    receiving message bigger than buffer
+    data available
+    dumpreadbuffer
+    
+binding 2 sockets to same port
+    TCP listener
+    UDP 
+    
+host/client info
+
+hostname/ip
+
+cross-language testing
+    int32 send/recv
+    double send/recv
+
