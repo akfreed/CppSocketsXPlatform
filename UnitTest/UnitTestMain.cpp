@@ -196,9 +196,6 @@ int main()
     TestReport report = TestMain();
     DisplayResults(report);
 
-    std::cout << "End of program. Press Enter to continue...";
-    std::cin.ignore();
-
     if (g_mustTerminate)
         std::terminate();
     else

@@ -324,7 +324,7 @@ bool TcpSocket::Write(const char* buf, int len)
 // send a char string
 bool TcpSocket::WriteString(const char* str)
 {
-    int len = strlen(str);
+    int len = static_cast<int>(strlen(str)); // todo: Use size_t.
     if (len > MAX_STRING_LEN)
         len = MAX_STRING_LEN;
 

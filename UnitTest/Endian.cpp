@@ -219,7 +219,7 @@ TestReport EndianCheckDouble(bool assumptions, SOCKET& sender, SOCKET& receiver)
     // readBuffer should be big-endian
     std::array<char, 8> expected = { 8, 7, 6, 5, 4, 3, 2, 1 };
 
-    if (!bufferMatches(readBuffer, expected, expected.size()))
+    if (!bufferMatches(readBuffer, expected, static_cast<unsigned>(expected.size()))) // todo: Switch to size_t.
     {
         report.ResultNotes = "Read buffer was not big-endian.";
         return report;

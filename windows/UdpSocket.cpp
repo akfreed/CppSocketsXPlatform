@@ -368,7 +368,7 @@ int UdpSocket::Read(char* dest, int maxlen)
 
     sockaddr_in info;
     int infoLen;
-    int amountRead;
+    int amountRead = 0;
     bool success = false;
 
     while (!success)

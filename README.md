@@ -1,5 +1,4 @@
-This solution contains a cross-platform API for sockets in C++11. It works on Windows and Posix systems.
+This solution contains a cross-platform API for sockets in C++14. It works on Windows and Posix systems.
 
-There are five projects. Two of them are libraries, and three of them are executables. The sockets library is the part to check out. It can be found under windows/ and posix/. CMake will include the appropriate source, depending on what platform you are building on. The other library contains the code for TCP and UDP echoservers. 
+There are five projects. Two of them are libraries, and three of them are executables. The sockets library is the part to check out. It can be found under `windows/` and `posix/`. CMake will include the appropriate source, depending on what platform you are building on. The other library contains the code for TCP and UDP echoservers. 
 
-This project uses CMake. CMake creates the makefile, then you use that makefile to build. CMake is cross platform and works with a wide range of compilers (e.g. MSVC, GCC, MinGW), operating systems (e.g. Windows, Linux), and IDEs (e.g. Visual Studio, Code::Blocks, Make). To use it, navigate to the directory with the bottommost CMakeList.txt file. Add a new directory. Go into the directory and type "cmake ..". On Linux, for example, this might create a Makefile. You can then type "make" to build the project. On Windows, this might create a Visual Studio solution. You can open the solution and compile.

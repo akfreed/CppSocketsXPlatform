@@ -1,7 +1,7 @@
-cmake_minimum_required (VERSION 3.5)
+cmake_minimum_required (VERSION 3.10)
 
-# C++11
-set(CMAKE_CXX_STANDARD 11)
+# C++14
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -16,7 +16,8 @@ add_library(Network STATIC
     UdpSocket.h
     WinsockContextManager.h
 )
+target_include_directories(Network PUBLIC .)
 target_link_libraries(Network
-    pthread
+    ${CMAKE_THREAD_LIBS_INIT}
 )
-target_compile_options(Network PRIVATE -Wall -Wextra -Wpedantic)
+target_compile_options(Network PRIVATE ${WARNING_FLAGS})
