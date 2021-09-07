@@ -27,63 +27,58 @@
 
 #pragma once
 
-#include "SocketIncludes.h"
+#include <WinsockContext.h>
 
-#include "WinsockContext.h"
-
+#include <cstdint>
 #include <mutex>
 #include <condition_variable>
-
+#include <string>
 
 class UdpSocket
 {
-    public:
-        UdpSocket();
-        explicit UdpSocket(unsigned short myport);
-        UdpSocket(const char* host, unsigned short hostport);
-        UdpSocket(const char* host, unsigned short hostport, unsigned short myport);
-        UdpSocket(const UdpSocket &) = delete;
-        UdpSocket(UdpSocket &&) noexcept(false);
-        UdpSocket& operator=(const UdpSocket&) = delete;
-        UdpSocket& operator=(UdpSocket&&) noexcept(false);
-        ~UdpSocket() noexcept;
+public:
+    UdpSocket() = default;
+    explicit UdpSocket(uint16_t myport);
+    UdpSocket(std::string const& host, uint16_t hostport);
+    UdpSocket(std::string const& host, uint16_t hostport, uint16_t myport);
+    UdpSocket(UdpSocket const&) = delete;
+    UdpSocket(UdpSocket&& other) noexcept(false);
+    UdpSocket& operator=(UdpSocket const&) = delete;
+    UdpSocket& operator=(UdpSocket&& other) noexcept(false);
+    ~UdpSocket();
 
-        int GetDumpCount() const;
-        bool IsValid();
-        bool SetReadTimeout(unsigned milliseconds);
-        int DataAvailable();
+    bool IsValid() const;
+    bool SetReadTimeout(unsigned milliseconds);
+    int DataAvailable() const;
 
-        void Close();
-        bool DumpReadBuffer();
+    void Close();
 
-        bool Write(const char* source, int len);
-        int Read(char* dest, int maxlen);
+    bool Write(char const* source, int len);
+    int Read(char* dest, int maxlen);
 
-    private:
-        enum class State
-        {
-            OPEN,
-            READING,
-            SHUTTING_DOWN,
-            CLOSED
-        };
+private:
+    enum class State
+    {
+        OPEN,
+        READING,
+        SHUTTING_DOWN,
+        CLOSED
+    };
 
-        void move(UdpSocket&& other) noexcept(false);
-        void close(std::unique_lock<std::mutex>& lock);
-        bool checkSenderInfo(const sockaddr_in& info, int len, std::unique_lock<std::mutex>&) const;
-        void setSenderInfo(sockaddr_in& info, int len, std::unique_lock<std::mutex>&);
-        bool preReadSetup();
-        bool postReadCheck(int amountRead, int maxlen, sockaddr_in& info, int infoLen, std::unique_lock<std::mutex>& lock);
+    void move(UdpSocket&& other) noexcept(false);
+    void close(std::unique_lock<std::mutex>& lock);
+    bool checkSenderInfo(sockaddr_in const& info, int len, std::unique_lock<std::mutex>&) const;
+    void setSenderInfo(sockaddr_in& info, int len, std::unique_lock<std::mutex>&);
+    bool preReadSetup();
+    bool postReadCheck(int amountRead, int maxlen, sockaddr_in& info, int infoLen, std::unique_lock<std::mutex>& lock);
 
-        WinsockContext m_winsockContext;
-        SOCKET         m_socketId;
-        sockaddr_in    m_myInfo;
-        sockaddr_in    m_theirInfo;
-        int            m_theirInfoLen;
-        bool           m_theirInfoIsValid;
-        State          m_state;
-        std::mutex     m_socketLock;
-        std::condition_variable m_readCancel;
-        int            m_dumpCount;
+    WinsockContext m_winsockContext;
+    SOCKET m_socketId = INVALID_SOCKET;
+    sockaddr_in m_myInfo{};
+    sockaddr_in m_theirInfo{};
+    int m_theirInfoLen = sizeof(m_theirInfo);
+    bool m_theirInfoIsValid = false;
+    State m_state = State::CLOSED;
+    mutable std::mutex m_socketLock;
+    std::condition_variable m_readCancel;
 };
-

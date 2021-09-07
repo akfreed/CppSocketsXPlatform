@@ -16,21 +16,15 @@
 
 // Contains the cpp code for TcpSocket
 
-#include "TcpSocket.h"
+#include <TcpSocket.h>
 
 #include <cassert>
+#include <cstring>
 
 // constructor connects to host:port
-TcpSocket::TcpSocket(const char* host, const char* port)
+TcpSocket::TcpSocket(std::string const& host, uint16_t port)
 {
     Connect(host, port);
-}
-
-// default constructor
-// Socket is not connected
-TcpSocket::TcpSocket()
-{ 
-    std::lock_guard<std::mutex> lock(m_socketLock);  // ensures proper memory fencing
 }
 
 // special private constructor used only by TcpListener.Accept(), which has a friend function
@@ -142,25 +136,21 @@ void TcpSocket::close(std::unique_lock<std::mutex>& lock)
     freeaddrinfo(m_hostInfoList);
 }
 
-// connects to host:port
-bool TcpSocket::Connect(const char* host, const char* port)
+//! Connects to host:port
+bool TcpSocket::Connect(std::string const& host, uint16_t port)
 {
     std::lock_guard<std::mutex> lock(m_socketLock);
     if (m_state != State::CLOSED)
         return false;
 
-    ZeroMemory(&m_hostInfo, sizeof(m_hostInfo));
-    m_hostInfo.ai_family = AF_UNSPEC;  // can be IPv4 or IPv6
-    m_hostInfo.ai_socktype = SOCK_STREAM;  // for TCP
+    std::memset(&m_hostInfo, 0, sizeof(m_hostInfo));
+    m_hostInfo.ai_family = AF_UNSPEC; // Can be IPv4 or IPv6
+    m_hostInfo.ai_socktype = SOCK_STREAM; // TCP
 
-                                           // get some info. Fill the struct linked list
-    int error = getaddrinfo(host, port, &m_hostInfo, &m_hostInfoList);
+    int error = getaddrinfo(host.c_str(), std::to_string(port).c_str(), &m_hostInfo, &m_hostInfoList);
     if (error != 0)
-    {
         return false;
-    }
 
-    // get us a socket
     m_socketId = socket(m_hostInfoList->ai_family, m_hostInfoList->ai_socktype, m_hostInfoList->ai_protocol);
     if (m_socketId == INVALID_SOCKET)
     {
@@ -169,7 +159,6 @@ bool TcpSocket::Connect(const char* host, const char* port)
         return false;
     }
 
-    // connect
     error = connect(m_socketId, m_hostInfoList->ai_addr, (int)m_hostInfoList->ai_addrlen);
     if (error == SOCKET_ERROR)
     {
@@ -185,7 +174,7 @@ bool TcpSocket::Connect(const char* host, const char* port)
 
 //----------------------------------------------------------------------------
 
-bool TcpSocket::IsConnected()
+bool TcpSocket::IsConnected() const
 {
     std::lock_guard<std::mutex> lock(m_socketLock);
     return m_state != State::CLOSED;
@@ -193,21 +182,21 @@ bool TcpSocket::IsConnected()
 
 //----------------------------------------------------------------------------
 
-// If this timeout is reached, the socket will be closed. Thank you, Windows.
-// Only use this feature as a robustness mechanism.
-// (e.g. so you don't block forever if the connection is somehow silently lost.)
-// Don't use this as a form of non-blocking read.
+//! If this timeout is reached, the socket will be closed. Thank you, Windows.
+//! Only use this feature as a robustness mechanism.
+//! (e.g. so you don't block forever if the connection is somehow silently lost.)
+//! Don't use this as a form of non-blocking read.
 bool TcpSocket::SetReadTimeout(unsigned milliseconds)
 {
     std::lock_guard<std::mutex> lock(m_socketLock);
     if (m_state != State::CONNECTED)
         return false;
-    return setsockopt(m_socketId, SOL_SOCKET, SO_RCVTIMEO, (const char*)&milliseconds, sizeof(milliseconds)) == 0;
+    return setsockopt(m_socketId, SOL_SOCKET, SO_RCVTIMEO, (char const*)&milliseconds, sizeof(milliseconds)) == 0;
 }
 
 //----------------------------------------------------------------------------
 
-bool TcpSocket::Write(const char* buf, int len)
+bool TcpSocket::Write(char const* buf, int len)
 {
     std::unique_lock<std::mutex> lock(m_socketLock);
     if (m_state == State::CLOSED || m_state == State::SHUTTING_DOWN)
@@ -289,7 +278,7 @@ bool TcpSocket::Read(char* buf, int len)
 // you can read this many bytes without blocking
 // may be smaller than the actual number of bytes available
 // returns -1 on error
-int TcpSocket::DataAvailable()
+int TcpSocket::DataAvailable() const
 {
     std::lock_guard<std::mutex> lock(m_socketLock);
     if (m_state != State::CONNECTED)

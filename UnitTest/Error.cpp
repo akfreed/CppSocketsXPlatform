@@ -41,9 +41,9 @@ public:
     void SetUp() override
     {
         Timeout timeout{ std::chrono::seconds(3) };
-        TcpListener listener(TestGlobals::portString);
+        TcpListener listener(TestGlobals::port);
         ASSERT_TRUE(listener.IsValid());
-        ASSERT_TRUE(m_sender.Connect(TestGlobals::localhost, TestGlobals::portString));
+        ASSERT_TRUE(m_sender.Connect(TestGlobals::localhost, TestGlobals::port));
         ASSERT_TRUE(m_sender.IsConnected());
         m_receiver = listener.Accept();
         ASSERT_TRUE(m_receiver.IsConnected());

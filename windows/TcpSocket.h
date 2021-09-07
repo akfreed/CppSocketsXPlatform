@@ -23,36 +23,34 @@
 
 #pragma once
 
-#include "SocketIncludes.h"
+#include <WinsockContext.h>
 
-#include "TcpListener.h"
-#include "WinsockContext.h"
-
-#include <stdint.h>
+#include <cstdint>
 #include <mutex>
 #include <condition_variable>
+#include <string>
 
 class TcpSocket
 {
 public:
-    TcpSocket();
-    TcpSocket(const char* host, const char* port);
-    TcpSocket(const TcpSocket&) = delete;
-    TcpSocket(TcpSocket&&) noexcept(false);
-    TcpSocket& operator=(const TcpSocket&) = delete;
-    TcpSocket& operator=(TcpSocket&&) noexcept(false);
+    TcpSocket() = default;
+    TcpSocket(std::string const& host, uint16_t port);
+    TcpSocket(TcpSocket const&) = delete;
+    TcpSocket(TcpSocket&& other) noexcept(false);
+    TcpSocket& operator=(TcpSocket const&) = delete;
+    TcpSocket& operator=(TcpSocket&& other) noexcept(false);
     ~TcpSocket();
 
-    bool IsConnected();
+    bool IsConnected() const;
     bool SetReadTimeout(unsigned milliseconds);
 
-    bool Connect(const char* host, const char* port);
+    bool Connect(std::string const& host, uint16_t port);
     void Close();
 
-    bool Write(const char* buf, int len);
+    bool Write(char const* buf, int len);
     bool Read(char* buf, int len);
 
-    int DataAvailable();
+    int DataAvailable() const;
 
     class Attorney
     {
@@ -69,20 +67,18 @@ private:
         CLOSED
     };
 
-    explicit TcpSocket(SOCKET fd);  // special constructor used by TcpListener::Accept()
+    explicit TcpSocket(SOCKET fd);
 
-    void move(TcpSocket&&) noexcept(false);
+    void move(TcpSocket&& other) noexcept(false);
     void close(std::unique_lock<std::mutex>& lock);
     bool preReadSetup();
     bool postReadCheck(int amountRead, int len);
 
     WinsockContext m_winsockContext;
-    SOCKET         m_socketId = INVALID_SOCKET;
-    addrinfo       m_hostInfo{};
-    addrinfo*      m_hostInfoList = nullptr;
-    State          m_state = State::CLOSED;
-    std::mutex     m_socketLock;
+    SOCKET m_socketId = INVALID_SOCKET;
+    addrinfo m_hostInfo{};
+    addrinfo* m_hostInfoList = nullptr;
+    State m_state = State::CLOSED;
+    mutable std::mutex m_socketLock;
     std::condition_variable m_readCancel;
 };
-
-

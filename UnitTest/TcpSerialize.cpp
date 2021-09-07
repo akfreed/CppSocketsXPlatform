@@ -35,9 +35,9 @@ public:
     static void SetUpTestSuite()
     {
         Timeout timeout{ std::chrono::seconds(3) };
-        TcpListener listener(TestGlobals::portString);
+        TcpListener listener(TestGlobals::port);
         ASSERT_TRUE(listener.IsValid()) << "Unable to start listener.";
-        s_sender = std::make_unique<TcpSerializer>(TcpSocket(TestGlobals::localhost, TestGlobals::portString));
+        s_sender = std::make_unique<TcpSerializer>(TcpSocket(TestGlobals::localhost, TestGlobals::port));
         ASSERT_TRUE(s_sender->Socket().IsConnected()) << "Unable to connect client to listener.";
         s_receiver = std::make_unique<TcpSerializer>(TcpSocket(listener.Accept()));
         ASSERT_TRUE(s_receiver->Socket().IsConnected()) << "Error on accept.";

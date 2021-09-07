@@ -19,6 +19,5 @@
 struct TestGlobals
 {
     static constexpr uint16_t port = 11111;
-    static constexpr char portString[] = "11111";
     static constexpr char localhost[] = "127.0.0.1";
 };

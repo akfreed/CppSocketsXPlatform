@@ -16,30 +16,24 @@
 
 // Contains the cpp code for TcpListener
 
-#include "TcpListener.h"
-#include "TcpSocket.h"
+#include <TcpListener.h>
+
+#include <TcpSocket.h>
 
 #include <cassert>
 
-
-TcpListener::TcpListener(const char* port)
-    : m_socketId(INVALID_SOCKET)
-    , m_state(State::CLOSED)
+TcpListener::TcpListener(uint16_t port)
 {
     start(port);
 }
-
 
 // Cannot be noexcept because it a mutex can fail to lock.
 // The copy operations are deleted, so standard containers will used move 
 // operations, however the strong exception guarantee is lost.
 TcpListener::TcpListener(TcpListener&& other) noexcept(false)
-    : m_socketId(INVALID_SOCKET)
-    , m_state(State::CLOSED)
 {
     this->move(std::move(other));
 }
-
 
 // Cannot be noexcept because it a mutex can fail to lock.
 // The copy operations are deleted, so standard containers will used move 
@@ -51,13 +45,11 @@ TcpListener& TcpListener::operator=(TcpListener&& other) noexcept(false)
     return *this;
 }
 
-
 // Close() can throw, but in that case we pretty much have to abort anyways.
-TcpListener::~TcpListener() noexcept
+TcpListener::~TcpListener()
 {
     Close();
 }
-
 
 //----------------------------------------------------------------------------
 
@@ -85,13 +77,11 @@ void TcpListener::move(TcpListener&& other) noexcept(false)
     other.m_state = State::CLOSED;
 }
 
-
 void TcpListener::Close()
 {
     std::unique_lock<std::mutex> lock(m_lock);
     close(lock);
 }
-
 
 // Be sure to lock before calling!
 void TcpListener::close(std::unique_lock<std::mutex>& lock)
@@ -125,26 +115,22 @@ void TcpListener::close(std::unique_lock<std::mutex>& lock)
     m_socketId = INVALID_SOCKET;
 }
 
-
-bool TcpListener::start(const char* port)
+bool TcpListener::start(uint16_t port)
 {
     std::lock_guard<std::mutex> lock(m_lock);
     if (m_state != State::CLOSED)
         return false;
 
-    addrinfo hostInfo;
+    addrinfo hostInfo{};
     addrinfo* hostInfoList = nullptr;
 
-    ZeroMemory(&hostInfo, sizeof(hostInfo));
     hostInfo.ai_family = AF_INET;
     hostInfo.ai_socktype = SOCK_STREAM;
     hostInfo.ai_protocol = IPPROTO_TCP;
     hostInfo.ai_flags = AI_PASSIVE;
-    int error = getaddrinfo(NULL, port, &hostInfo, &hostInfoList);
+    int error = getaddrinfo(nullptr, std::to_string(port).c_str(), &hostInfo, &hostInfoList);
     if (error != 0)
-    {
         return false;
-    }
 
     m_socketId = socket(hostInfoList->ai_family, hostInfoList->ai_socktype, hostInfoList->ai_protocol);
     if (m_socketId == INVALID_SOCKET)
@@ -154,7 +140,7 @@ bool TcpListener::start(const char* port)
     }
 
     /*
-    const char yes = static_cast<char>(true);
+    char const yes = static_cast<char>(true);
     error = setsockopt(m_socketId, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(bool));
     if (error == -1)
     {
@@ -186,15 +172,13 @@ bool TcpListener::start(const char* port)
     return true;
 }
 
-
 //----------------------------------------------------------------------------
 
-bool TcpListener::IsValid()
+bool TcpListener::IsValid() const
 {
-    std::lock_guard<std::mutex> lock(m_lock);  // lock used here mostly for the memory fence...
+    std::lock_guard<std::mutex> lock(m_lock);
     return m_state != State::CLOSED;
 }
-
 
 // friend of class TcpSocket, allowing us to use a special constructor
 TcpSocket TcpListener::Accept()
@@ -231,4 +215,3 @@ TcpSocket TcpListener::Accept()
         }
     }
 }
-

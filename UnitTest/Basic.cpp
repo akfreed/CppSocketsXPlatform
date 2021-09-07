@@ -37,9 +37,9 @@ class Basic : public ::testing::Test
 
 TEST_F(Basic, TcpSelfConnect)
 {
-    TcpListener listener(TestGlobals::portString);
+    TcpListener listener(TestGlobals::port);
     ASSERT_TRUE(listener.IsValid());
-    TcpSocket client(TestGlobals::localhost, TestGlobals::portString);
+    TcpSocket client(TestGlobals::localhost, TestGlobals::port);
     ASSERT_TRUE(client.IsConnected());
     TcpSocket host = listener.Accept();
     ASSERT_TRUE(host.IsConnected());
@@ -55,9 +55,9 @@ TEST_F(Basic, UdpSelfConnect)
 
 TEST_F(Basic, TcpSendRecvBuf)
 {
-    TcpListener listener(TestGlobals::portString);
+    TcpListener listener(TestGlobals::port);
     ASSERT_TRUE(listener.IsValid());
-    TcpSocket sender(TestGlobals::localhost, TestGlobals::portString);
+    TcpSocket sender(TestGlobals::localhost, TestGlobals::port);
     ASSERT_TRUE(sender.IsConnected());
     TcpSocket receiver = listener.Accept();
     ASSERT_TRUE(receiver.IsConnected());
@@ -110,9 +110,9 @@ TEST_F(Basic, UdpSendRecvBuf)
 // Test the DataAvailable() function.
 TEST_F(Basic, DataAvailable)
 {
-    TcpListener listener(TestGlobals::portString);
+    TcpListener listener(TestGlobals::port);
     ASSERT_TRUE(listener.IsValid());
-    TcpSerializer sender(TcpSocket(TestGlobals::localhost, TestGlobals::portString));
+    TcpSerializer sender(TcpSocket(TestGlobals::localhost, TestGlobals::port));
     ASSERT_TRUE(sender.Socket().IsConnected());
     TcpSerializer receiver(TcpSocket(listener.Accept()));
     ASSERT_TRUE(receiver.Socket().IsConnected());

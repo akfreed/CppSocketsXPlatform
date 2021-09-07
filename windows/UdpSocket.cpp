@@ -16,35 +16,27 @@
 
 // Contains the cpp code for UdpSocket.h
 
-#include "UdpSocket.h"
+#include <UdpSocket.h>
 
 #include <utility>
-#include <assert.h>
-
+#include <cassert>
 
 // This constructor uses any port
 // a port of 0 means windows will pick a port for you
-UdpSocket::UdpSocket(const char* host, unsigned short hostport)
+UdpSocket::UdpSocket(std::string const& host, uint16_t hostport)
     : UdpSocket(host, hostport, 0)
 {
 }
 
-
 // This constructor sets the port and not the host
 // The first client to connect will be locked in
-UdpSocket::UdpSocket(unsigned short myport)
-    : UdpSocket(nullptr, 0, myport)
+UdpSocket::UdpSocket(uint16_t myport)
+    : UdpSocket("", 0, myport)
 { 
 }
 
-
 // This constructor lets you specify the host and your own port
-UdpSocket::UdpSocket(const char* host, unsigned short hostport, unsigned short myport)
-    : m_socketId(INVALID_SOCKET)
-    , m_theirInfoLen(sizeof(m_theirInfo))
-    , m_theirInfoIsValid(false)
-    , m_state(State::CLOSED)
-    , m_dumpCount(0)
+UdpSocket::UdpSocket(std::string const& host, uint16_t hostport, uint16_t myport)
 {
     std::lock_guard<std::mutex> lock(m_socketLock);
     ZeroMemory(&m_myInfo, sizeof(m_myInfo));
@@ -65,32 +57,17 @@ UdpSocket::UdpSocket(const char* host, unsigned short hostport, unsigned short m
 
     ZeroMemory(&m_theirInfo, sizeof(m_theirInfo));
 
-    // if host==nullptr or hostport==0, we will skip this
-    if (host && hostport)
+    // If hostname is empty or hostport is 0, we will skip this.
+    if (!host.empty() && hostport > 0)
     {
         m_theirInfo.sin_family = AF_INET;
         m_theirInfo.sin_port = htons(hostport);
-        inet_pton(AF_INET, host, &m_theirInfo.sin_addr);
+        inet_pton(AF_INET, host.c_str(), &m_theirInfo.sin_addr);
         m_theirInfoIsValid = true;
     }
 
     m_state = State::OPEN;
 }
-
-
-// default constructor
-UdpSocket::UdpSocket()
-    : m_socketId(INVALID_SOCKET)
-    , m_theirInfoLen(sizeof(m_theirInfo))
-    , m_theirInfoIsValid(false)
-    , m_state(State::CLOSED)
-    , m_dumpCount(0)
-{ 
-    std::lock_guard<std::mutex> lock(m_socketLock);  // ensures proper memory fencing
-    ZeroMemory(&m_myInfo, sizeof(m_myInfo));
-    ZeroMemory(&m_theirInfo, sizeof(m_theirInfo));
-}
-
 
 // move constructor
 // Cannot be noexcept because it a mutex can fail to lock.
@@ -101,7 +78,6 @@ UdpSocket::UdpSocket(UdpSocket&& other) noexcept(false)
 {
     this->move(std::move(other));
 }
-
 
 // move assignment
 // Cannot be noexcept because it a mutex can fail to lock.
@@ -114,14 +90,12 @@ UdpSocket& UdpSocket::operator=(UdpSocket&& other) noexcept(false)
     return *this;
 }
 
-
 // destructor
 // Close() can throw, but in that case we pretty much have to abort anyways.
-UdpSocket::~UdpSocket() noexcept
+UdpSocket::~UdpSocket()
 {
     Close();
 }
-
 
 //----------------------------------------------------------------------------
 
@@ -159,11 +133,7 @@ void UdpSocket::move(UdpSocket&& other) noexcept(false)
 
     m_state = std::move(other.m_state);
     other.m_state = State::CLOSED;
-
-    m_dumpCount = other.m_dumpCount;
-    other.m_dumpCount = 0;
 }
-
 
 // shutdown and close the socket
 void UdpSocket::Close()
@@ -171,7 +141,6 @@ void UdpSocket::Close()
     std::unique_lock<std::mutex> lock(m_socketLock);
     close(lock);
 }
-
 
 // be sure to lock before calling!
 void UdpSocket::close(std::unique_lock<std::mutex>& lock)
@@ -207,21 +176,13 @@ void UdpSocket::close(std::unique_lock<std::mutex>& lock)
     m_theirInfoIsValid = false;
 }
 
-
 //----------------------------------------------------------------------------
 
-int UdpSocket::GetDumpCount() const
-{
-    return m_dumpCount;
-}
-
-
-bool UdpSocket::IsValid()
+bool UdpSocket::IsValid() const
 {
     std::lock_guard<std::mutex> lock(m_socketLock);  // mutex used more for the memory fence than anything else...
     return m_state != State::CLOSED;
 }
-
 
 //----------------------------------------------------------------------------
 
@@ -234,14 +195,13 @@ bool UdpSocket::SetReadTimeout(unsigned milliseconds)
     std::lock_guard<std::mutex> lock(m_socketLock);
     if (m_state != State::OPEN)
         return false;
-    return setsockopt(m_socketId, SOL_SOCKET, SO_RCVTIMEO, (const char*)&milliseconds, sizeof(milliseconds)) == 0;
+    return setsockopt(m_socketId, SOL_SOCKET, SO_RCVTIMEO, (char const*)&milliseconds, sizeof(milliseconds)) == 0;
 }
-
 
 //----------------------------------------------------------------------------
 
 // The lock is required to be locked before entry. It is not used by this function, but serves as a reminder that this data should be protected by a lock
-bool UdpSocket::checkSenderInfo(const sockaddr_in& info, int len, std::unique_lock<std::mutex>&) const
+bool UdpSocket::checkSenderInfo(sockaddr_in const& info, int len, std::unique_lock<std::mutex>&) const
 {
     // check if the info is different from expected
     if (m_theirInfoLen != len ||
@@ -255,7 +215,6 @@ bool UdpSocket::checkSenderInfo(const sockaddr_in& info, int len, std::unique_lo
     return true;
 }
 
-
 // The lock is required to be locked before entry. It is not used by this function, but serves as a reminder that this data should be protected by a lock
 void UdpSocket::setSenderInfo(sockaddr_in& info, int len, std::unique_lock<std::mutex>&)
 {
@@ -265,10 +224,9 @@ void UdpSocket::setSenderInfo(sockaddr_in& info, int len, std::unique_lock<std::
     m_theirInfoIsValid = true;
 }
 
-
 //----------------------------------------------------------------------------
 
-bool UdpSocket::Write(const char* buffer, int len)
+bool UdpSocket::Write(char const* buffer, int len)
 {
     std::unique_lock<std::mutex> lock(m_socketLock);
     if (m_state == State::CLOSED || m_state == State::SHUTTING_DOWN || !m_theirInfoIsValid || len < 1)
@@ -284,7 +242,6 @@ bool UdpSocket::Write(const char* buffer, int len)
     return true;
 }
 
-
 bool UdpSocket::preReadSetup()
 {
     std::lock_guard<std::mutex> lock(m_socketLock);
@@ -299,7 +256,6 @@ bool UdpSocket::preReadSetup()
     m_state = State::READING;
     return true;
 }
-
 
 // lock should be locked before entry
 bool UdpSocket::postReadCheck(int amountRead, int maxlen, sockaddr_in& info, int infoLen, std::unique_lock<std::mutex>& lock)
@@ -356,7 +312,6 @@ bool UdpSocket::postReadCheck(int amountRead, int maxlen, sockaddr_in& info, int
     return true;
 }
 
-
 int UdpSocket::Read(char* dest, int maxlen)
 {
     // sanity check
@@ -399,13 +354,12 @@ int UdpSocket::Read(char* dest, int maxlen)
     return amountRead;
 }
 
-
 //----------------------------------------------------------------------------
 
 // returns the total amount of data in the buffer. 
 // A call to Read will not necessarily return this much data, since the buffer may contain many datagrams
 // returns -1 on error
-int UdpSocket::DataAvailable()
+int UdpSocket::DataAvailable() const
 {
     std::lock_guard<std::mutex> lock(m_socketLock);
     if (m_state != State::OPEN)
@@ -423,41 +377,3 @@ int UdpSocket::DataAvailable()
 
     return static_cast<int>(bytesAvailable);
 }
-
-
-// dumps all the datagrams from the buffer
-bool UdpSocket::DumpReadBuffer()
-{
-    ++m_dumpCount;
-    const int BUFFER_SIZE = 4096;
-    char buffer[BUFFER_SIZE];
-
-    sockaddr_in info;
-    int infoLen = sizeof(info);
-    ZeroMemory(&info, sizeof(info));
-    int available;
-    int amountRead;
-
-    while ((available = DataAvailable()) > 0)
-    {
-        if (!preReadSetup())
-            return false;
-
-        amountRead = recvfrom(m_socketId, buffer, BUFFER_SIZE, 0, (sockaddr*)&info, &infoLen);
-
-        {
-            std::unique_lock<std::mutex> lock(m_socketLock);
-            if (!postReadCheck(amountRead, BUFFER_SIZE, info, infoLen, lock))
-                return false;
-        }
-    }
-
-    if (available != 0)
-    {
-        Close();
-        return false;
-    }
-
-    return true;
-}
-

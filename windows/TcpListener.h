@@ -23,48 +23,46 @@
 
 #pragma once
 
-#include "SocketIncludes.h"
+#include <WinsockContext.h>
 
-#include "WinsockContext.h"
-
+#include <cstdint>
 #include <mutex>
 #include <condition_variable>
+#include <string>
 
 class TcpSocket;
 
-
 class TcpListener
 {
-    public:
-        explicit TcpListener(const char* port);
-        TcpListener() = delete;
-        TcpListener(const TcpListener&) = delete;
-        TcpListener(TcpListener&&) noexcept(false);
-        TcpListener& operator=(const TcpListener&) = delete;
-        TcpListener& operator=(TcpListener&&) noexcept(false);
-        ~TcpListener() noexcept;
+public:
+    explicit TcpListener(uint16_t port);
+    TcpListener(TcpListener const&) = delete;
+    TcpListener(TcpListener&&) noexcept(false);
+    TcpListener& operator=(TcpListener const&) = delete;
+    TcpListener& operator=(TcpListener&&) noexcept(false);
+    ~TcpListener();
 
-        bool IsValid();
+    bool IsValid() const;
 
-        void Close();
-        TcpSocket Accept();
+    void Close();
+    TcpSocket Accept();
 
-    private:
-        enum class State
-        {
-            OPEN,
-            ACCEPTING,
-            SHUTTING_DOWN,
-            CLOSED
-        };
+private:
+    enum class State
+    {
+        OPEN,
+        ACCEPTING,
+        SHUTTING_DOWN,
+        CLOSED
+    };
 
-        bool start(const char* port);
-        void move(TcpListener&&) noexcept(false);
-        void close(std::unique_lock<std::mutex>& lock);
+    bool start(uint16_t port);
+    void move(TcpListener&& other) noexcept(false);
+    void close(std::unique_lock<std::mutex>& lock);
 
-        WinsockContext m_winsockContext;
-        SOCKET         m_socketId;
-        State          m_state;
-        std::mutex     m_lock;
-        std::condition_variable m_acceptCancel;
+    WinsockContext m_winsockContext;
+    SOCKET m_socketId = INVALID_SOCKET;
+    State m_state = State::CLOSED;
+    mutable std::mutex m_lock;
+    std::condition_variable m_acceptCancel;
 };
