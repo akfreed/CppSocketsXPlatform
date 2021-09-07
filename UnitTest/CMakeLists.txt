@@ -3,11 +3,12 @@ add_executable(UnitTest
     Basic.cpp
     Endian.cpp
     Error.cpp
-    TestReport.h
-    UnitTestMain.cpp
-    UnitTestMain.h
+    TcpSerialize.cpp
+    TestGlobals.h
+    Timeout.h
 )
 target_link_libraries(UnitTest
+    gtest_main
     Network
 )
 target_compile_options(UnitTest PRIVATE ${WARNING_FLAGS})

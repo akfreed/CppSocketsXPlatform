@@ -25,11 +25,10 @@
 
 #include "SocketIncludes.h"
 
+#include "WinsockContext.h"
+
 #include <mutex>
 #include <condition_variable>
-
-#include "WinsockContextManager.h"
-
 
 class TcpSocket;
 
@@ -63,8 +62,9 @@ class TcpListener
         void move(TcpListener&&) noexcept(false);
         void close(std::unique_lock<std::mutex>& lock);
 
-        SOCKET     m_socketId;
-        State      m_state;
-        std::mutex m_lock;
+        WinsockContext m_winsockContext;
+        SOCKET         m_socketId;
+        State          m_state;
+        std::mutex     m_lock;
         std::condition_variable m_acceptCancel;
 };

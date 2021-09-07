@@ -14,29 +14,13 @@
 // limitations under the License.
 // ==================================================================
 
-// Contains the definition for TestReport.
-
 #pragma once
 
-#include <vector>
+#include "SocketIncludes.h"
 
-
-//============================================================================
-
-struct TestReport
+class WinsockContext
 {
-    std::string Name;
-    std::string Description;
-    bool Passed = false;
-    bool FailedAssumptions = false;
-    bool Skipped = false;
-    std::string ResultNotes = "";
-    std::vector<TestReport> SubTests;
-
-    TestReport() { }
-    TestReport(std::string name, std::string description)
-        : Name(std::move(name))
-        , Description(std::move(description))
-    { }
+public:
+    WinsockContext();
+    ~WinsockContext();
 };
-

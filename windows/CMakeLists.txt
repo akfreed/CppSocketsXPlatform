@@ -11,11 +11,14 @@ add_library(Network STATIC
     SocketIncludes.h
     TcpListener.cpp
     TcpListener.h
+    TcpSerializer.cpp
+    TcpSerializer.h
     TcpSocket.cpp
     TcpSocket.h
     UdpSocket.cpp
     UdpSocket.h
-    WinsockContextManager.h
+    WinsockContext.cpp
+    WinsockContext.h
 )
 target_include_directories(Network PUBLIC .)
 target_link_libraries(Network 

@@ -19,6 +19,7 @@ endif()
 
 # Dependencies
 find_package(Threads REQUIRED)
+add_subdirectory(thirdparty/)
 
 # Projects
 # Use different source files for sockets depending on platform
@@ -29,7 +30,7 @@ elseif(LINUX OR UNIX OR APPLE)
     add_subdirectory(posix)
     include_directories(posix)
 endif()
-add_subdirectory(EchoServers)
+#add_subdirectory(EchoServers) todo: restore
 add_subdirectory(UnitTest)
 
 # Set Unit Tests as the start-up project

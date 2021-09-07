@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2018 Alexander K. Freed
+// Copyright 2018-2021 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,513 +14,117 @@
 // limitations under the License.
 // ==================================================================
 
-// Contains the basic tests.
+#include <gtest/gtest.h>
 
-#include "TcpListener.h"
-#include "TcpSocket.h"
-#include "UdpSocket.h"
+#include <TcpListener.h>
+#include <TcpSerializer.h>
+#include <TcpSocket.h>
+#include <UdpSocket.h>
+#include "Timeout.h"
+#include "TestGlobals.h"
 
 #include <cstring>
 #include <string>
-#include <vector>
-#include <array>
+#include <memory>
+#include <chrono>
+#include <algorithm>
+#include <thread>
 
-#include "TestReport.h"
-#include "UnitTestMain.h"
-
-
-//============================================================================
-// tests
-
-template <typename SOCKET>
-TestReport SendRecvChar(bool assumptions, SOCKET& sender, SOCKET& receiver)
+class Basic : public ::testing::Test
 {
-    TestReport report("SendRecvChar", "Sends and receives a char.");
-    char sentData = 'f';
+    Timeout m_timeout{std::chrono::seconds(3)};
+};
 
-    if (!assumptions)
-    {
-        report.ResultNotes = "Failed assumptions.";
-        report.FailedAssumptions = true;
-        return report;
-    }
-
-    if (!IsValidSocket(sender))
-    {
-        report.ResultNotes = "Sender not connected.";
-        return report;
-    }
-    if (!IsValidSocket(receiver))
-    {
-        report.ResultNotes = "Receiver not connected.";
-        return report;
-    }
-
-    if (receiver.DataAvailable() != 0)
-    {
-        report.ResultNotes = "Receiver had data in buffer before data was sent.";
-        return report;
-    }
-
-    if (!sender.Write(sentData))
-    {
-        report.ResultNotes = "Write failed.";
-        return report;
-    }
-
-    if (!receiver.SetReadTimeout(5000))
-    {
-        report.ResultNotes = "Receiver setsockopt failed when setting read timeout.";
-        return report;
-    }
-
-    char c;
-    if (!receiver.Read(c))
-    {
-        report.ResultNotes = "Read failed.";
-        return report;
-    }
-
-    if (c != sentData)
-    {
-        report.ResultNotes = "Read received wrong data.";
-        return report;
-    }
-
-    report.Passed = true;
-    return report;
+TEST_F(Basic, TcpSelfConnect)
+{
+    TcpListener listener(TestGlobals::portString);
+    ASSERT_TRUE(listener.IsValid());
+    TcpSocket client(TestGlobals::localhost, TestGlobals::portString);
+    ASSERT_TRUE(client.IsConnected());
+    TcpSocket host = listener.Accept();
+    ASSERT_TRUE(host.IsConnected());
 }
 
-
-//----------------------------------------------------------------------------
-
-template <typename SOCKET>
-TestReport SendRecvBool(bool assumptions, SOCKET& sender, SOCKET& receiver)
+TEST_F(Basic, UdpSelfConnect)
 {
-    TestReport report("SendRecvBool", "Sends and receives true and false.");
-
-    if (!assumptions)
-    {
-        report.ResultNotes = "Failed assumptions.";
-        report.FailedAssumptions = true;
-        return report;
-    }
-
-    if (!IsValidSocket(sender))
-    {
-        report.ResultNotes = "Sender not connected.";
-        return report;
-    }
-    if (!IsValidSocket(receiver))
-    {
-        report.ResultNotes = "Receiver not connected.";
-        return report;
-    }
-
-    if (receiver.DataAvailable() != 0)
-    {
-        report.ResultNotes = "Receiver had data in buffer before data was sent.";
-        return report;
-    }
-
-    if (!sender.Write(false))
-    {
-        report.ResultNotes = "Write failed.";
-        return report;
-    }
-
-    if (!sender.Write(true))
-    {
-        report.ResultNotes = "Write failed.";
-        return report;
-    }
-
-    if (!sender.Write(true))
-    {
-        report.ResultNotes = "Write failed.";
-        return report;
-    }
-
-    if (!receiver.SetReadTimeout(5000))
-    {
-        report.ResultNotes = "Receiver setsockopt failed when setting read timeout.";
-        return report;
-    }
-
-    bool b;
-    if (!receiver.Read(b))
-    {
-        report.ResultNotes = "Read failed.";
-        return report;
-    }
-
-    if (b != false)
-    {
-        report.ResultNotes = "Read received wrong data.";
-        return report;
-    }
-
-    if (!receiver.Read(b))
-    {
-        report.ResultNotes = "Read failed.";
-        return report;
-    }
-
-    if (b != true)
-    {
-        report.ResultNotes = "Read received wrong data.";
-        return report;
-    }
-
-    // this test is not necessary
-    char c;
-    if (!receiver.Read(c))
-    {
-        report.ResultNotes = "Read failed.";
-        return report;
-    }
-
-    if (c != 1)
-    {
-        report.ResultNotes = "Read received wrong data.";
-        return report;
-    }
-
-    report.Passed = true;
-    return report;
+    UdpSocket client(TestGlobals::localhost, TestGlobals::port);
+    ASSERT_TRUE(client.IsValid());
+    UdpSocket host(TestGlobals::port);
+    ASSERT_TRUE(host.IsValid());
 }
 
-
-//----------------------------------------------------------------------------
-
-template <typename SOCKET>
-TestReport SendRecvInt(bool assumptions, SOCKET& sender, SOCKET& receiver)
+TEST_F(Basic, TcpSendRecvBuf)
 {
-    TestReport report("SendRecvInt", "Sends and receives an int32.");
-    int sentData = -20;
+    TcpListener listener(TestGlobals::portString);
+    ASSERT_TRUE(listener.IsValid());
+    TcpSocket sender(TestGlobals::localhost, TestGlobals::portString);
+    ASSERT_TRUE(sender.IsConnected());
+    TcpSocket receiver = listener.Accept();
+    ASSERT_TRUE(receiver.IsConnected());
 
-    if (!assumptions)
-    {
-        report.ResultNotes = "Failed assumptions.";
-        report.FailedAssumptions = true;
-        return report;
-    }
-
-    if (!IsValidSocket(sender))
-    {
-        report.ResultNotes = "Sender not connected.";
-        return report;
-    }
-    if (!IsValidSocket(receiver))
-    {
-        report.ResultNotes = "Receiver not connected.";
-        return report;
-    }
-
-    if (receiver.DataAvailable() != 0)
-    {
-        report.ResultNotes = "Receiver had data in buffer before data was sent.";
-        return report;
-    }
-
-    if (!sender.Write(sentData))
-    {
-        report.ResultNotes = "Write failed.";
-        return report;
-    }
-
-    if (!receiver.SetReadTimeout(5000))
-    {
-        report.ResultNotes = "Receiver setsockopt failed when setting read timeout.";
-        return report;
-    }
-
-    int i;
-    if (!receiver.Read(i))
-    {
-        report.ResultNotes = "Read failed.";
-        return report;
-    }
-
-    if (i != sentData)
-    {
-        report.ResultNotes = "Read received wrong data.";
-        return report;
-    }
-
-    report.Passed = true;
-    return report;
-}
-
-
-//----------------------------------------------------------------------------
-
-template <typename SOCKET>
-TestReport SendRecvDouble(bool assumptions, SOCKET& sender, SOCKET& receiver)
-{
-    TestReport report("SendRecvDouble", "Sends and receives a double.");
-    double sentData = 5.1234567890;
-
-    if (!assumptions)
-    {
-        report.ResultNotes = "Failed assumptions.";
-        report.FailedAssumptions = true;
-        return report;
-    }
-
-    if (!IsValidSocket(sender))
-    {
-        report.ResultNotes = "Sender not connected.";
-        return report;
-    }
-    if (!IsValidSocket(receiver))
-    {
-        report.ResultNotes = "Receiver not connected.";
-        return report;
-    }
-
-    if (receiver.DataAvailable() != 0)
-    {
-        report.ResultNotes = "Receiver had data in buffer before data was sent.";
-        return report;
-    }
-
-    if (!sender.Write(sentData))
-    {
-        report.ResultNotes = "Write failed.";
-        return report;
-    }
-
-    if (!receiver.SetReadTimeout(5000))
-    {
-        report.ResultNotes = "Receiver setsockopt failed when setting read timeout.";
-        return report;
-    }
-
-    double d;
-    if (!receiver.Read(d))
-    {
-        report.ResultNotes = "Read failed.";
-        return report;
-    }
-
-    if (d != sentData)
-    {
-        report.ResultNotes = "Read received wrong data.";
-        return report;
-    }
-
-    report.Passed = true;
-    return report;
-}
-
-
-//----------------------------------------------------------------------------
-
-template <typename SOCKET>
-TestReport SendRecvBuf(bool assumptions, SOCKET& sender, SOCKET& receiver)
-{
-    TestReport report("SendRecvBuf", "Sends and receives a char buffer.");
     char sentData[6] = { 1, 2, 3, 4, 5, 6 };
+    ASSERT_TRUE(sender.Write(sentData, 5));
 
-    if (!assumptions)
-    {
-        report.ResultNotes = "Failed assumptions.";
-        report.FailedAssumptions = true;
-        return report;
-    }
+    char recvData[6] = { 0, 0, 0, 0, 0, 0 };
+    ASSERT_TRUE(receiver.Read(recvData, 5));
+    ASSERT_TRUE(std::equal(recvData, recvData + 5, sentData));
 
-    if (!IsValidSocket(sender))
-    {
-        report.ResultNotes = "Sender not connected.";
-        return report;
-    }
-    if (!IsValidSocket(receiver))
-    {
-        report.ResultNotes = "Receiver not connected.";
-        return report;
-    }
+    ASSERT_TRUE(sender.Write(sentData + 3, 3));
+    ASSERT_TRUE(sender.Write(sentData, 3));
 
-    if (receiver.DataAvailable() != 0)
-    {
-        report.ResultNotes = "Receiver had data in buffer before data was sent.";
-        return report;
-    }
+    ASSERT_TRUE(receiver.Read(recvData, 2));
+    auto expected = { 4, 5, 3, 4, 5, 0 };
+    ASSERT_TRUE(std::equal(recvData, recvData + 6, expected.begin()));
 
-    if (!sender.Write(sentData, 5))
-    {
-        report.ResultNotes = "Write failed.";
-        return report;
-    }
-
-    if (!receiver.SetReadTimeout(5000))
-    {
-        report.ResultNotes = "Receiver setsockopt failed when setting read timeout.";
-        return report;
-    }
-
-    char buf[6] = { 0, 0, 0, 0, 0 };
-    std::array<char, 6> expected = { 1, 2, 3, 4, 5, 0 };
-
-    if (!receiver.Read(buf, 5))
-    {
-        report.ResultNotes = "Read failed.";
-        return report;
-    }
-
-    if (!bufferMatches(buf, expected, 5))
-    {
-        report.ResultNotes = "Read received wrong data.";
-        return report;
-    }
-
-    if (!sender.Write(sentData + 3, 3))
-    {
-        report.ResultNotes = "Write failed.";
-        return report;
-    }
-
-    if (!sender.Write(sentData, 3))
-    {
-        report.ResultNotes = "Write failed.";
-        return report;
-    }
-
-    expected = { 4, 5, 3, 4, 5, 0 };
-    if (!receiver.Read(buf, 2))
-    {
-        report.ResultNotes = "Read failed.";
-        return report;
-    }
-
+    ASSERT_TRUE(receiver.Read(recvData, 4));
     expected = { 6, 1, 2, 3, 5, 0 };
-    if (!receiver.Read(buf, 4))
-    {
-        report.ResultNotes = "Read failed.";
-        return report;
-    }
-
-    report.Passed = true;
-    return report;
+    ASSERT_TRUE(std::equal(recvData, recvData + 6, expected.begin()));
 }
 
-
-//----------------------------------------------------------------------------
-
-template <typename SOCKET>
-TestReport SendRecvCharString(bool assumptions, SOCKET& sender, SOCKET& receiver)
+TEST_F(Basic, UdpSendRecvBuf)
 {
-    TestReport report("SendRecvCharString", "Sends and receives a char string.");
-    char s[101] = "Hello, World!";
+    UdpSocket sender(TestGlobals::localhost, TestGlobals::port);
+    ASSERT_TRUE(sender.IsValid());
+    UdpSocket receiver(TestGlobals::port);
+    ASSERT_TRUE(receiver.IsValid());
 
-    if (!assumptions)
-    {
-        report.ResultNotes = "Failed assumptions.";
-        report.FailedAssumptions = true;
-        return report;
-    }
+    char sentData[6] = { 1, 2, 3, 4, 5, 6 };
+    ASSERT_TRUE(sender.Write(sentData, 5));
 
-    if (!IsValidSocket(sender))
-    {
-        report.ResultNotes = "Sender not connected.";
-        return report;
-    }
-    if (!IsValidSocket(receiver))
-    {
-        report.ResultNotes = "Receiver not connected.";
-        return report;
-    }
+    char recvData[6] = { 0, 0, 0, 0, 0, 0 };
+    ASSERT_TRUE(receiver.Read(recvData, 5));
+    ASSERT_TRUE(std::equal(recvData, recvData + 5, sentData));
 
-    if (receiver.DataAvailable() != 0)
-    {
-        report.ResultNotes = "Receiver had data in buffer before data was sent.";
-        return report;
-    }
+    ASSERT_TRUE(sender.Write(sentData + 3, 3));
+    ASSERT_TRUE(sender.Write(sentData, 3));
 
-    if (!sender.WriteString(s))
-    {
-        report.ResultNotes = "Write failed.";
-        return report;
-    }
+    ASSERT_TRUE(receiver.Read(recvData, 2));
+    auto expected = { 4, 5, 3, 4, 5, 0 };
+    ASSERT_TRUE(std::equal(recvData, recvData + 6, expected.begin()));
 
-    if (!receiver.SetReadTimeout(5000))
-    {
-        report.ResultNotes = "Receiver setsockopt failed when setting read timeout.";
-        return report;
-    }
-
-    char msg[101];
-    memset(msg, 0xFF, 101);
-
-    if (!receiver.ReadString(msg, 101))
-    {
-        report.ResultNotes = "Read failed.";
-        return report;
-    }
-
-    if (strcmp(s, msg) != 0)
-    {
-        report.ResultNotes = "Read received wrong data.";
-        return report;
-    }
-
-    report.Passed = true;
-    return report;
+    ASSERT_TRUE(receiver.Read(recvData, 4));
+    expected = { 1, 2, 3, 4, 5, 0 };
+    ASSERT_TRUE(std::equal(recvData, recvData + 6, expected.begin()));
 }
 
-
-//============================================================================
-// Test Basic Main
-
-TestReport TestBasic()
+// Test the DataAvailable() function.
+TEST_F(Basic, DataAvailable)
 {
-    TestReport report("RunBasic", "Runs basic read/write tests.");
+    TcpListener listener(TestGlobals::portString);
+    ASSERT_TRUE(listener.IsValid());
+    TcpSerializer sender(TcpSocket(TestGlobals::localhost, TestGlobals::portString));
+    ASSERT_TRUE(sender.Socket().IsConnected());
+    TcpSerializer receiver(TcpSocket(listener.Accept()));
+    ASSERT_TRUE(receiver.Socket().IsConnected());
 
-    TestReport result;
-    TcpSocket senderTcp, receiverTcp;
+    ASSERT_EQ(receiver.Socket().DataAvailable(), 0);
 
-    result = SelfConnect("11111", senderTcp, receiverTcp);
-    report.SubTests.push_back(result);
+    int i = 5;
+    ASSERT_TRUE(sender.Write(i));
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-    bool assumptions = result.Passed;
-
-    result = SendRecvChar(assumptions, senderTcp, receiverTcp);
-    report.SubTests.push_back(result);
-
-    result = SendRecvBool(assumptions, senderTcp, receiverTcp);
-    report.SubTests.push_back(result);
-
-    result = SendRecvInt(assumptions, senderTcp, receiverTcp);
-    report.SubTests.push_back(result);
-
-    result = SendRecvDouble(assumptions, senderTcp, receiverTcp);
-    report.SubTests.push_back(result);
-
-    result = SendRecvBuf(assumptions, senderTcp, receiverTcp);
-    report.SubTests.push_back(result);
-
-    result = SendRecvCharString(assumptions, senderTcp, receiverTcp);
-    report.SubTests.push_back(result);
-
-    UdpSocket senderUdp, receiverUdp;
-    result = SelfConnect(11111, senderUdp, receiverUdp);
-    report.SubTests.push_back(result);
-    assumptions = result.Passed;
-
-    result = SendRecvBuf(assumptions, senderUdp, receiverUdp);
-    report.SubTests.push_back(result);
-
-    // set top-level report
-    report.Passed = true;
-    for (auto& subtest : report.SubTests)
-    {
-        if (!subtest.Passed)
-        {
-            report.Passed = false;
-            break;
-        }
-    }
-    
-    return report;
+    ASSERT_GT(receiver.Socket().DataAvailable(), 0);
+    ASSERT_TRUE(receiver.Read(i));
+    ASSERT_EQ(receiver.Socket().DataAvailable(), 0);
 }
 

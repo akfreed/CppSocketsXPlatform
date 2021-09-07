@@ -19,7 +19,7 @@
 #include "TcpListener.h"
 #include "TcpSocket.h"
 
-#include <assert.h>
+#include <cassert>
 
 
 TcpListener::TcpListener(const char* port)

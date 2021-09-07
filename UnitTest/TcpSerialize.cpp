@@ -16,17 +16,20 @@
 
 #include <gtest/gtest.h>
 
-#include "TestGlobals.h"
+#include <TcpListener.h>
+#include <TcpSerializer.h>
+#include <TcpSocket.h>
+#include <UdpSocket.h>
 #include "Timeout.h"
-#include "TcpSocket.h"
-#include "TcpSerializer.h"
-#include "TcpListener.h"
+#include "TestGlobals.h"
 
-#include <cstdint>
 #include <cstring>
+#include <string>
+#include <memory>
+#include <chrono>
 #include <algorithm>
 
-class Endian : public ::testing::Test
+class TcpSerialize : public ::testing::Test
 {
 public:
     static void SetUpTestSuite()
@@ -60,49 +63,61 @@ public:
     Timeout m_timeout{ std::chrono::seconds(3) };
 };
 
-std::unique_ptr<TcpSerializer> Endian::s_sender;
-std::unique_ptr<TcpSerializer> Endian::s_receiver;
+std::unique_ptr<TcpSerializer> TcpSerialize::s_sender;
+std::unique_ptr<TcpSerializer> TcpSerialize::s_receiver;
 
-TEST_F(Endian, CheckInt)
+TEST_F(TcpSerialize, SendRecvChar)
 {
-    const int32_t value = 0x3CABBA6E;
-    char valBuffer[sizeof(value)];
-
-    std::memcpy(valBuffer, &value, sizeof(value));
-
-    ASSERT_TRUE(s_sender->Write(value));
-    ASSERT_TRUE(s_sender->Write(value));
-
-    char readBuffer[sizeof(value)];
-    ASSERT_TRUE(s_receiver->Socket().Read(readBuffer, sizeof(value)));
-    char expected[4]{ '\x3C', '\xAB', '\xBA', '\x6E' };
-    ASSERT_TRUE(std::equal(expected, expected + 4, readBuffer));
-
-    int32_t readInt = 0;
-    ASSERT_TRUE(s_receiver->Read(readInt));
-    std::memcpy(readBuffer, &readInt, sizeof(readInt));
-    ASSERT_TRUE(std::equal(readBuffer, readBuffer + 4, valBuffer));
+    const char sentData = 'f';
+    ASSERT_TRUE(s_sender->Write(sentData));
+    char recvData{};
+    ASSERT_TRUE(s_receiver->Read(recvData));
+    ASSERT_EQ(recvData, sentData);
 }
 
-TEST_F(Endian, CheckDouble)
+TEST_F(TcpSerialize, SendRecvBool)
 {
-    const uint64_t value = 0x0807060504030201;
-    char valBuffer[sizeof(value)];
-    double toSend;
+    ASSERT_TRUE(s_sender->Write(false));
+    ASSERT_TRUE(s_sender->Write(true));
+    constexpr bool s = true;
+    ASSERT_TRUE(s_sender->Write(s));
 
-    std::memcpy(valBuffer, &value, sizeof(value));
-    std::memcpy(&toSend, &value, sizeof(value));
+    bool b = true;
+    ASSERT_TRUE(s_receiver->Read(b));
+    ASSERT_EQ(b, false);
+    ASSERT_TRUE(s_receiver->Read(b));
+    ASSERT_EQ(b, true);
+    ASSERT_TRUE(s_receiver->Read(b));
+    ASSERT_EQ(b, true);
+}
 
-    ASSERT_TRUE(s_sender->Write(toSend));
-    ASSERT_TRUE(s_sender->Write(toSend));
+TEST_F(TcpSerialize, SendRecvInt32)
+{
+    int sentData = -20;
+    ASSERT_TRUE(s_sender->Write(sentData));
 
-    char readBuffer[sizeof(value)];
-    ASSERT_TRUE(s_receiver->Socket().Read(readBuffer, sizeof(value)));
-    char expected[8]{ 8, 7, 6, 5, 4, 3, 2, 1 };
-    ASSERT_TRUE(std::equal(expected, expected + 8, readBuffer));
+    int recvData{};
+    ASSERT_TRUE(s_receiver->Read(recvData));
+    ASSERT_EQ(recvData, sentData);
+}
 
-    double readDouble = 0;
-    ASSERT_TRUE(s_receiver->Read(readDouble));
-    std::memcpy(readBuffer, &readDouble, sizeof(readDouble));
-    ASSERT_TRUE(std::equal(readBuffer, readBuffer + 8, valBuffer));
+TEST_F(TcpSerialize, SendRecvDouble)
+{
+    double sentData = 5.1234567890;
+    ASSERT_TRUE(s_sender->Write(sentData));
+
+    double recvData{};
+    ASSERT_TRUE(s_receiver->Read(recvData));
+    ASSERT_EQ(recvData, sentData);
+}
+
+TEST_F(TcpSerialize, SendRecvCharString)
+{
+    char s[101] = "Hello, World!";
+    ASSERT_TRUE(s_sender->WriteString(s));
+
+    char msg[101];
+    memset(msg, 0xFF, 101);
+    ASSERT_TRUE(s_receiver->ReadString(msg, 101));
+    ASSERT_EQ(std::strcmp(s, msg), 0);
 }

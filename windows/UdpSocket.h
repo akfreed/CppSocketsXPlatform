@@ -29,10 +29,10 @@
 
 #include "SocketIncludes.h"
 
+#include "WinsockContext.h"
+
 #include <mutex>
 #include <condition_variable>
-
-#include "WinsockContextManager.h"
 
 
 class UdpSocket
@@ -75,14 +75,15 @@ class UdpSocket
         bool preReadSetup();
         bool postReadCheck(int amountRead, int maxlen, sockaddr_in& info, int infoLen, std::unique_lock<std::mutex>& lock);
 
-        SOCKET      m_socketId;
-        sockaddr_in m_myInfo;
-        sockaddr_in m_theirInfo;
-        int         m_theirInfoLen;
-        bool        m_theirInfoIsValid;
-        State       m_state;
-        std::mutex  m_socketLock;
+        WinsockContext m_winsockContext;
+        SOCKET         m_socketId;
+        sockaddr_in    m_myInfo;
+        sockaddr_in    m_theirInfo;
+        int            m_theirInfoLen;
+        bool           m_theirInfoIsValid;
+        State          m_state;
+        std::mutex     m_socketLock;
         std::condition_variable m_readCancel;
-        int         m_dumpCount;
+        int            m_dumpCount;
 };
 
