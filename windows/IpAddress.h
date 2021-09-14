@@ -20,6 +20,8 @@
 #include <string>
 #include <array>
 
+namespace strapper { namespace net {
+
 class IpAddressV4
 {
 public:
@@ -38,3 +40,5 @@ public:
 private:
     uint32_t m_val = 0;
 };
+
+} }

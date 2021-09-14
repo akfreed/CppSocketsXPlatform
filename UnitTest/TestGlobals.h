@@ -16,9 +16,15 @@
 
 #pragma once
 
+#include <cstdint>
+
+namespace strapper { namespace net { namespace test {
+
 struct TestGlobals
 {
     static constexpr char localhost[] = "127.0.0.1";
     static constexpr uint16_t port = 11111;
     static constexpr uint16_t port2 = 11112;
 };
+
+} } }

@@ -21,7 +21,8 @@
 #include <SocketHandle.h>
 
 #include <cstdint>
-#include <string>
+
+namespace strapper { namespace net {
 
 class TcpSocketBase;
 
@@ -50,3 +51,5 @@ private:
     WinsockContext m_winsockContext;
     SocketHandle m_socket;
 };
+
+} }

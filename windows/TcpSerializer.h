@@ -18,6 +18,8 @@
 
 #include <TcpSocket.h>
 
+namespace strapper { namespace net {
+
 class TcpSerializer
 {
 public:
@@ -43,3 +45,5 @@ public:
 private:
     TcpSocket m_socket;
 };
+
+} }

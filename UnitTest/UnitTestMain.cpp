@@ -18,6 +18,8 @@
 
 #include <iostream>
 
+namespace strapper { namespace net { namespace test {
+
 void TerminateHandler()
 {
     std::exception_ptr currentException = std::current_exception();
@@ -44,11 +46,13 @@ void TerminateHandler()
     std::abort();
 }
 
+} } }
+
 int main()
 {
     try
     {
-        std::set_terminate(TerminateHandler);
+        std::set_terminate(strapper::net::test::TerminateHandler);
         testing::InitGoogleTest();
         return RUN_ALL_TESTS();
     }

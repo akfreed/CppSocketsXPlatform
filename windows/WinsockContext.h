@@ -20,6 +20,8 @@
 
 #include <memory>
 
+namespace strapper { namespace net {
+
 class Winsock;
 
 class WinsockContext
@@ -30,3 +32,5 @@ public:
 private:
     std::shared_ptr<Winsock> m_handle;
 };
+
+} }

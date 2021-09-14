@@ -18,6 +18,8 @@
 
 #include <string>
 
+namespace strapper { namespace net {
+
 class ErrorCode
 {
 public:
@@ -36,3 +38,5 @@ private:
     std::string m_name;
     std::string m_what;
 };
+
+} }

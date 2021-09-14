@@ -21,6 +21,8 @@
 #include <mutex>
 #include <condition_variable>
 
+namespace strapper { namespace net {
+
 class TcpSocket
 {
 public:
@@ -70,3 +72,5 @@ private:
     TcpSocketBase m_socket;
     State m_state = State::CLOSED;
 };
+
+} }

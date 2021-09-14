@@ -21,6 +21,8 @@
 
 #include <memory>
 
+namespace strapper { namespace net {
+
 namespace {
 
 SocketHandle Start(uint16_t port)
@@ -120,3 +122,5 @@ ErrorCode TcpListenerBase::shutdown()
 {
     return (::shutdown(m_socket.Get(), SD_BOTH) == SOCKET_ERROR) ? ErrorCode(WSAGetLastError()) : ErrorCode();
 }
+
+} }

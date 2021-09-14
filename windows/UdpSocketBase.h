@@ -21,11 +21,11 @@
 #include <IpAddress.h>
 
 #include <cstdint>
-#include <string>
+
+namespace strapper { namespace net {
 
 class UdpSocketBase
 {
-    //friend class UdpSocket;
 public:
     UdpSocketBase();
     explicit UdpSocketBase(uint16_t myport);
@@ -51,3 +51,5 @@ private:
     WinsockContext m_winsockContext;
     SocketHandle m_socket;
 };
+
+} }

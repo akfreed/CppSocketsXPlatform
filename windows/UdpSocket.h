@@ -21,6 +21,8 @@
 #include <mutex>
 #include <condition_variable>
 
+namespace strapper { namespace net {
+
 class UdpSocket
 {
 public:
@@ -61,3 +63,5 @@ private:
     State m_state = State::CLOSED;
     SOCKET m_socketId = INVALID_SOCKET;
 };
+
+} }

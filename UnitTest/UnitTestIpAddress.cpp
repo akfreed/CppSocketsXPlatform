@@ -22,6 +22,8 @@
 #include <string>
 #include <algorithm>
 
+namespace strapper { namespace net { namespace test {
+
 class UnitTestIpAddress : public ::testing::Test
 {
 };
@@ -98,3 +100,5 @@ TEST_F(UnitTestIpAddress, ConstructFromInt)
     ASSERT_EQ(IpAddressV4(htonl(0xABCDEF01)).ToInt(), htonl(0xABCDEF01u));
     ASSERT_EQ(IpAddressV4(htonl(0xABCDEF01)).ToString(), "171:205:239:1");
 }
+
+} } }

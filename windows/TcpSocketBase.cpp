@@ -21,6 +21,8 @@
 #include <memory>
 #include <limits>
 
+namespace strapper { namespace net {
+
 namespace {
 
 //! Connects to host:port
@@ -170,3 +172,5 @@ TcpSocketBase::operator bool() const
 {
     return IsConnected();
 }
+
+} }

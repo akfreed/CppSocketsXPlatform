@@ -23,6 +23,8 @@
 #include <stdexcept>
 #include <iostream>
 
+namespace strapper { namespace net { namespace test {
+
 class Timeout
 {
 public:
@@ -81,3 +83,5 @@ private:
     std::condition_variable m_cv;
     bool m_complete = false;
 };
+
+} } }

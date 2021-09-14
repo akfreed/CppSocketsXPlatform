@@ -1,9 +1,9 @@
 # Unit Tests
 add_executable(UnitTest
-    Basic.cpp
-    Endian.cpp
-    Error.cpp
-    TcpSerialize.cpp
+    UnitTestBasic.cpp
+    UnitTestEndian.cpp
+    UnitTestError.cpp
+    UnitTestSerialize.cpp
     TestGlobals.h
     Timeout.h
     UnitTestIpAddress.cpp

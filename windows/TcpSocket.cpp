@@ -21,6 +21,8 @@
 #include <cassert>
 #include <cstring>
 
+namespace strapper { namespace net {
+
 // constructor connects to host:port
 TcpSocket::TcpSocket(std::string const& host, uint16_t port)
     : m_socket(host, port)
@@ -208,3 +210,5 @@ TcpSocket::operator bool() const
 {
     return IsConnected();
 }
+
+} }

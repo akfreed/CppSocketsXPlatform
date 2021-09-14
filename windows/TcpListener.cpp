@@ -23,6 +23,8 @@
 
 #include <cassert>
 
+namespace strapper { namespace net {
+
 TcpListener::TcpListener(uint16_t port)
     : m_listener(port)
     , m_state(m_listener ? State::OPEN : State::CLOSED)
@@ -135,3 +137,5 @@ TcpListener::operator bool() const
 {
     return IsListening();
 }
+
+} }

@@ -20,6 +20,8 @@
 
 #include <cassert>
 
+namespace strapper { namespace net {
+
 UdpSocket::UdpSocket()
     : m_state(m_socket ? State::OPEN : State::CLOSED)
 { }
@@ -173,3 +175,5 @@ UdpSocket::operator bool() const
 {
     return IsOpen();
 }
+
+} }

@@ -21,6 +21,8 @@
 #include <exception>
 #include <string>
 
+namespace strapper { namespace net {
+
 class NetworkError : public std::exception
 {
 public:
@@ -63,3 +65,5 @@ class NetworkConnectionError : public NetworkError
 public:
     using NetworkError::NetworkError;
 };
+
+} }

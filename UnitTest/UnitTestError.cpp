@@ -29,7 +29,9 @@
 #include <atomic>
 #include <exception>
 
-class Error : public ::testing::Test
+namespace strapper { namespace net { namespace test {
+
+class UnitTestError : public ::testing::Test
 {
 public:
     static void SetUpTestSuite()
@@ -57,7 +59,7 @@ public:
 };
 
 // Tests that SetReadTimeout breaks a blocking read and closes the socket.
-TEST_F(Error, ReadTimeout)
+TEST_F(UnitTestError, ReadTimeout)
 {
     Timeout timeout(std::chrono::seconds(3));
 
@@ -75,7 +77,7 @@ TEST_F(Error, ReadTimeout)
 
 // Tests that closing the socket breaks a blocking read on a separate thread.
 // todo: Fix for windows by closing the socket before waiting.
-TEST_F(Error, DISABLED_CloseFromOtherThread)
+TEST_F(UnitTestError, DISABLED_CloseFromOtherThread)
 {
     Timeout timeout(std::chrono::seconds(3));
 
@@ -96,3 +98,5 @@ TEST_F(Error, DISABLED_CloseFromOtherThread)
     m_receiver.Close();  // This call should block until the operation is done.
     ASSERT_FALSE(m_receiver.IsConnected());
 }
+
+} } }

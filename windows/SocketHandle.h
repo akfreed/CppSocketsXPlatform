@@ -19,6 +19,8 @@
 #include <SocketIncludes.h>
 #include <ErrorCode.h>
 
+namespace strapper { namespace net {
+
 class SocketHandle
 {
 public:
@@ -38,3 +40,5 @@ public:
 private:
     SOCKET m_socketId = INVALID_SOCKET;
 };
+
+} }

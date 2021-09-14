@@ -16,6 +16,8 @@
 
 #include <SocketHandle.h>
 
+namespace strapper { namespace net {
+
 SocketHandle::SocketHandle(int family, int socktype, int protocol)
     : m_socketId(socket(family, socktype, protocol))
 { }
@@ -59,3 +61,5 @@ ErrorCode SocketHandle::Close()
     m_socketId = INVALID_SOCKET;
     return (error == SOCKET_ERROR) ? ErrorCode(WSAGetLastError()) : ErrorCode();
 }
+
+} }

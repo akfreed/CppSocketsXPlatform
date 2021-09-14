@@ -21,6 +21,8 @@
 
 #include <string>
 
+namespace strapper { namespace net {
+
 #define CODES(L) \
     L(NO_ERROR, NetworkProgrammingError) \
     L(WSAEACCES, NetworkProgrammingError) \
@@ -101,3 +103,5 @@ void ErrorCode::ThrowIfError() const
         throw NetworkProgrammingError(*this, What());
     }
 }
+
+} }

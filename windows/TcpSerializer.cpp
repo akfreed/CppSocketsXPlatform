@@ -19,6 +19,8 @@
 #include <cassert>
 #include <stdexcept>
 
+namespace strapper { namespace net {
+
 TcpSerializer::TcpSerializer(TcpSocket&& socket)
     : m_socket(std::move(socket))
 { }
@@ -177,3 +179,5 @@ int TcpSerializer::ReadString(char* c, int maxlen)
 
     return len;
 }
+
+} }

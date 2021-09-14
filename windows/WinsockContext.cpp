@@ -20,6 +20,8 @@
 #include <stdexcept>
 #include <mutex>
 
+namespace strapper { namespace net {
+
 class Winsock
 {
 public:
@@ -67,3 +69,5 @@ std::mutex Winsock::s_mutex;
 WinsockContext::WinsockContext()
     : m_handle(Winsock::Get())
 { }
+
+} }

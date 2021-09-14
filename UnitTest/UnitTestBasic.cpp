@@ -31,16 +31,18 @@
 #include <algorithm>
 #include <thread>
 
-class Basic : public ::testing::Test
+namespace strapper { namespace net { namespace test {
+
+class UnitTestBasic : public ::testing::Test
 {
     Timeout m_timeout{std::chrono::seconds(3)};
 };
 
-TEST_F(Basic, Empty)
+TEST_F(UnitTestBasic, Empty)
 {
 }
 
-TEST_F(Basic, TcpSelfConnect)
+TEST_F(UnitTestBasic, TcpSelfConnect)
 {
     TcpListener listener(TestGlobals::port);
     ASSERT_TRUE(listener);
@@ -50,7 +52,7 @@ TEST_F(Basic, TcpSelfConnect)
     ASSERT_TRUE(host.IsConnected());
 }
 
-TEST_F(Basic, UdpCreate)
+TEST_F(UnitTestBasic, UdpCreate)
 {
     UdpSocket client;
     ASSERT_TRUE(client);
@@ -58,7 +60,7 @@ TEST_F(Basic, UdpCreate)
     ASSERT_TRUE(host);
 }
 
-TEST_F(Basic, TcpSendRecvBuf)
+TEST_F(UnitTestBasic, TcpSendRecvBuf)
 {
     TcpListener listener(TestGlobals::port);
     ASSERT_TRUE(listener);
@@ -86,7 +88,7 @@ TEST_F(Basic, TcpSendRecvBuf)
     ASSERT_TRUE(std::equal(recvData, recvData + 6, expected.begin()));
 }
 
-TEST_F(Basic, UdpSendRecvBuf)
+TEST_F(UnitTestBasic, UdpSendRecvBuf)
 {
     IpAddressV4 const ip(TestGlobals::localhost);
     uint16_t const port = TestGlobals::port;
@@ -113,14 +115,13 @@ TEST_F(Basic, UdpSendRecvBuf)
     ASSERT_EQ(senderIp.ToString(), ip.ToString());
 
     receiver.Read(recvData, 4, &senderIp, &senderPort);
-    std::cout << senderIp.ToString() << std::endl;
     expected = { 1, 2, 3, 4, 5, 0 };
     ASSERT_TRUE(std::equal(recvData, recvData + 6, expected.begin()));
     ASSERT_EQ(senderIp.ToString(), ip.ToString());
 }
 
 // Test the DataAvailable() function.
-TEST_F(Basic, DataAvailable)
+TEST_F(UnitTestBasic, DataAvailable)
 {
     TcpListener listener(TestGlobals::port);
     ASSERT_TRUE(listener);
@@ -139,3 +140,5 @@ TEST_F(Basic, DataAvailable)
     ASSERT_TRUE(receiver.Read(i));
     ASSERT_EQ(receiver.Socket().DataAvailable(), 0u);
 }
+
+} } }

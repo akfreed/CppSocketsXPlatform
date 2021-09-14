@@ -22,6 +22,8 @@
 
 #include <limits>
 
+namespace strapper { namespace net {
+
 namespace {
 
 // Creates a socket and binds it to the given port. Set to 0 for any.
@@ -185,3 +187,5 @@ UdpSocketBase::operator bool() const
 {
     return IsOpen();
 }
+
+} }

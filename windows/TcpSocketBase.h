@@ -23,6 +23,8 @@
 #include <cstdint>
 #include <string>
 
+namespace strapper { namespace net {
+
 class TcpSocketBase
 {
     friend class TcpSocket;
@@ -62,3 +64,5 @@ private:
     WinsockContext m_winsockContext;
     SocketHandle m_socket;
 };
+
+} }
