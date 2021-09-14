@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2018-2021 Alexander K. Freed
+// Copyright 2018, 2021 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ public:
     {
         Timeout timeout{ std::chrono::seconds(3) };
         TcpListener listener(TestGlobals::port);
-        ASSERT_TRUE(listener.IsValid()) << "Unable to start listener.";
+        ASSERT_TRUE(listener) << "Unable to start listener.";
         s_sender = std::make_unique<TcpSerializer>(TcpSocket(TestGlobals::localhost, TestGlobals::port));
         ASSERT_TRUE(s_sender->Socket().IsConnected()) << "Unable to connect client to listener.";
         s_receiver = std::make_unique<TcpSerializer>(TcpSocket(listener.Accept()));
@@ -54,7 +54,7 @@ public:
         ASSERT_TRUE(s_sender->Socket().IsConnected());
         ASSERT_TRUE(s_receiver->Socket().IsConnected());
         // Since the sockets are re-used, a previous test failure can leave some data in the buffer.
-        ASSERT_EQ(s_receiver->Socket().DataAvailable(), 0) << "Receiver had data in buffer before data was sent.";
+        ASSERT_EQ(s_receiver->Socket().DataAvailable(), 0u) << "Receiver had data in buffer before data was sent.";
     }
 
     static std::unique_ptr<TcpSerializer> s_sender;
@@ -69,7 +69,7 @@ std::unique_ptr<TcpSerializer> TcpSerialize::s_receiver;
 TEST_F(TcpSerialize, SendRecvChar)
 {
     const char sentData = 'f';
-    ASSERT_TRUE(s_sender->Write(sentData));
+    s_sender->Write(sentData);
     char recvData{};
     ASSERT_TRUE(s_receiver->Read(recvData));
     ASSERT_EQ(recvData, sentData);
@@ -77,10 +77,10 @@ TEST_F(TcpSerialize, SendRecvChar)
 
 TEST_F(TcpSerialize, SendRecvBool)
 {
-    ASSERT_TRUE(s_sender->Write(false));
-    ASSERT_TRUE(s_sender->Write(true));
+    s_sender->Write(false);
+    s_sender->Write(true);
     constexpr bool s = true;
-    ASSERT_TRUE(s_sender->Write(s));
+    s_sender->Write(s);
 
     bool b = true;
     ASSERT_TRUE(s_receiver->Read(b));
@@ -94,7 +94,7 @@ TEST_F(TcpSerialize, SendRecvBool)
 TEST_F(TcpSerialize, SendRecvInt32)
 {
     int sentData = -20;
-    ASSERT_TRUE(s_sender->Write(sentData));
+    s_sender->Write(sentData);
 
     int recvData{};
     ASSERT_TRUE(s_receiver->Read(recvData));
@@ -104,7 +104,7 @@ TEST_F(TcpSerialize, SendRecvInt32)
 TEST_F(TcpSerialize, SendRecvDouble)
 {
     double sentData = 5.1234567890;
-    ASSERT_TRUE(s_sender->Write(sentData));
+    s_sender->Write(sentData);
 
     double recvData{};
     ASSERT_TRUE(s_receiver->Read(recvData));
@@ -114,7 +114,7 @@ TEST_F(TcpSerialize, SendRecvDouble)
 TEST_F(TcpSerialize, SendRecvCharString)
 {
     char s[101] = "Hello, World!";
-    ASSERT_TRUE(s_sender->WriteString(s));
+    s_sender->WriteString(s);
 
     char msg[101];
     memset(msg, 0xFF, 101);

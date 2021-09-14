@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2018 Alexander K. Freed
+// Copyright 2018, 2021 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,366 +14,162 @@
 // limitations under the License.
 // ==================================================================
 
-// Contains the cpp code for UdpSocket.h
-
 #include <UdpSocket.h>
 
-#include <utility>
+#include <NetworkError.h>
+
 #include <cassert>
 
-// This constructor uses any port
-// a port of 0 means windows will pick a port for you
-UdpSocket::UdpSocket(std::string const& host, uint16_t hostport)
-    : UdpSocket(host, hostport, 0)
-{
-}
+UdpSocket::UdpSocket()
+    : m_state(m_socket ? State::OPEN : State::CLOSED)
+{ }
 
-// This constructor sets the port and not the host
-// The first client to connect will be locked in
 UdpSocket::UdpSocket(uint16_t myport)
-    : UdpSocket("", 0, myport)
-{ 
-}
+    : m_socket(myport)
+    , m_state(m_socket ? State::OPEN : State::CLOSED)
+{ }
 
-// This constructor lets you specify the host and your own port
-UdpSocket::UdpSocket(std::string const& host, uint16_t hostport, uint16_t myport)
-{
-    std::lock_guard<std::mutex> lock(m_socketLock);
-    ZeroMemory(&m_myInfo, sizeof(m_myInfo));
-
-    m_socketId = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    if (m_socketId == INVALID_SOCKET)
-        return;
-
-    m_myInfo.sin_family = AF_INET;
-    m_myInfo.sin_addr.s_addr = htonl(INADDR_ANY);
-    m_myInfo.sin_port = htons(myport); 
-
-    if (bind(m_socketId, (sockaddr*)&m_myInfo, sizeof(m_myInfo)) == SOCKET_ERROR)
-    {
-        closesocket(m_socketId);
-        return;
-    }
-
-    ZeroMemory(&m_theirInfo, sizeof(m_theirInfo));
-
-    // If hostname is empty or hostport is 0, we will skip this.
-    if (!host.empty() && hostport > 0)
-    {
-        m_theirInfo.sin_family = AF_INET;
-        m_theirInfo.sin_port = htons(hostport);
-        inet_pton(AF_INET, host.c_str(), &m_theirInfo.sin_addr);
-        m_theirInfoIsValid = true;
-    }
-
-    m_state = State::OPEN;
-}
-
-// move constructor
-// Cannot be noexcept because it a mutex can fail to lock.
-// The copy operations are deleted, so standard containers will used move 
-// operations, however the strong exception guarantee is lost.
-UdpSocket::UdpSocket(UdpSocket&& other) noexcept(false)
+UdpSocket::UdpSocket(UdpSocket&& other) noexcept
     : UdpSocket()
 {
-    this->move(std::move(other));
+    swap(*this, other);
 }
 
-// move assignment
-// Cannot be noexcept because it a mutex can fail to lock.
-// The copy operations are deleted, so standard containers will used move 
-// operations, however the strong exception guarantee is lost.
-UdpSocket& UdpSocket::operator=(UdpSocket&& other) noexcept(false)
+UdpSocket& UdpSocket::operator=(UdpSocket&& other) noexcept
 {
-    // move function handles cleaning up
-    this->move(std::move(other));
+    UdpSocket temp(std::move(other));
+    swap(*this, temp);
     return *this;
 }
 
-// destructor
-// Close() can throw, but in that case we pretty much have to abort anyways.
 UdpSocket::~UdpSocket()
 {
     Close();
 }
 
-//----------------------------------------------------------------------------
-
-void UdpSocket::move(UdpSocket&& other) noexcept(false)
+void swap(UdpSocket& left, UdpSocket& right)
 {
-    std::lock(m_socketLock, other.m_socketLock);  // deadlock-proof
-    std::unique_lock<std::mutex> lock(m_socketLock, std::adopt_lock);
-    std::unique_lock<std::mutex> other_lock(other.m_socketLock, std::adopt_lock);
-
-    // clean up
-    close(lock);
+    using State = UdpSocket::State;
+    std::lock(left.m_socketLock, right.m_socketLock);  // deadlock-proof
+    std::unique_lock<std::mutex> leftLock(left.m_socketLock, std::adopt_lock);
+    std::unique_lock<std::mutex> rightLock(right.m_socketLock, std::adopt_lock);
 
     // If the other socket is reading, moving it probably create a logic bug.
+    assert(left.m_state != State::READING);
+    assert(right.m_state != State::READING);
     // If the other socket is shutting down, wait for it to finish.
-    if (other.m_state == State::READING || other.m_state == State::SHUTTING_DOWN)
-    {
-        assert(other.m_state != State::READING);
-        other.close(other_lock);
-    }
+    if (left.m_state == State::SHUTTING_DOWN)
+        left.m_readCancel.wait(leftLock, [&left]() { return left.m_state == State::CLOSED; });
+    if (right.m_state == State::SHUTTING_DOWN)
+        right.m_readCancel.wait(rightLock, [&right]() { return right.m_state == State::CLOSED; });
 
-    m_socketId = std::move(other.m_socketId);
-    other.m_socketId = INVALID_SOCKET;
-
-    m_myInfo = std::move(other.m_myInfo);
-    ZeroMemory(&other.m_myInfo, sizeof(other.m_myInfo));
-
-    m_theirInfo = std::move(other.m_theirInfo);
-    ZeroMemory(&other.m_theirInfo, sizeof(other.m_theirInfo));
-
-    m_theirInfoLen = std::move(other.m_theirInfoLen);
-    other.m_theirInfoLen = sizeof(other.m_theirInfo);
-
-    m_theirInfoIsValid = std::move(other.m_theirInfoIsValid);
-    other.m_theirInfoIsValid = false;
-
-    m_state = std::move(other.m_state);
-    other.m_state = State::CLOSED;
+    using std::swap;
+    swap(left.m_socket, right.m_socket);
+    swap(left.m_state, right.m_state);
 }
 
-// shutdown and close the socket
-void UdpSocket::Close()
+bool UdpSocket::IsOpen() const
 {
-    std::unique_lock<std::mutex> lock(m_socketLock);
-    close(lock);
-}
-
-// be sure to lock before calling!
-void UdpSocket::close(std::unique_lock<std::mutex>& lock)
-{
-    switch (m_state)
-    {
-    case State::CLOSED:
-        return;  // return!
-        break;
-
-    case State::SHUTTING_DOWN:
-        while (m_state != State::CLOSED)
-            m_readCancel.wait(lock);
-        return;  // return!
-        break;
-
-    case State::OPEN:
-        m_state = State::CLOSED;
-        shutdown(m_socketId, SD_BOTH);
-        break;  // fall out
-
-    case State::READING:
-        m_state = State::SHUTTING_DOWN;
-        shutdown(m_socketId, SD_BOTH);
-        // If there is a blocked read on a separate thread, the socket shutdown will unblock it. Wait for it to finish.
-        while (m_state != State::CLOSED)
-            m_readCancel.wait(lock);
-        break;  // fall out
-    }
-
-    closesocket(m_socketId);
-    m_socketId = INVALID_SOCKET;
-    m_theirInfoIsValid = false;
-}
-
-//----------------------------------------------------------------------------
-
-bool UdpSocket::IsValid() const
-{
-    std::lock_guard<std::mutex> lock(m_socketLock);  // mutex used more for the memory fence than anything else...
+    std::lock_guard<std::mutex> lock(m_socketLock);
     return m_state != State::CLOSED;
 }
-
-//----------------------------------------------------------------------------
 
 // If this timeout is reached, the socket will be closed. Thank you, Windows.
 // Only use this feature as a robustness mechanism.
 // (e.g. so you don't block forever if the connection is somehow silently lost.)
 // Don't use this as a form of non-blocking read.
-bool UdpSocket::SetReadTimeout(unsigned milliseconds)
+void UdpSocket::SetReadTimeout(unsigned milliseconds)
 {
     std::lock_guard<std::mutex> lock(m_socketLock);
-    if (m_state != State::OPEN)
-        return false;
-    return setsockopt(m_socketId, SOL_SOCKET, SO_RCVTIMEO, (char const*)&milliseconds, sizeof(milliseconds)) == 0;
+    if (m_state == State::CLOSED)
+        throw NetworkConnectionError("Socket is not open.");
+    if (m_state == State::READING)
+        throw NetworkProgrammingError("Socket is already reading.");
+    if (m_state == State::SHUTTING_DOWN)
+        throw NetworkConnectionError("Socket was closed from another thread.");
+
+    m_socket.SetReadTimeout(milliseconds);
 }
 
-//----------------------------------------------------------------------------
-
-// The lock is required to be locked before entry. It is not used by this function, but serves as a reminder that this data should be protected by a lock
-bool UdpSocket::checkSenderInfo(sockaddr_in const& info, int len, std::unique_lock<std::mutex>&) const
-{
-    // check if the info is different from expected
-    if (m_theirInfoLen != len ||
-        m_theirInfo.sin_addr.s_addr != info.sin_addr.s_addr ||
-        m_theirInfo.sin_port != info.sin_port ||
-        m_theirInfo.sin_family != info.sin_family)
-    {
-        //assert(false);  // todo: remove from final implementation
-        //return false;  // todo: re-instate after testing
-    }
-    return true;
-}
-
-// The lock is required to be locked before entry. It is not used by this function, but serves as a reminder that this data should be protected by a lock
-void UdpSocket::setSenderInfo(sockaddr_in& info, int len, std::unique_lock<std::mutex>&)
-{
-    // if this is our first read, save the info
-    memcpy(&m_theirInfo, &info, sizeof(m_theirInfo));
-    m_theirInfoLen = len;
-    m_theirInfoIsValid = true;
-}
-
-//----------------------------------------------------------------------------
-
-bool UdpSocket::Write(char const* buffer, int len)
+// Shutdown and close the socket.
+void UdpSocket::Close() noexcept
 {
     std::unique_lock<std::mutex> lock(m_socketLock);
-    if (m_state == State::CLOSED || m_state == State::SHUTTING_DOWN || !m_theirInfoIsValid || len < 1)
-        return false;
-
-    int amountWritten = sendto(m_socketId, buffer, len, 0, (sockaddr*)&m_theirInfo, m_theirInfoLen);
-
-    if (amountWritten == SOCKET_ERROR)
+    switch (m_state)
     {
-        close(lock);
-        return false;
+    case State::CLOSED:
+        break;
+
+    case State::SHUTTING_DOWN:
+        m_readCancel.wait(lock, [this]() { return m_state == State::CLOSED; });
+        break;
+
+    case State::OPEN:
+        m_state = State::CLOSED;
+        m_socket.Close();
+        break;
+
+    case State::READING:
+        m_state = State::SHUTTING_DOWN;
+        shutdown(m_socketId, SD_BOTH);
+        // If there is a blocked read on a separate thread, the socket shutdown will unblock it. Wait for it to finish.
+        m_readCancel.wait(lock, [this]() { return m_state == State::CLOSED; });
+        break;  // fall out
     }
-    return true;
 }
 
-bool UdpSocket::preReadSetup()
+void UdpSocket::Write(void const* src, size_t len, IpAddressV4 const& ipAddress, uint16_t port)
 {
-    std::lock_guard<std::mutex> lock(m_socketLock);
-    // Sanity check.
-    if (m_state == State::READING)
-    {
-        assert(false);
-        return false;
-    }
-    if (m_state != State::OPEN)
-        return false;
-    m_state = State::READING;
-    return true;
+    std::unique_lock<std::mutex> lock(m_socketLock);
+    if (m_state == State::CLOSED)
+        throw NetworkConnectionError("Socket is not open.");
+    if (m_state == State::SHUTTING_DOWN)
+        throw NetworkConnectionError("Socket was closed from another thread.");
+
+    return m_socket.Write(src, len, ipAddress, port);
 }
 
-// lock should be locked before entry
-bool UdpSocket::postReadCheck(int amountRead, int maxlen, sockaddr_in& info, int infoLen, std::unique_lock<std::mutex>& lock)
+void UdpSocket::Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddress, uint16_t* out_port)
 {
+    {
+        std::lock_guard<std::mutex> lock(m_socketLock);
+        if (m_state == State::READING || m_state == State::SHUTTING_DOWN)
+            throw NetworkProgrammingError("Socket is already reading.");
+        if (m_state == State::CLOSED)
+            throw NetworkConnectionError("Socket is not open.");
+        m_state = State::READING;
+    }
+
+    m_socket.Read(dest, maxlen, out_ipAddress, out_port);
+
+    std::unique_lock<std::mutex> lock(m_socketLock);
     if (m_state == State::SHUTTING_DOWN)
     {
         m_state = State::CLOSED;
+        m_socket.Close();
         m_readCancel.notify_all();
-        return false;
-    }
-    else if (amountRead == SOCKET_ERROR)
-    {
-        int error = WSAGetLastError();
-        switch (error)
-        {
-        case WSAEINTR:       // blocking call was interrupted. In a multi-threaded environment, probably means the socket was closed by another thread
-            assert(false);   // This shouldn't happen since this situation should be protected by the state machine and mutexes.
-            return false;
-            break;
-
-        case WSAETIMEDOUT:   // timeout was reached. If this happens, the socket is in an invalid state and must be closed. (Thanks, Windows)
-            m_state = State::OPEN;
-            close(lock);
-            return false;
-            break;
-
-        case WSAEMSGSIZE:    // buffer was not large enough
-            amountRead = maxlen;
-            break;  // fall out of error check back to normal return
-
-        case WSAECONNRESET:  // In TCP, this is a hard reset. In UDP, it means a previous write failed (ICMP Port Unreachable).
-            if (!m_theirInfoIsValid)  // expected behavior when reusing a socket. However, we don't allow socket reuse in this implementation.
-            {
-                assert(false);
-                return false;
-            }
-            else if (checkSenderInfo(info, infoLen, lock))  // same sender. Up to calling code if they want to close
-            {
-                return false;
-            }
-            // else, different sender. fall out of error check back to normal return, which will try the read again
-            break;
-
-        default:
-            assert(false);  // todo: development only. Need to see what kind of errors we experience.
-            m_state = State::OPEN;
-            close(lock);
-            return false;
-            break;
-        }
+        return;
     }
 
     m_state = State::OPEN;
-    return true;
 }
-
-int UdpSocket::Read(char* dest, int maxlen)
-{
-    // sanity check
-    if (maxlen < 1)
-    {
-        assert(false);
-        return 0;
-    }
-
-    sockaddr_in info;
-    int infoLen;
-    int amountRead = 0;
-    bool success = false;
-
-    while (!success)
-    {
-        infoLen = sizeof(info);
-        ZeroMemory(&info, sizeof(info));
-
-        if (!preReadSetup())
-            return -1;
-
-        amountRead = recvfrom(m_socketId, dest, maxlen, 0, (sockaddr*)&info, &infoLen);
-
-        {
-            std::unique_lock<std::mutex> lock(m_socketLock);
-            if (!postReadCheck(amountRead, maxlen, info, infoLen, lock))
-                return SOCKET_ERROR;
-
-            if (!m_theirInfoIsValid)  // first connection in is locked in for the life of the object
-            {
-                setSenderInfo(info, infoLen, lock);
-                success = true;
-            }
-            else if (checkSenderInfo(info, infoLen, lock))  // If sender is different from expected, ignore the read and try again
-                success = true;
-        }
-    }
-    
-    return amountRead;
-}
-
-//----------------------------------------------------------------------------
 
 // returns the total amount of data in the buffer. 
 // A call to Read will not necessarily return this much data, since the buffer may contain many datagrams
-// returns -1 on error
-int UdpSocket::DataAvailable() const
+unsigned UdpSocket::DataAvailable() const
 {
     std::lock_guard<std::mutex> lock(m_socketLock);
-    if (m_state != State::OPEN)
-    {
-        assert(false);
-        return -1;
-    }
+    if (m_state == State::CLOSED)
+        throw NetworkConnectionError("Socket is not open.");
+    if (m_state == State::READING)
+        throw NetworkProgrammingError("Socket is already reading.");
+    if (m_state == State::SHUTTING_DOWN)
+        throw NetworkConnectionError("Socket was closed from another thread.");
 
-    unsigned long bytesAvailable;
-    if (ioctlsocket(m_socketId, FIONREAD, &bytesAvailable) != 0)
-        return -1;
+    return m_socket.DataAvailable();
+}
 
-    if (bytesAvailable > INT_MAX)
-        bytesAvailable = INT_MAX;
-
-    return static_cast<int>(bytesAvailable);
+UdpSocket::operator bool() const
+{
+    return IsOpen();
 }

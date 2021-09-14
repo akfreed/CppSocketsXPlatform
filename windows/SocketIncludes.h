@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2017-2021 Alexander K. Freed
+// Copyright 2017, 2021 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -34,6 +34,9 @@
 // prevent windows.h from including winsock.h
 #ifndef WIN32_LEAN_AND_MEAN
     #define WIN32_LEAN_AND_MEAN 
+#endif
+#ifndef NOMINMAX
+    #define NOMINMAX
 #endif
 #include <winsock2.h>
 #include <ws2tcpip.h>

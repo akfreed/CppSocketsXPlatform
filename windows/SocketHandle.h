@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2018 Alexander K. Freed
+// Copyright 2021 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,9 +16,25 @@
 
 #pragma once
 
-struct TestGlobals
+#include <SocketIncludes.h>
+#include <ErrorCode.h>
+
+class SocketHandle
 {
-    static constexpr char localhost[] = "127.0.0.1";
-    static constexpr uint16_t port = 11111;
-    static constexpr uint16_t port2 = 11112;
+public:
+    SocketHandle() = default;
+    SocketHandle(int family, int socktype, int protocol);
+    explicit SocketHandle(SOCKET fd);
+    SocketHandle(SocketHandle const&) = delete;
+    SocketHandle(SocketHandle&& other) noexcept;
+    SocketHandle& operator=(SocketHandle const&) = delete;
+    SocketHandle& operator=(SocketHandle&& other) noexcept;
+    ~SocketHandle();
+
+    explicit operator bool() const;
+    SOCKET const& Get() const;
+    ErrorCode Close();
+
+private:
+    SOCKET m_socketId = INVALID_SOCKET;
 };

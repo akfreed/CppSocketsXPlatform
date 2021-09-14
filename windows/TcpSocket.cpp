@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2018-2021 Alexander K. Freed
+// Copyright 2018, 2021 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,165 +14,63 @@
 // limitations under the License.
 // ==================================================================
 
-// Contains the cpp code for TcpSocket
-
 #include <TcpSocket.h>
+
+#include <NetworkError.h>
 
 #include <cassert>
 #include <cstring>
 
 // constructor connects to host:port
 TcpSocket::TcpSocket(std::string const& host, uint16_t port)
-{
-    Connect(host, port);
-}
+    : m_socket(host, port)
+    , m_state(m_socket ? State::CONNECTED : State::CLOSED)
+{ }
 
 // special private constructor used only by TcpListener.Accept(), which has a friend function
-TcpSocket::TcpSocket(SOCKET fd)
-    : m_socketId(fd)
-    , m_state(State::CONNECTED)
-{
-    std::lock_guard<std::mutex> lock(m_socketLock);  // ensures proper memory fencing
-}
+TcpSocket::TcpSocket(TcpSocketBase&& socket)
+    : m_socket(std::move(socket))
+    , m_state(m_socket ? State::CONNECTED : State::CLOSED)
+{ }
 
-// move constructor
-// Cannot be noexcept because it a mutex can fail to lock.
-// The copy operations are deleted, so standard containers will used move 
-// operations, however the strong exception guarantee is lost.
-TcpSocket::TcpSocket(TcpSocket&& other) noexcept(false)
+TcpSocket::TcpSocket(TcpSocket&& other) noexcept
     : TcpSocket()
 {
-    this->move(std::move(other));
+    swap(*this, other);
 }
 
-// move assignment
-// Cannot be noexcept because it a mutex can fail to lock.
-// The copy operations are deleted, so standard containers will used move 
-// operations, however the strong exception guarantee is lost.
-TcpSocket& TcpSocket::operator=(TcpSocket&& other) noexcept(false)
+TcpSocket& TcpSocket::operator=(TcpSocket&& other) noexcept
 {
-    // move function handles cleaning up
-    this->move(std::move(other));
+    TcpSocket temp(std::move(other));
+    swap(*this, temp);
     return *this;
 }
 
-// destructor
-// Close() can throw, but in that case we pretty much have to abort anyways.
 TcpSocket::~TcpSocket()
 {
     Close();
 }
 
-//----------------------------------------------------------------------------
-
-void TcpSocket::move(TcpSocket&& other) noexcept(false)
+void swap(TcpSocket& left, TcpSocket& right)
 {
-    std::lock(m_socketLock, other.m_socketLock);  // deadlock-proof
-    std::unique_lock<std::mutex> lock(m_socketLock, std::adopt_lock);
-    std::unique_lock<std::mutex> other_lock(other.m_socketLock, std::adopt_lock);
+    using State = TcpSocket::State;
+    std::lock(left.m_socketLock, right.m_socketLock); // Avoids deadlock.
+    std::unique_lock<std::mutex> leftLock(left.m_socketLock, std::adopt_lock);
+    std::unique_lock<std::mutex> rightLock(right.m_socketLock, std::adopt_lock);
 
-    // clean up
-    close(lock);
+    // If the socket is reading, moving it probably create a logic bug.
+    assert(left.m_state != State::READING);
+    assert(right.m_state != State::READING);
+    // If the socket is shutting down, wait for it to finish.
+    if (left.m_state == State::SHUTTING_DOWN)
+        left.m_readCancel.wait(leftLock, [&left]() { return left.m_state == State::CLOSED; });
+    if (right.m_state == State::SHUTTING_DOWN)
+        right.m_readCancel.wait(rightLock, [&right]() { return right.m_state == State::CLOSED; });
 
-    // If the other socket is reading, moving it probably create a logic bug.
-    // If the other socket is shutting down, wait for it to finish.
-    if (other.m_state == State::READING || other.m_state == State::SHUTTING_DOWN)
-    {
-        assert(other.m_state != State::READING);
-        other.close(other_lock);
-    }
-
-    m_socketId = std::move(other.m_socketId);
-    other.m_socketId = INVALID_SOCKET;
-
-    m_hostInfo = std::move(other.m_hostInfo);
-    ZeroMemory(&other.m_hostInfo, sizeof(other.m_hostInfo));
-
-    m_hostInfoList = std::move(other.m_hostInfoList);
-    other.m_hostInfoList = nullptr;
-
-    m_state = std::move(other.m_state);
-    other.m_state = State::CLOSED;
+    using std::swap;
+    swap(left.m_socket, right.m_socket);
+    swap(left.m_state, right.m_state);
 }
-
-// shutdown and close the socket
-void TcpSocket::Close()
-{
-    std::unique_lock<std::mutex> lock(m_socketLock);
-    close(lock);
-}
-
-// be sure to lock before calling!
-void TcpSocket::close(std::unique_lock<std::mutex>& lock)
-{
-    switch (m_state)
-    {
-    case State::CLOSED:
-        return;  // return!
-        break;
-
-    case State::SHUTTING_DOWN:
-        while (m_state != State::CLOSED)
-            m_readCancel.wait(lock);
-        return;  // return!
-        break;
-
-    case State::CONNECTED:
-        m_state = State::CLOSED;
-        shutdown(m_socketId, SD_BOTH);
-        break;  // fall out
-
-    case State::READING:
-        m_state = State::SHUTTING_DOWN;
-        shutdown(m_socketId, SD_BOTH);
-        // If there is a blocked read on a separate thread, the socket shutdown will unblock it. Wait for it to finish.
-        while (m_state != State::CLOSED)
-            m_readCancel.wait(lock);
-        break;  // fall out
-    }
-
-    closesocket(m_socketId);
-    m_socketId = INVALID_SOCKET;
-    freeaddrinfo(m_hostInfoList);
-}
-
-//! Connects to host:port
-bool TcpSocket::Connect(std::string const& host, uint16_t port)
-{
-    std::lock_guard<std::mutex> lock(m_socketLock);
-    if (m_state != State::CLOSED)
-        return false;
-
-    std::memset(&m_hostInfo, 0, sizeof(m_hostInfo));
-    m_hostInfo.ai_family = AF_UNSPEC; // Can be IPv4 or IPv6
-    m_hostInfo.ai_socktype = SOCK_STREAM; // TCP
-
-    int error = getaddrinfo(host.c_str(), std::to_string(port).c_str(), &m_hostInfo, &m_hostInfoList);
-    if (error != 0)
-        return false;
-
-    m_socketId = socket(m_hostInfoList->ai_family, m_hostInfoList->ai_socktype, m_hostInfoList->ai_protocol);
-    if (m_socketId == INVALID_SOCKET)
-    {
-        freeaddrinfo(m_hostInfoList);
-        m_hostInfoList = nullptr;
-        return false;
-    }
-
-    error = connect(m_socketId, m_hostInfoList->ai_addr, (int)m_hostInfoList->ai_addrlen);
-    if (error == SOCKET_ERROR)
-    {
-        freeaddrinfo(m_hostInfoList);
-        m_hostInfoList = nullptr;
-        closesocket(m_socketId);
-        return false;
-    }
-
-    m_state = State::CONNECTED;
-    return true;
-}
-
-//----------------------------------------------------------------------------
 
 bool TcpSocket::IsConnected() const
 {
@@ -180,119 +78,133 @@ bool TcpSocket::IsConnected() const
     return m_state != State::CLOSED;
 }
 
-//----------------------------------------------------------------------------
-
 //! If this timeout is reached, the socket will be closed. Thank you, Windows.
 //! Only use this feature as a robustness mechanism.
 //! (e.g. so you don't block forever if the connection is somehow silently lost.)
 //! Don't use this as a form of non-blocking read.
-bool TcpSocket::SetReadTimeout(unsigned milliseconds)
+void TcpSocket::SetReadTimeout(unsigned milliseconds)
 {
     std::lock_guard<std::mutex> lock(m_socketLock);
-    if (m_state != State::CONNECTED)
-        return false;
-    return setsockopt(m_socketId, SOL_SOCKET, SO_RCVTIMEO, (char const*)&milliseconds, sizeof(milliseconds)) == 0;
-}
-
-//----------------------------------------------------------------------------
-
-bool TcpSocket::Write(char const* buf, int len)
-{
-    std::unique_lock<std::mutex> lock(m_socketLock);
-    if (m_state == State::CLOSED || m_state == State::SHUTTING_DOWN)
-        return false;
-
-    if (len <= 0)
-    {
-        assert(false);
-        return true;
-    }
-
-    int amountWritten = send(m_socketId, buf, len, 0);
-
-    if (amountWritten == SOCKET_ERROR)
-    {
-        close(lock);
-        return false;
-    }
-    return true;
-}
-
-bool TcpSocket::preReadSetup()
-{
-    std::lock_guard<std::mutex> lock(m_socketLock);
-    // Sanity check.
+    if (m_state == State::CLOSED)
+        throw NetworkConnectionError("Socket is not connected.");
     if (m_state == State::READING)
-    {
-        assert(false);
-        return false;
-    }
-    if (m_state != State::CONNECTED)
-        return false;
-    m_state = State::READING;
-    return true;
+        throw NetworkProgrammingError("Socket is already reading.");
+    if (m_state == State::SHUTTING_DOWN)
+        throw NetworkConnectionError("Socket was closed from another thread.");
+
+    m_socket.SetReadTimeout(milliseconds);
 }
 
-bool TcpSocket::postReadCheck(int amountRead, int len)
+void TcpSocket::ShutdownSend()
+{
+    std::lock_guard<std::mutex> lock(m_socketLock);
+    if (m_state == State::CLOSED)
+        throw NetworkConnectionError("Socket is not connected.");
+    if (m_state == State::SHUTTING_DOWN)
+        throw NetworkConnectionError("Socket was closed from another thread.");
+
+    m_socket.ShutdownSend();
+}
+
+void TcpSocket::ShutdownBoth()
+{
+    std::lock_guard<std::mutex> lock(m_socketLock);
+    if (m_state == State::CLOSED)
+        throw NetworkConnectionError("Socket is not connected.");
+    if (m_state == State::SHUTTING_DOWN)
+        throw NetworkConnectionError("Socket was closed from another thread.");
+
+    m_socket.ShutdownBoth();
+}
+
+// Shutdown and close the socket.
+void TcpSocket::Close() noexcept
 {
     std::unique_lock<std::mutex> lock(m_socketLock);
-    if (m_state == State::SHUTTING_DOWN)
+    switch (m_state)
     {
+    case State::CLOSED:
+        break;
+
+    case State::SHUTTING_DOWN:
+        m_readCancel.wait(lock, [this]() { return m_state == State::CLOSED; });
+        break;
+
+    case State::CONNECTED:
         m_state = State::CLOSED;
-        m_readCancel.notify_all();
-        return false;
-    }
-    else if (amountRead == SOCKET_ERROR || amountRead < len)  // amount read can be less than len if a read timeout occurs, in which case we need to close the socket.
-    {
-        m_state = State::CONNECTED;
-        close(lock);
-        return false;
-    }
-    else
-    {
-        m_state = State::CONNECTED;
-        return true;
+        m_socket.Close();
+        break;
+
+    case State::READING:
+        m_state = State::SHUTTING_DOWN;
+        m_socket.ShutdownBoth();
+        // If there is a blocked read on a separate thread, the socket shutdown will unblock it. Wait for it to finish.
+        m_readCancel.wait(lock, [this]() { return m_state == State::CLOSED; });
+        break;
     }
 }
 
-// reads len bytes into given char* buffer
-bool TcpSocket::Read(char* buf, int len)
+void TcpSocket::Write(void const* src, size_t len)
 {
-    // sanity check
-    if (len < 1)
+    std::unique_lock<std::mutex> lock(m_socketLock);
+    if (m_state == State::CLOSED)
+        throw NetworkConnectionError("Socket is not connected.");
+    if (m_state == State::SHUTTING_DOWN)
+        throw NetworkConnectionError("Socket was closed from another thread.");
+
+    m_socket.Write(src, len);
+}
+
+bool TcpSocket::Read(void* dest, size_t len)
+{
     {
-        assert(false);
-        return false;
+        std::lock_guard<std::mutex> lock(m_socketLock);
+        if (m_state == State::READING || m_state == State::SHUTTING_DOWN)
+            throw NetworkProgrammingError("Socket is already reading.");
+        if (m_state == State::CLOSED)
+            throw NetworkConnectionError("Socket is not connected.");
+        m_state = State::READING;
     }
 
-    if (!preReadSetup())
-        return false;
+    try
+    {
+        bool const stillConnected = m_socket.Read(dest, len);
 
-    int amountRead = recv(m_socketId, buf, len, MSG_WAITALL);  // MSG_WAITALL blocks until all bytes are there
-    
-    return postReadCheck(amountRead, len);
+        std::unique_lock<std::mutex> lock(m_socketLock);
+        if (m_state == State::SHUTTING_DOWN)
+            throw NetworkConnectionError("Socket was closed from another thread.");
+
+        m_state = State::CONNECTED;
+        return stillConnected;
+    }
+    catch (NetworkError const&)
+    {
+        std::unique_lock<std::mutex> lock(m_socketLock);
+        m_state = State::CLOSED;
+        m_socket.Close();
+        m_readCancel.notify_all();
+        throw;
+    }    
 }
 
 // returns the amount of bytes available in the stream
 // guaranteed not to be bigger than the actual number
 // you can read this many bytes without blocking
 // may be smaller than the actual number of bytes available
-// returns -1 on error
-int TcpSocket::DataAvailable() const
+unsigned TcpSocket::DataAvailable()
 {
     std::lock_guard<std::mutex> lock(m_socketLock);
-    if (m_state != State::CONNECTED)
-    {
-        assert(false);
-        return -1;
-    }
+    if (m_state == State::CLOSED)
+        throw NetworkConnectionError("Socket is not connected.");
+    if (m_state == State::READING)
+        throw NetworkProgrammingError("Socket is already reading.");
+    if (m_state == State::SHUTTING_DOWN)
+        throw NetworkConnectionError("Socket was closed from another thread.");
 
-    unsigned long bytesAvailable;
-    if (ioctlsocket(m_socketId, FIONREAD, &bytesAvailable) != 0)
-        return -1;
+    return m_socket.DataAvailable();
+}
 
-    if (bytesAvailable > INT_MAX)
-        bytesAvailable = INT_MAX;
-
-    return static_cast<int>(bytesAvailable);
+TcpSocket::operator bool() const
+{
+    return IsConnected();
 }

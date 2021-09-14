@@ -6,9 +6,11 @@ add_executable(UnitTest
     TcpSerialize.cpp
     TestGlobals.h
     Timeout.h
+    UnitTestIpAddress.cpp
+    UnitTestMain.cpp
 )
 target_link_libraries(UnitTest
-    gtest_main
+    gtest
     Network
 )
 target_compile_options(UnitTest PRIVATE ${WARNING_FLAGS})

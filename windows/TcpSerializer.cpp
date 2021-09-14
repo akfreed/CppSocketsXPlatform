@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2018-2021 Alexander K. Freed
+// Copyright 2018, 2021 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,14 +14,7 @@
 // limitations under the License.
 // ==================================================================
 
-// Contains the declaration TcpSocket
-//
-// This file should be included before windows.h
-//
-// The copy operations are deleted, so standard containers will used move 
-// operations, however the strong exception guarantee is lost.
-
-#include "TcpSerializer.h"
+#include <TcpSerializer.h>
 
 #include <cassert>
 #include <stdexcept>
@@ -40,18 +33,18 @@ TcpSocket& TcpSerializer::Socket()
     return m_socket;
 }
 
-bool TcpSerializer::Write(char c)
+void TcpSerializer::Write(char c)
 {
-    return m_socket.Write(&c, 1);
+    m_socket.Write(&c, 1);
 }
 
-bool TcpSerializer::Write(bool b)
+void TcpSerializer::Write(bool b)
 {
     const char c = static_cast<char>(b);
-    return m_socket.Write(&c, 1);
+    m_socket.Write(&c, 1);
 }
 
-bool TcpSerializer::Write(int32_t int32)
+void TcpSerializer::Write(int32_t int32)
 {
     static_assert(sizeof(int32_t) == 4, "Function not compatible with this architecture.");
     static_assert(sizeof(char) == 1, "Function not compatible with this architecture.");
@@ -61,10 +54,10 @@ bool TcpSerializer::Write(int32_t int32)
     int32 = htonl(int32);  // convert to big endian
     memcpy(buffer, &int32, sizeof(int32));
 
-    return m_socket.Write(buffer, 4);
+    m_socket.Write(buffer, 4);
 }
 
-bool TcpSerializer::Write(double d)
+void TcpSerializer::Write(double d)
 {
     static_assert(sizeof(unsigned long long) == 8, "Function not compatible with this architecture.");
     static_assert(sizeof(double) == 8, "Function not compatible with this architecture.");
@@ -82,16 +75,17 @@ bool TcpSerializer::Write(double d)
         in >>= 8;
     }
 
-    return m_socket.Write(buffer, 8);
+    m_socket.Write(buffer, 8);
 }
 
-bool TcpSerializer::WriteString(const char* str)
+void TcpSerializer::WriteString(const char* str)
 {
     int len = static_cast<int>(strlen(str)); // todo: Use size_t.
     if (len > MAX_STRING_LEN)
         len = MAX_STRING_LEN;
 
-    return Write(len) && m_socket.Write(str, len);
+    Write(len);
+    m_socket.Write(str, len);
 }
 
 //----------------------------------------------------------------------------

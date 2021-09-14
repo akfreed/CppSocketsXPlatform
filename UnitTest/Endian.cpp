@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2018-2021 Alexander K. Freed
+// Copyright 2018, 2021 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ public:
     {
         Timeout timeout{ std::chrono::seconds(3) };
         TcpListener listener(TestGlobals::port);
-        ASSERT_TRUE(listener.IsValid()) << "Unable to start listener.";
+        ASSERT_TRUE(listener) << "Unable to start listener.";
         s_sender = std::make_unique<TcpSerializer>(TcpSocket(TestGlobals::localhost, TestGlobals::port));
         ASSERT_TRUE(s_sender->Socket().IsConnected()) << "Unable to connect client to listener.";
         s_receiver = std::make_unique<TcpSerializer>(TcpSocket(listener.Accept()));
@@ -51,7 +51,7 @@ public:
         ASSERT_TRUE(s_sender->Socket().IsConnected());
         ASSERT_TRUE(s_receiver->Socket().IsConnected());
         // Since the sockets are re-used, a previous test failure can leave some data in the buffer.
-        ASSERT_EQ(s_receiver->Socket().DataAvailable(), 0) << "Receiver had data in buffer before data was sent.";
+        ASSERT_EQ(s_receiver->Socket().DataAvailable(), 0u) << "Receiver had data in buffer before data was sent.";
     }
 
     static std::unique_ptr<TcpSerializer> s_sender;
@@ -70,8 +70,8 @@ TEST_F(Endian, CheckInt)
 
     std::memcpy(valBuffer, &value, sizeof(value));
 
-    ASSERT_TRUE(s_sender->Write(value));
-    ASSERT_TRUE(s_sender->Write(value));
+    s_sender->Write(value);
+    s_sender->Write(value);
 
     char readBuffer[sizeof(value)];
     ASSERT_TRUE(s_receiver->Socket().Read(readBuffer, sizeof(value)));
@@ -93,8 +93,8 @@ TEST_F(Endian, CheckDouble)
     std::memcpy(valBuffer, &value, sizeof(value));
     std::memcpy(&toSend, &value, sizeof(value));
 
-    ASSERT_TRUE(s_sender->Write(toSend));
-    ASSERT_TRUE(s_sender->Write(toSend));
+    s_sender->Write(toSend);
+    s_sender->Write(toSend);
 
     char readBuffer[sizeof(value)];
     ASSERT_TRUE(s_receiver->Socket().Read(readBuffer, sizeof(value)));

@@ -16,28 +16,29 @@
 
 #pragma once
 
-#include <UdpSocketBase.h>
+#include <WinsockContext.h>
+#include <SocketHandle.h>
+#include <IpAddress.h>
 
-#include <mutex>
-#include <condition_variable>
+#include <cstdint>
+#include <string>
 
-class UdpSocket
+class UdpSocketBase
 {
+    //friend class UdpSocket;
 public:
-    UdpSocket();
-    explicit UdpSocket(uint16_t myport);
-    UdpSocket(UdpSocket const&) = delete;
-    UdpSocket(UdpSocket&& other) noexcept;
-    UdpSocket& operator=(UdpSocket const&) = delete;
-    UdpSocket& operator=(UdpSocket&& other) noexcept;
-    ~UdpSocket();
-
-    friend void swap(UdpSocket& left, UdpSocket& right);
+    UdpSocketBase();
+    explicit UdpSocketBase(uint16_t myport);
+    UdpSocketBase(UdpSocketBase const&) = delete;
+    UdpSocketBase(UdpSocketBase&& other) = default;
+    UdpSocketBase& operator=(UdpSocketBase const&) = delete;
+    UdpSocketBase& operator=(UdpSocketBase&& other) = default;
+    ~UdpSocketBase();
 
     bool IsOpen() const;
     void SetReadTimeout(unsigned milliseconds);
 
-    void Close() noexcept;
+    void Close();
 
     void Write(void const* src, size_t len, IpAddressV4 const& ipAddress, uint16_t port);
     void Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddress, uint16_t* out_port);
@@ -46,18 +47,7 @@ public:
 
     explicit operator bool() const;
 
-private:
-    enum class State
-    {
-        OPEN,
-        READING,
-        SHUTTING_DOWN,
-        CLOSED
-    };
-
-    mutable std::mutex m_socketLock;
-    std::condition_variable m_readCancel;
-    UdpSocketBase m_socket;
-    State m_state = State::CLOSED;
-    SOCKET m_socketId = INVALID_SOCKET;
+private:    
+    WinsockContext m_winsockContext;
+    SocketHandle m_socket;
 };

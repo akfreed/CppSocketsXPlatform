@@ -16,30 +16,32 @@
 
 #pragma once
 
-#include <TcpSocketBase.h>
+#include <WinsockContext.h>
+#include <ErrorCode.h>
+#include <SocketHandle.h>
 
-#include <mutex>
-#include <condition_variable>
+#include <cstdint>
+#include <string>
 
-class TcpSocket
+class TcpSocketBase
 {
+    friend class TcpSocket;
 public:
-    TcpSocket() = default;
-    TcpSocket(std::string const& host, uint16_t port);
-    TcpSocket(TcpSocket const&) = delete;
-    TcpSocket(TcpSocket&& other) noexcept;
-    TcpSocket& operator=(TcpSocket const&) = delete;
-    TcpSocket& operator=(TcpSocket&& other) noexcept;
-    ~TcpSocket();
-
-    friend void swap(TcpSocket& left, TcpSocket& right);
+    TcpSocketBase() = default;
+    TcpSocketBase(std::string const& host, uint16_t port);
+    TcpSocketBase(TcpSocketBase const&) = delete;
+    TcpSocketBase(TcpSocketBase&&) = default;
+    TcpSocketBase& operator=(TcpSocketBase const&) = delete;
+    TcpSocketBase& operator=(TcpSocketBase&&) = default;
+    ~TcpSocketBase();
 
     bool IsConnected() const;
     void SetReadTimeout(unsigned milliseconds);
 
-    void ShutdownSend();
-    void ShutdownBoth();
-    void Close() noexcept;
+    ErrorCode ShutdownSend() noexcept;
+    ErrorCode ShutdownReceive() noexcept;
+    ErrorCode ShutdownBoth() noexcept;
+    ErrorCode Close() noexcept;
 
     void Write(void const* src, size_t len);
     bool Read(void* dest, size_t len);
@@ -50,23 +52,13 @@ public:
 
     class Attorney
     {
-        friend class TcpListener;
-        static TcpSocket accept(TcpSocketBase&& socket) { return TcpSocket(std::move(socket)); }
+        friend class TcpListenerBase;
+        static TcpSocketBase accept(SocketHandle&& socket) { return TcpSocketBase(std::move(socket)); }
     };
 
 private:
-    enum class State
-    {
-        CONNECTED,
-        READING,
-        SHUTTING_DOWN,
-        CLOSED
-    };
+    explicit TcpSocketBase(SocketHandle&& socket);
 
-    explicit TcpSocket(TcpSocketBase&& socket);
-    
-    mutable std::mutex m_socketLock;
-    std::condition_variable m_readCancel;
-    TcpSocketBase m_socket;
-    State m_state = State::CLOSED;
+    WinsockContext m_winsockContext;
+    SocketHandle m_socket;
 };

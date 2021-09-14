@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2018 Alexander K. Freed
+// Copyright 2018, 2021 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,199 +19,119 @@
 #include <TcpListener.h>
 
 #include <TcpSocket.h>
+#include <NetworkError.h>
 
 #include <cassert>
 
 TcpListener::TcpListener(uint16_t port)
+    : m_listener(port)
+    , m_state(m_listener ? State::OPEN : State::CLOSED)
+{ }
+
+TcpListener::TcpListener(TcpListener&& other) noexcept
+    : TcpListener()
 {
-    start(port);
+    swap(*this, other);
 }
 
-// Cannot be noexcept because it a mutex can fail to lock.
-// The copy operations are deleted, so standard containers will used move 
-// operations, however the strong exception guarantee is lost.
-TcpListener::TcpListener(TcpListener&& other) noexcept(false)
+TcpListener& TcpListener::operator=(TcpListener&& other) noexcept
 {
-    this->move(std::move(other));
-}
-
-// Cannot be noexcept because it a mutex can fail to lock.
-// The copy operations are deleted, so standard containers will used move 
-// operations, however the strong exception guarantee is lost.
-TcpListener& TcpListener::operator=(TcpListener&& other) noexcept(false)
-{
-    // move function handles cleaning up
-    this->move(std::move(other));
+    TcpListener temp(std::move(other));
+    swap(*this, temp);
     return *this;
 }
 
-// Close() can throw, but in that case we pretty much have to abort anyways.
 TcpListener::~TcpListener()
 {
     Close();
 }
 
-//----------------------------------------------------------------------------
-
-void TcpListener::move(TcpListener&& other) noexcept(false)
+void swap(TcpListener& left, TcpListener& right)
 {
-    std::lock(m_lock, other.m_lock);  // deadlock-proof
-    std::unique_lock<std::mutex> lock(m_lock, std::adopt_lock);
-    std::unique_lock<std::mutex> other_lock(other.m_lock, std::adopt_lock);
+    using State = TcpListener::State;
+    std::lock(left.m_lock, right.m_lock);  // deadlock-proof
+    std::unique_lock<std::mutex> leftLock(left.m_lock, std::adopt_lock);
+    std::unique_lock<std::mutex> rightLock(right.m_lock, std::adopt_lock);
 
-    // clean up
-    close(lock);
+    // If the listener is accpting, moving it probably create a logic bug.
+    assert(left.m_state != State::ACCEPTING);
+    assert(right.m_state != State::ACCEPTING);
+    // If the listener is shutting down, wait for it to finish.
+    if (left.m_state == State::SHUTTING_DOWN)
+        left.m_acceptCancel.wait(leftLock, [&left]() { return left.m_state == State::CLOSED; });
+    if (right.m_state == State::SHUTTING_DOWN)
+        right.m_acceptCancel.wait(rightLock, [&right]() { return right.m_state == State::CLOSED; });
 
-    // If the other listener is accpting, moving it probably create a logic bug.
-    // If the other listener is shutting down, wait for it to finish.
-    if (other.m_state == State::ACCEPTING || other.m_state == State::SHUTTING_DOWN)
-    {
-        assert(other.m_state != State::ACCEPTING);
-        other.close(other_lock);
-    }
-
-    m_socketId = std::move(other.m_socketId);
-    other.m_socketId = INVALID_SOCKET;
-
-    m_state = std::move(other.m_state);
-    other.m_state = State::CLOSED;
+    using std::swap;
+    swap(left.m_listener, right.m_listener);
+    swap(left.m_state, right.m_state);
 }
 
-void TcpListener::Close()
-{
-    std::unique_lock<std::mutex> lock(m_lock);
-    close(lock);
-}
-
-// Be sure to lock before calling!
-void TcpListener::close(std::unique_lock<std::mutex>& lock)
-{
-    switch (m_state)
-    {
-    case State::CLOSED:
-        return;  // return!
-        break;
-
-    case State::SHUTTING_DOWN:
-        while (m_state != State::CLOSED)
-            m_acceptCancel.wait(lock);
-        return;  // return!
-        break;
-
-    case State::OPEN:
-        m_state = State::CLOSED;
-        shutdown(m_socketId, SD_BOTH);
-        break;  // fall out
-
-    case State::ACCEPTING:
-        m_state = State::SHUTTING_DOWN;
-        shutdown(m_socketId, SD_BOTH);
-        while (m_state != State::CLOSED)
-            m_acceptCancel.wait(lock);
-        break;  // fall out
-    }
-
-    closesocket(m_socketId);
-    m_socketId = INVALID_SOCKET;
-}
-
-bool TcpListener::start(uint16_t port)
-{
-    std::lock_guard<std::mutex> lock(m_lock);
-    if (m_state != State::CLOSED)
-        return false;
-
-    addrinfo hostInfo{};
-    addrinfo* hostInfoList = nullptr;
-
-    hostInfo.ai_family = AF_INET;
-    hostInfo.ai_socktype = SOCK_STREAM;
-    hostInfo.ai_protocol = IPPROTO_TCP;
-    hostInfo.ai_flags = AI_PASSIVE;
-    int error = getaddrinfo(nullptr, std::to_string(port).c_str(), &hostInfo, &hostInfoList);
-    if (error != 0)
-        return false;
-
-    m_socketId = socket(hostInfoList->ai_family, hostInfoList->ai_socktype, hostInfoList->ai_protocol);
-    if (m_socketId == INVALID_SOCKET)
-    {
-        freeaddrinfo(hostInfoList);
-        return false;
-    }
-
-    /*
-    char const yes = static_cast<char>(true);
-    error = setsockopt(m_socketId, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(bool));
-    if (error == -1)
-    {
-    freeaddrinfo(hostInfoList);
-    closesocket(m_socketId);
-    return false;
-    }
-    // */
-
-    error = bind(m_socketId, hostInfoList->ai_addr, (int)hostInfoList->ai_addrlen);
-    if (error == -1)
-    {
-        freeaddrinfo(hostInfoList);
-        closesocket(m_socketId);
-        m_socketId = INVALID_SOCKET;
-        return false;
-    }
-
-    freeaddrinfo(hostInfoList);
-
-    error = listen(m_socketId, 128);
-    if (error == SOCKET_ERROR)
-    {
-        closesocket(m_socketId);
-        return false;
-    }
-
-    m_state = State::OPEN;
-    return true;
-}
-
-//----------------------------------------------------------------------------
-
-bool TcpListener::IsValid() const
+bool TcpListener::IsListening() const
 {
     std::lock_guard<std::mutex> lock(m_lock);
     return m_state != State::CLOSED;
 }
 
-// friend of class TcpSocket, allowing us to use a special constructor
+void TcpListener::Close() noexcept
+{
+    std::unique_lock<std::mutex> lock(m_lock);
+
+    switch (m_state)
+    {
+    case State::CLOSED:
+        break;
+
+    case State::SHUTTING_DOWN:
+        m_acceptCancel.wait(lock, [this]() { return m_state == State::CLOSED; });
+        break;
+
+    case State::OPEN:
+        m_state = State::CLOSED;
+        m_listener.Close();
+        break;
+
+    case State::ACCEPTING:
+        m_state = State::SHUTTING_DOWN;
+        m_listener.shutdown();
+        m_acceptCancel.wait(lock, [this]() { return m_state == State::CLOSED; });
+        break;
+    }
+}
+
 TcpSocket TcpListener::Accept()
 {
     {
         std::lock_guard<std::mutex> lock(m_lock);
-        assert(m_state != State::ACCEPTING);  // sanity check
-        if (m_state != State::OPEN)
-            return TcpSocket();
+        if (m_state == State::ACCEPTING || m_state == State::SHUTTING_DOWN)
+            throw NetworkProgrammingError("Listener is already accepting.");
+        if (m_state == State::CLOSED)
+            throw NetworkConnectionError("Listener is closed.");
         m_state = State::ACCEPTING;
     }
 
-    SOCKET clientId = accept(m_socketId, NULL, NULL);  // todo: implement args 2 and 3
-    
+    try
     {
+        TcpSocketBase newClient = m_listener.Accept();
+
         std::unique_lock<std::mutex> lock(m_lock);
         if (m_state == State::SHUTTING_DOWN)
-        {
-            if (clientId != INVALID_SOCKET)
-                TcpSocket::Attorney::accept(clientId).Close();
-            m_state = State::CLOSED;
-            m_acceptCancel.notify_all();
-            return TcpSocket();
-        }
-        else if (clientId == INVALID_SOCKET)
-        {
-            m_state = State::OPEN;
-            return TcpSocket();
-        }
-        else
-        {
-            m_state = State::OPEN;
-            return TcpSocket::Attorney::accept(clientId);
-        }
+            throw NetworkConnectionError("Listener was closed from another thread.");
+
+        m_state = State::OPEN;
+        return TcpSocket::Attorney::accept(std::move(newClient));
     }
+    catch (NetworkError const&)
+    {
+        std::unique_lock<std::mutex> lock(m_lock);
+        m_state = State::CLOSED;
+        m_listener.Close();
+        m_acceptCancel.notify_all();
+        throw;
+    }
+}
+
+TcpListener::operator bool() const
+{
+    return IsListening();
 }

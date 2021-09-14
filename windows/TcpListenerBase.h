@@ -16,44 +16,37 @@
 
 #pragma once
 
-#include <TcpListenerBase.h>
+#include <WinsockContext.h>
+#include <ErrorCode.h>
+#include <SocketHandle.h>
 
-#include <mutex>
-#include <condition_variable>
+#include <cstdint>
+#include <string>
 
-class TcpSocket;
+class TcpSocketBase;
 
-class TcpListener
+class TcpListenerBase
 {
+    friend class TcpListener;
 public:
-    TcpListener() = default;
-    explicit TcpListener(uint16_t port);
-    TcpListener(TcpListener const&) = delete;
-    TcpListener(TcpListener&&) noexcept;
-    TcpListener& operator=(TcpListener const&) = delete;
-    TcpListener& operator=(TcpListener&&) noexcept;
-    ~TcpListener();
-
-    friend void swap(TcpListener& left, TcpListener& right);
+    TcpListenerBase() = default;
+    explicit TcpListenerBase(uint16_t port);
+    TcpListenerBase(TcpListenerBase const&) = delete;
+    TcpListenerBase(TcpListenerBase&&) = default;
+    TcpListenerBase& operator=(TcpListenerBase const&) = delete;
+    TcpListenerBase& operator=(TcpListenerBase&&) = default;
+    ~TcpListenerBase();
 
     bool IsListening() const;
 
-    void Close() noexcept;
-    TcpSocket Accept();
+    ErrorCode Close();
+    TcpSocketBase Accept();
 
     explicit operator bool() const;
 
 private:
-    enum class State
-    {
-        OPEN,
-        ACCEPTING,
-        SHUTTING_DOWN,
-        CLOSED
-    };
+    ErrorCode shutdown();
 
-    mutable std::mutex m_lock;
-    std::condition_variable m_acceptCancel;
-    TcpListenerBase m_listener;
-    State m_state = State::CLOSED;
+    WinsockContext m_winsockContext;
+    SocketHandle m_socket;
 };

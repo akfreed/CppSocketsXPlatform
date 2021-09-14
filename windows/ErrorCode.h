@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2018 Alexander K. Freed
+// Copyright 2021 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,9 +16,23 @@
 
 #pragma once
 
-struct TestGlobals
+#include <string>
+
+class ErrorCode
 {
-    static constexpr char localhost[] = "127.0.0.1";
-    static constexpr uint16_t port = 11111;
-    static constexpr uint16_t port2 = 11112;
+public:
+    ErrorCode();
+    explicit ErrorCode(int errorCode);
+
+    std::string const& Name() const { return m_name; }
+    int Code() const { return m_errorCode; }
+    std::string const& What() const { return m_what; }
+    explicit operator bool() const { return m_errorCode != 0; }
+
+    void ThrowIfError() const;
+
+private:
+    int m_errorCode = 0;
+    std::string m_name;
+    std::string m_what;
 };

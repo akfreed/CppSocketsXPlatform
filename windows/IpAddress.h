@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2018 Alexander K. Freed
+// Copyright 2021 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,9 +16,25 @@
 
 #pragma once
 
-struct TestGlobals
+#include <cstdint>
+#include <string>
+#include <array>
+
+class IpAddressV4
 {
-    static constexpr char localhost[] = "127.0.0.1";
-    static constexpr uint16_t port = 11111;
-    static constexpr uint16_t port2 = 11112;
+public:
+    static IpAddressV4 const Any;
+
+    IpAddressV4() = default;
+    IpAddressV4(std::string const& ip);
+    //! @param[in] val An int (in network byte order) representation of an IP address.
+    explicit IpAddressV4(uint32_t val);
+
+    std::string ToString(char delim = ':') const;
+    std::array<uint8_t, 4> ToArray() const;
+    //! @return The address as an int in network byte order.
+    uint32_t ToInt() const;
+
+private:
+    uint32_t m_val = 0;
 };
