@@ -27,7 +27,6 @@ namespace strapper { namespace net {
 
 class TcpSocketBase
 {
-    friend class TcpSocket;
 public:
     TcpSocketBase() = default;
     TcpSocketBase(std::string const& host, uint16_t port);

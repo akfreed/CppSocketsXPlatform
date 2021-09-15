@@ -19,7 +19,7 @@
 #include <TcpSocket.h>
 #include <TcpSerializer.h>
 #include <TcpListener.h>
-#include <NetworkError.h>
+#include <SocketError.h>
 #include "TestGlobals.h"
 #include "Timeout.h"
 
@@ -67,7 +67,7 @@ TEST_F(UnitTestError, ReadTimeout)
 
     auto start = std::chrono::steady_clock::now();
     uint8_t buf[1];
-    ASSERT_THROW(m_receiver.Read(buf, 1), NetworkError) << "Socket read did not throw.";
+    ASSERT_THROW(m_receiver.Read(buf, 1), SocketError) << "Socket read did not throw.";
     auto stop = std::chrono::steady_clock::now();
     ASSERT_GT((stop - start), std::chrono::milliseconds(950)) << "Socket returned from read too early.";
     ASSERT_LT((stop - start), std::chrono::milliseconds(1050)) << "Socket returend from read too late.";

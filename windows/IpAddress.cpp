@@ -16,7 +16,7 @@
 
 #include <IpAddress.h>
 
-#include <NetworkError.h>
+#include <SocketError.h>
 
 #include <cstring>
 #include <sstream>
@@ -29,7 +29,7 @@ IpAddressV4 const IpAddressV4::Any{};
 
 IpAddressV4::IpAddressV4(std::string const& ip)
 {
-    NetworkProgrammingError error("Not a valid IPv4 address: '" + ip + "'");
+    ProgramError error("Not a valid IPv4 address: '" + ip + "'");
     if (!std::regex_match(ip, std::regex(R"(^(\d{1,3}[:\.]){3}\d{1,3}$)")))
         throw error;
 

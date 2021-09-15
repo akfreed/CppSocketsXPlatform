@@ -20,7 +20,6 @@
 #include <TcpSerializer.h>
 #include <TcpSocket.h>
 #include <UdpSocket.h>
-#include <NetworkError.h>
 #include "Timeout.h"
 #include "TestGlobals.h"
 
@@ -39,8 +38,7 @@ class UnitTestBasic : public ::testing::Test
 };
 
 TEST_F(UnitTestBasic, Empty)
-{
-}
+{ }
 
 TEST_F(UnitTestBasic, TcpSelfConnect)
 {

@@ -16,7 +16,7 @@
 
 #include <UdpSocket.h>
 
-#include <NetworkError.h>
+#include <SocketError.h>
 
 #include <cassert>
 
@@ -84,11 +84,11 @@ void UdpSocket::SetReadTimeout(unsigned milliseconds)
 {
     std::lock_guard<std::mutex> lock(m_socketLock);
     if (m_state == State::CLOSED)
-        throw NetworkConnectionError("Socket is not open.");
+        throw ProgramError("Socket is not open.");
     if (m_state == State::READING)
-        throw NetworkProgrammingError("Socket is already reading.");
+        throw ProgramError("Socket is already reading.");
     if (m_state == State::SHUTTING_DOWN)
-        throw NetworkConnectionError("Socket was closed from another thread.");
+        throw ProgramError("Socket was closed from another thread.");
 
     m_socket.SetReadTimeout(milliseconds);
 }
@@ -124,9 +124,9 @@ void UdpSocket::Write(void const* src, size_t len, IpAddressV4 const& ipAddress,
 {
     std::unique_lock<std::mutex> lock(m_socketLock);
     if (m_state == State::CLOSED)
-        throw NetworkConnectionError("Socket is not open.");
+        throw ProgramError("Socket is not open.");
     if (m_state == State::SHUTTING_DOWN)
-        throw NetworkConnectionError("Socket was closed from another thread.");
+        throw ProgramError("Socket was closed from another thread.");
 
     return m_socket.Write(src, len, ipAddress, port);
 }
@@ -136,9 +136,9 @@ void UdpSocket::Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddress, uint
     {
         std::lock_guard<std::mutex> lock(m_socketLock);
         if (m_state == State::READING || m_state == State::SHUTTING_DOWN)
-            throw NetworkProgrammingError("Socket is already reading.");
+            throw ProgramError("Socket is already reading.");
         if (m_state == State::CLOSED)
-            throw NetworkConnectionError("Socket is not open.");
+            throw ProgramError("Socket is not open.");
         m_state = State::READING;
     }
 
@@ -162,11 +162,11 @@ unsigned UdpSocket::DataAvailable() const
 {
     std::lock_guard<std::mutex> lock(m_socketLock);
     if (m_state == State::CLOSED)
-        throw NetworkConnectionError("Socket is not open.");
+        throw ProgramError("Socket is not open.");
     if (m_state == State::READING)
-        throw NetworkProgrammingError("Socket is already reading.");
+        throw ProgramError("Socket is already reading.");
     if (m_state == State::SHUTTING_DOWN)
-        throw NetworkConnectionError("Socket was closed from another thread.");
+        throw ProgramError("Socket was closed from another thread.");
 
     return m_socket.DataAvailable();
 }

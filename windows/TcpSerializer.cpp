@@ -16,8 +16,9 @@
 
 #include <TcpSerializer.h>
 
+#include <SocketError.h>
+
 #include <cassert>
-#include <stdexcept>
 
 namespace strapper { namespace net {
 
@@ -154,7 +155,7 @@ int TcpSerializer::ReadString(char* c, int maxlen)
 {
     if (maxlen < 1)
     {
-        throw std::runtime_error("Max length must be greater than 0.");
+        throw ProgramError("Max length must be greater than 0.");
     }
 
     int len;

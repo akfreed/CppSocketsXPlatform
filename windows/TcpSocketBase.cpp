@@ -16,7 +16,7 @@
 
 #include <TcpSocketBase.h>
 
-#include <NetworkError.h>
+#include <SocketError.h>
 
 #include <memory>
 #include <limits>
@@ -84,11 +84,12 @@ bool TcpSocketBase::IsConnected() const
 //! Only use this feature as a robustness mechanism.
 //! (e.g. so you don't block forever if the connection is somehow silently lost.)
 //! Don't use this as a form of non-blocking read.
+//! 0 = no timeout (forever) and is the default setting
 void TcpSocketBase::SetReadTimeout(unsigned milliseconds)
 {
     DWORD const arg = milliseconds;
     if (setsockopt(m_socket.Get(), SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<char const*>(&arg), sizeof(arg)) == SOCKET_ERROR)
-        ErrorCode(WSAGetLastError()).ThrowIfError();
+        ErrorCode(WSAGetLastError()).Throw();
 }
 
 ErrorCode TcpSocketBase::ShutdownSend() noexcept
@@ -116,10 +117,10 @@ ErrorCode TcpSocketBase::Close() noexcept
 void TcpSocketBase::Write(void const* src, size_t len)
 {
     if (len > std::numeric_limits<int>::max())
-        throw NetworkProgrammingError("Length must be less than int max.");
+        throw ProgramError("Length must be less than int max.");
 
     if (send(m_socket.Get(), reinterpret_cast<char const*>(src), static_cast<int>(len), 0) == SOCKET_ERROR)
-        ErrorCode(WSAGetLastError()).ThrowIfError();
+        ErrorCode(WSAGetLastError()).Throw();
 }
 
 //! Reads len bytes into given buffer.
@@ -130,22 +131,22 @@ bool TcpSocketBase::Read(void* dest, size_t len)
     try
     {
         if (len > std::numeric_limits<int>::max())
-            throw NetworkProgrammingError("Length must be less than int max.");
+            throw ProgramError("Length must be less than int max.");
 
         int const lenAsInt = static_cast<int>(len);
         int amountRead = recv(m_socket.Get(), reinterpret_cast<char*>(dest), lenAsInt, MSG_WAITALL);
         if (amountRead == SOCKET_ERROR)
-            ErrorCode(WSAGetLastError()).ThrowIfError();
+            ErrorCode(WSAGetLastError()).Throw();
         if (amountRead == 0 && len > 0)
         {
             ShutdownReceive().ThrowIfError();
             return false;
         }
         if (amountRead != lenAsInt)
-            throw NetworkConnectionError("Other side closed before all bytes were received.");
+            throw ProgramError("Other side closed before all bytes were received.");
         return true;
     }
-    catch (NetworkError const&)
+    catch (ProgramError const&)
     {
         Close();
         throw;
@@ -160,7 +161,7 @@ unsigned TcpSocketBase::DataAvailable()
 {
     unsigned long bytesAvailable = 0;
     if (ioctlsocket(m_socket.Get(), FIONREAD, &bytesAvailable) == SOCKET_ERROR)
-        ErrorCode(WSAGetLastError()).ThrowIfError();
+        ErrorCode(WSAGetLastError()).Throw();
 
     if (bytesAvailable > std::numeric_limits<unsigned>::max())
         bytesAvailable = std::numeric_limits<unsigned>::max();

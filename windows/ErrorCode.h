@@ -23,20 +23,18 @@ namespace strapper { namespace net {
 class ErrorCode
 {
 public:
-    ErrorCode();
-    explicit ErrorCode(int errorCode);
+    explicit ErrorCode(int errorCode = 0);
 
+    int NativeCode() const { return m_nativeErrorCode; }
     std::string const& Name() const { return m_name; }
-    int Code() const { return m_errorCode; }
-    std::string const& What() const { return m_what; }
-    explicit operator bool() const { return m_errorCode != 0; }
+    explicit operator bool() const { return m_nativeErrorCode != 0; }
 
     void ThrowIfError() const;
+    void Throw() const;
 
 private:
-    int m_errorCode = 0;
+    int m_nativeErrorCode = 0;
     std::string m_name;
-    std::string m_what;
 };
 
 } }

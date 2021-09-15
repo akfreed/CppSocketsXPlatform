@@ -28,7 +28,7 @@ class TcpSocketBase;
 
 class TcpListenerBase
 {
-    friend class TcpListener;
+    friend class TcpListener; // todo: remove
 public:
     TcpListenerBase() = default;
     explicit TcpListenerBase(uint16_t port);

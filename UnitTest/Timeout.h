@@ -16,11 +16,12 @@
 
 #pragma once
 
+#include <SocketError.h>
+
 #include <thread>
 #include <mutex>
 #include <condition_variable>
 #include <chrono>
-#include <stdexcept>
 #include <iostream>
 
 namespace strapper { namespace net { namespace test {
@@ -69,7 +70,7 @@ private:
             if (!complete)
             {
                 std::cout << "Timeout exceeded." << std::endl;
-                throw std::runtime_error("Timeout exceeded.");
+                throw ProgramError("Timeout exceeded.");
             }
         }
         catch (...)

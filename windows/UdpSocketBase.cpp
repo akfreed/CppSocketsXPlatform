@@ -17,7 +17,7 @@
 #include <UdpSocketBase.h>
 
 #include <ErrorCode.h>
-#include <NetworkError.h>
+#include <SocketError.h>
 #include <IpAddress.h>
 
 #include <limits>
@@ -73,7 +73,7 @@ void UdpSocketBase::SetReadTimeout(unsigned milliseconds)
 {
     DWORD const arg = milliseconds;
     if (setsockopt(m_socket.Get(), SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<char const*>(&arg), sizeof(arg)) == SOCKET_ERROR)
-        ErrorCode(WSAGetLastError()).ThrowIfError();
+        ErrorCode(WSAGetLastError()).Throw();
 }
 
 // Shutdown and close the socket.
@@ -86,22 +86,22 @@ void UdpSocketBase::Close()
 void UdpSocketBase::Write(void const* src, size_t len, IpAddressV4 const& ipAddress, uint16_t port)
 {
     if (len > std::numeric_limits<int>::max())
-        throw NetworkProgrammingError("Length must be less than int max.");
+        throw ProgramError("Length must be less than int max.");
 
     sockaddr_in info{};
     info.sin_family = AF_INET;
     info.sin_port = htons(port);
     int const success = inet_pton(AF_INET, ipAddress.ToString('.').c_str(), &info.sin_addr);
     if (success == 0)
-        throw NetworkProgrammingError("Invalid IP address: " + ipAddress.ToString('.'));
+        throw ProgramError("Invalid IP address: " + ipAddress.ToString('.'));
     if (success == -1)
-        ErrorCode(WSAGetLastError()).ThrowIfError();
+        ErrorCode(WSAGetLastError()).Throw();
     if (success != 1)
-        throw NetworkProgrammingError("Unknown error.");
+        throw ProgramError("Unknown error.");
 
     int amountWritten = sendto(m_socket.Get(), reinterpret_cast<const char*>(src), static_cast<int>(len), 0, reinterpret_cast<sockaddr*>(&info), sizeof(info));
     if (amountWritten == SOCKET_ERROR)
-        ErrorCode(WSAGetLastError()).ThrowIfError();
+        ErrorCode(WSAGetLastError()).Throw();
 }
 
     //if (amountRead == SOCKET_ERROR)
@@ -151,16 +151,16 @@ void UdpSocketBase::Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddress, 
     sockaddr_in info{};
     int infoLen = sizeof(info);
     if (maxlen > std::numeric_limits<int>::max())
-        throw NetworkProgrammingError("Max length must be less than int max.");
+        throw ProgramError("Max length must be less than int max.");
 
     int const amountRead = recvfrom(m_socket.Get(), reinterpret_cast<char*>(dest), static_cast<int>(maxlen), 0, reinterpret_cast<sockaddr*>(&info), &infoLen);
     if (amountRead == 0)
-        throw NetworkProgrammingError("Socket was closed.");
+        throw ProgramError("Socket was closed.");
     if (amountRead == SOCKET_ERROR)
-        ErrorCode(WSAGetLastError()).ThrowIfError();
+        ErrorCode(WSAGetLastError()).Throw();
 
     if ((out_ipAddress || out_port) && (infoLen != sizeof(info)))
-        throw NetworkSystemError("Read returned unexpected endpoint info size.");
+        throw ProgramError("Read returned unexpected endpoint info size.");
 
     if (out_ipAddress)
         *out_ipAddress = IpAddressV4(info.sin_addr.s_addr);
@@ -175,7 +175,7 @@ unsigned UdpSocketBase::DataAvailable() const
 {
     unsigned long bytesAvailable = 0;
     if (ioctlsocket(m_socket.Get(), FIONREAD, &bytesAvailable) == SOCKET_ERROR)
-        ErrorCode(WSAGetLastError()).ThrowIfError();
+        ErrorCode(WSAGetLastError()).Throw();
 
     if (bytesAvailable > std::numeric_limits<unsigned>::max())
         bytesAvailable = std::numeric_limits<unsigned>::max();

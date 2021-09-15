@@ -23,47 +23,39 @@
 
 namespace strapper { namespace net {
 
-class NetworkError : public std::exception
+class ProgramError : public std::exception
 {
 public:
-    NetworkError() = default;
-    NetworkError(NetworkError const&) = default;
-    NetworkError& operator=(NetworkError const&) = default;
-    explicit NetworkError(std::string message)
-        : m_what(std::move(message))
+    ProgramError() = default;
+
+    explicit ProgramError(std::string what)
+        : m_what(std::move(what))
     { }
 
-    NetworkError(ErrorCode const& errorCode, std::string message)
-        : m_what(std::move(message))
+    char const* what() const noexcept override { return m_what.c_str(); }
+
+private:
+    std::string m_what = "Program Error.";
+};
+
+class SocketError : public ProgramError
+{
+public:
+    SocketError() = default;
+
+    explicit SocketError(ErrorCode const& errorCode)
+        : ProgramError(errorCode ? "SocketError: A socket API call returned " + errorCode.Name() + "." 
+                                 : "SocketError: Unknown cause.")
         , m_errorCode(errorCode)
     { }
 
-    char const* what() const noexcept override
+    int NativeCode() const
     {
-        return m_what.c_str();
+        return m_errorCode.NativeCode();
     }
 
 private:
-    std::string m_what = "Network Error thrown.";
     ErrorCode m_errorCode;
-};
-
-class NetworkProgrammingError : public NetworkError
-{
-public:
-    using NetworkError::NetworkError;
-};
-
-class NetworkSystemError : public NetworkError
-{
-public:
-    using NetworkError::NetworkError;
-};
-
-class NetworkConnectionError : public NetworkError
-{
-public:
-    using NetworkError::NetworkError;
 };
 
 } }

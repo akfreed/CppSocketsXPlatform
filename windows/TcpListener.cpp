@@ -19,7 +19,7 @@
 #include <TcpListener.h>
 
 #include <TcpSocket.h>
-#include <NetworkError.h>
+#include <SocketError.h>
 
 #include <cassert>
 
@@ -106,9 +106,9 @@ TcpSocket TcpListener::Accept()
     {
         std::lock_guard<std::mutex> lock(m_lock);
         if (m_state == State::ACCEPTING || m_state == State::SHUTTING_DOWN)
-            throw NetworkProgrammingError("Listener is already accepting.");
+            throw ProgramError("Listener is already accepting.");
         if (m_state == State::CLOSED)
-            throw NetworkConnectionError("Listener is closed.");
+            throw ProgramError("Listener is closed.");
         m_state = State::ACCEPTING;
     }
 
@@ -118,12 +118,12 @@ TcpSocket TcpListener::Accept()
 
         std::unique_lock<std::mutex> lock(m_lock);
         if (m_state == State::SHUTTING_DOWN)
-            throw NetworkConnectionError("Listener was closed from another thread.");
+            throw ProgramError("Listener was closed from another thread.");
 
         m_state = State::OPEN;
         return TcpSocket::Attorney::accept(std::move(newClient));
     }
-    catch (NetworkError const&)
+    catch (ProgramError const&)
     {
         std::unique_lock<std::mutex> lock(m_lock);
         m_state = State::CLOSED;

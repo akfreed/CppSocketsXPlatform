@@ -16,8 +16,9 @@
 
 #include <WinsockContext.h>
 
+#include <SocketError.h>
+
 #include <string>
-#include <stdexcept>
 #include <mutex>
 
 namespace strapper { namespace net {
@@ -58,7 +59,7 @@ private:
         WSADATA wsaData{};
         int result = WSAStartup(MAKEWORD(2, 2), &wsaData);
         if (result != 0)
-            throw std::runtime_error("Unable to initializer Winsock. WSA error: " + std::to_string(result));
+            throw ProgramError("Unable to initializer Winsock. WSA error: " + std::to_string(result));
     }
 
     static std::mutex s_mutex;

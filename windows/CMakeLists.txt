@@ -12,7 +12,7 @@ add_library(Network STATIC
     ErrorCode.h
     IpAddress.cpp
     IpAddress.h
-    NetworkError.h
+    SocketError.h
     SocketHandle.cpp
     SocketHandle.h
     SocketIncludes.h

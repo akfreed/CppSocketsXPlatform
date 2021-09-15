@@ -17,7 +17,7 @@
 #include <TcpListenerBase.h>
 
 #include <TcpSocketBase.h>
-#include <NetworkError.h>
+#include <SocketError.h>
 
 #include <memory>
 
@@ -101,12 +101,12 @@ TcpSocketBase TcpListenerBase::Accept()
                 int const error = WSAGetLastError();
                 if (error == WSAECONNRESET && retries < 10)
                     continue;
-                ErrorCode(error).ThrowIfError();
+                ErrorCode(error).Throw();
             }
             return TcpSocketBase::Attorney::accept(std::move(SocketHandle(clientId)));
         }
     }
-    catch (NetworkError const&)
+    catch (ProgramError const&)
     {
         Close();
         throw;

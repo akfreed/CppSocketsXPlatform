@@ -18,7 +18,7 @@
 #include <gtest/gtest.h>
 
 #include <IpAddress.h>
-#include <NetworkError.h>
+#include <SocketError.h>
 #include <string>
 #include <algorithm>
 
@@ -30,33 +30,33 @@ class UnitTestIpAddress : public ::testing::Test
 
 TEST_F(UnitTestIpAddress, IpAddressFail)
 {
-    ASSERT_THROW(IpAddressV4(""), NetworkProgrammingError);
-    ASSERT_THROW(IpAddressV4(":"), NetworkProgrammingError);
-    ASSERT_THROW(IpAddressV4("::"), NetworkProgrammingError);
-    ASSERT_THROW(IpAddressV4(":::"), NetworkProgrammingError);
-    ASSERT_THROW(IpAddressV4("::::"), NetworkProgrammingError);
-    ASSERT_THROW(IpAddressV4(":::::"), NetworkProgrammingError);
+    ASSERT_THROW(IpAddressV4(""), ProgramError);
+    ASSERT_THROW(IpAddressV4(":"), ProgramError);
+    ASSERT_THROW(IpAddressV4("::"), ProgramError);
+    ASSERT_THROW(IpAddressV4(":::"), ProgramError);
+    ASSERT_THROW(IpAddressV4("::::"), ProgramError);
+    ASSERT_THROW(IpAddressV4(":::::"), ProgramError);
 
-    ASSERT_THROW(IpAddressV4("0:0:0"), NetworkProgrammingError);
-    ASSERT_THROW(IpAddressV4(":0:0:0"), NetworkProgrammingError);
-    ASSERT_THROW(IpAddressV4("0::0:0"), NetworkProgrammingError);
-    ASSERT_THROW(IpAddressV4("0:0::0"), NetworkProgrammingError);
-    ASSERT_THROW(IpAddressV4("0:0:0:"), NetworkProgrammingError);
+    ASSERT_THROW(IpAddressV4("0:0:0"), ProgramError);
+    ASSERT_THROW(IpAddressV4(":0:0:0"), ProgramError);
+    ASSERT_THROW(IpAddressV4("0::0:0"), ProgramError);
+    ASSERT_THROW(IpAddressV4("0:0::0"), ProgramError);
+    ASSERT_THROW(IpAddressV4("0:0:0:"), ProgramError);
 
-    ASSERT_THROW(IpAddressV4("256:0:0:0"), NetworkProgrammingError);
-    ASSERT_THROW(IpAddressV4("0:256:0:0"), NetworkProgrammingError);
-    ASSERT_THROW(IpAddressV4("0:0:256:0"), NetworkProgrammingError);
-    ASSERT_THROW(IpAddressV4("0:0:0:256"), NetworkProgrammingError);
+    ASSERT_THROW(IpAddressV4("256:0:0:0"), ProgramError);
+    ASSERT_THROW(IpAddressV4("0:256:0:0"), ProgramError);
+    ASSERT_THROW(IpAddressV4("0:0:256:0"), ProgramError);
+    ASSERT_THROW(IpAddressV4("0:0:0:256"), ProgramError);
 
-    ASSERT_THROW(IpAddressV4("1000:0:0:0"), NetworkProgrammingError);
-    ASSERT_THROW(IpAddressV4("0:999:0:0"), NetworkProgrammingError);
-    ASSERT_THROW(IpAddressV4("0:0:333:0"), NetworkProgrammingError);
-    ASSERT_THROW(IpAddressV4("0:0:0:1111111"), NetworkProgrammingError);
+    ASSERT_THROW(IpAddressV4("1000:0:0:0"), ProgramError);
+    ASSERT_THROW(IpAddressV4("0:999:0:0"), ProgramError);
+    ASSERT_THROW(IpAddressV4("0:0:333:0"), ProgramError);
+    ASSERT_THROW(IpAddressV4("0:0:0:1111111"), ProgramError);
 
-    ASSERT_THROW(IpAddressV4("0:0:0:11111111111111111111111111111111"), NetworkProgrammingError);
+    ASSERT_THROW(IpAddressV4("0:0:0:11111111111111111111111111111111"), ProgramError);
 
-    ASSERT_THROW(IpAddressV4("0:0:0:A"), NetworkProgrammingError);
-    ASSERT_THROW(IpAddressV4("0:0:!:0"), NetworkProgrammingError);
+    ASSERT_THROW(IpAddressV4("0:0:0:A"), ProgramError);
+    ASSERT_THROW(IpAddressV4("0:0:!:0"), ProgramError);
 }
 
 TEST_F(UnitTestIpAddress, ToString)

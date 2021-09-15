@@ -17,44 +17,38 @@
 #include <SocketIncludes.h>
 #include <ErrorCode.h>
 
-#include <NetworkError.h>
+#include <SocketError.h>
 
 #include <string>
 
 namespace strapper { namespace net {
 
-#define CODES(L) \
-    L(NO_ERROR, NetworkProgrammingError) \
-    L(WSAEACCES, NetworkProgrammingError) \
-    L(WSAECONNABORTED, NetworkConnectionError) \
-    L(WSAECONNRESET, NetworkConnectionError) \
-    L(WSAEFAULT, NetworkProgrammingError) \
-    L(WSAEHOSTUNREACH, NetworkConnectionError) \
-    L(WSAEINPROGRESS, NetworkProgrammingError) \
-    L(WSAEINTR, NetworkProgrammingError) \
-    L(WSAEINVAL, NetworkProgrammingError) \
-    L(WSAEMFILE, NetworkSystemError) \
-    L(WSAEMSGSIZE, NetworkProgrammingError) \
-    L(WSAENETDOWN, NetworkSystemError) \
-    L(WSAENETRESET, NetworkConnectionError) \
-    L(WSAENOBUFS, NetworkSystemError) \
-    L(WSAENOPROTOOPT, NetworkProgrammingError) \
-    L(WSAENOTCONN, NetworkConnectionError) \
-    L(WSAENOTSOCK, NetworkProgrammingError) \
-    L(WSAEOPNOTSUPP, NetworkProgrammingError) \
-    L(WSAESHUTDOWN, NetworkConnectionError) \
-    L(WSAETIMEDOUT, NetworkConnectionError) \
-    L(WSAEWOULDBLOCK, NetworkProgrammingError) \
-    L(WSANOTINITIALISED, NetworkProgrammingError)
+#define CODES(FUNC) \
+    FUNC(NO_ERROR) \
+    FUNC(WSAEACCES) \
+    FUNC(WSAECONNABORTED) \
+    FUNC(WSAECONNRESET) \
+    FUNC(WSAEFAULT) \
+    FUNC(WSAEHOSTUNREACH) \
+    FUNC(WSAEINPROGRESS) \
+    FUNC(WSAEINTR) \
+    FUNC(WSAEINVAL) \
+    FUNC(WSAEMFILE) \
+    FUNC(WSAEMSGSIZE) \
+    FUNC(WSAENETDOWN) \
+    FUNC(WSAENETRESET) \
+    FUNC(WSAENOBUFS) \
+    FUNC(WSAENOPROTOOPT) \
+    FUNC(WSAENOTCONN) \
+    FUNC(WSAENOTSOCK) \
+    FUNC(WSAEOPNOTSUPP) \
+    FUNC(WSAESHUTDOWN) \
+    FUNC(WSAETIMEDOUT) \
+    FUNC(WSAEWOULDBLOCK) \
+    FUNC(WSANOTINITIALISED)
 
-#define NAME_SWITCH(name, level) \
-    case name: return #name;
-
-#define LEVEL_SWITCH(name, level) \
-    case name: return #level;
-
-#define EXCEPT_SWITCH(name, level) \
-    case name: throw level(*this, What());
+#define NAME_SWITCH(name) \
+    case name: return #name " (" + std::to_string(name) + ")";
 
 namespace {
 
@@ -68,40 +62,22 @@ std::string GetName(int errorCode)
     }
 }
 
-std::string GetLevel(int errorCode)
-{
-    switch (errorCode)
-    {
-        CODES(LEVEL_SWITCH)
-    default:
-        return "NetworkProgrammingError";
-    }
 }
 
-}
-
-ErrorCode::ErrorCode()
-    : m_name(GetName(m_errorCode) + " (" + std::to_string(m_errorCode) + ")")
-    , m_what(GetLevel(m_errorCode) + ": A socket API call returned " + m_name + ".")
-{ }
-
-ErrorCode::ErrorCode(int errorCode)
-    : m_errorCode(errorCode)
-    , m_name(GetName(m_errorCode) + " (" + std::to_string(m_errorCode) + ")")
-    , m_what(GetLevel(m_errorCode) + ": A socket API call returned " + m_name + ".")
+ErrorCode::ErrorCode(int errorCode /* = 0 */)
+    : m_nativeErrorCode(errorCode)
+    , m_name(GetName(m_nativeErrorCode))
 { }
 
 void ErrorCode::ThrowIfError() const
 {
-    if (!*this)
-        return;
+    if (*this)
+        throw SocketError(*this);
+}
 
-    switch (m_errorCode)
-    {
-        CODES(EXCEPT_SWITCH);
-    default:
-        throw NetworkProgrammingError(*this, What());
-    }
+void ErrorCode::Throw() const
+{
+    throw SocketError(*this);
 }
 
 } }

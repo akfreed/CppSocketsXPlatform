@@ -16,7 +16,7 @@
 
 #include <TcpSocket.h>
 
-#include <NetworkError.h>
+#include <SocketError.h>
 
 #include <cassert>
 #include <cstring>
@@ -88,11 +88,11 @@ void TcpSocket::SetReadTimeout(unsigned milliseconds)
 {
     std::lock_guard<std::mutex> lock(m_socketLock);
     if (m_state == State::CLOSED)
-        throw NetworkConnectionError("Socket is not connected.");
+        throw ProgramError("Socket is not connected.");
     if (m_state == State::READING)
-        throw NetworkProgrammingError("Socket is already reading.");
+        throw ProgramError("Socket is already reading.");
     if (m_state == State::SHUTTING_DOWN)
-        throw NetworkConnectionError("Socket was closed from another thread.");
+        throw ProgramError("Socket was closed from another thread.");
 
     m_socket.SetReadTimeout(milliseconds);
 }
@@ -101,9 +101,9 @@ void TcpSocket::ShutdownSend()
 {
     std::lock_guard<std::mutex> lock(m_socketLock);
     if (m_state == State::CLOSED)
-        throw NetworkConnectionError("Socket is not connected.");
+        throw ProgramError("Socket is not connected.");
     if (m_state == State::SHUTTING_DOWN)
-        throw NetworkConnectionError("Socket was closed from another thread.");
+        throw ProgramError("Socket was closed from another thread.");
 
     m_socket.ShutdownSend();
 }
@@ -112,9 +112,9 @@ void TcpSocket::ShutdownBoth()
 {
     std::lock_guard<std::mutex> lock(m_socketLock);
     if (m_state == State::CLOSED)
-        throw NetworkConnectionError("Socket is not connected.");
+        throw ProgramError("Socket is not connected.");
     if (m_state == State::SHUTTING_DOWN)
-        throw NetworkConnectionError("Socket was closed from another thread.");
+        throw ProgramError("Socket was closed from another thread.");
 
     m_socket.ShutdownBoth();
 }
@@ -150,9 +150,9 @@ void TcpSocket::Write(void const* src, size_t len)
 {
     std::unique_lock<std::mutex> lock(m_socketLock);
     if (m_state == State::CLOSED)
-        throw NetworkConnectionError("Socket is not connected.");
+        throw ProgramError("Socket is not connected.");
     if (m_state == State::SHUTTING_DOWN)
-        throw NetworkConnectionError("Socket was closed from another thread.");
+        throw ProgramError("Socket was closed from another thread.");
 
     m_socket.Write(src, len);
 }
@@ -162,9 +162,9 @@ bool TcpSocket::Read(void* dest, size_t len)
     {
         std::lock_guard<std::mutex> lock(m_socketLock);
         if (m_state == State::READING || m_state == State::SHUTTING_DOWN)
-            throw NetworkProgrammingError("Socket is already reading.");
+            throw ProgramError("Socket is already reading.");
         if (m_state == State::CLOSED)
-            throw NetworkConnectionError("Socket is not connected.");
+            throw ProgramError("Socket is not connected.");
         m_state = State::READING;
     }
 
@@ -174,12 +174,12 @@ bool TcpSocket::Read(void* dest, size_t len)
 
         std::unique_lock<std::mutex> lock(m_socketLock);
         if (m_state == State::SHUTTING_DOWN)
-            throw NetworkConnectionError("Socket was closed from another thread.");
+            throw ProgramError("Socket was closed from another thread.");
 
         m_state = State::CONNECTED;
         return stillConnected;
     }
-    catch (NetworkError const&)
+    catch (ProgramError const&)
     {
         std::unique_lock<std::mutex> lock(m_socketLock);
         m_state = State::CLOSED;
@@ -197,11 +197,11 @@ unsigned TcpSocket::DataAvailable()
 {
     std::lock_guard<std::mutex> lock(m_socketLock);
     if (m_state == State::CLOSED)
-        throw NetworkConnectionError("Socket is not connected.");
+        throw ProgramError("Socket is not connected.");
     if (m_state == State::READING)
-        throw NetworkProgrammingError("Socket is already reading.");
+        throw ProgramError("Socket is already reading.");
     if (m_state == State::SHUTTING_DOWN)
-        throw NetworkConnectionError("Socket was closed from another thread.");
+        throw ProgramError("Socket was closed from another thread.");
 
     return m_socket.DataAvailable();
 }
