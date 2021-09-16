@@ -160,8 +160,10 @@ void UdpSocket::Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddress, uint
             m_state = State::CLOSED;
             m_socket.Close();
             m_readCancel.notify_all();
-            throw;
         }
+        else
+            m_state = State::OPEN;
+        throw;
     }
 }
 

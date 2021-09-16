@@ -21,6 +21,7 @@
 #include <TcpListener.h>
 #include <UdpSocket.h>
 #include <SocketError.h>
+#include <UdpSocket.h>
 #include "TestGlobals.h"
 #include "Timeout.h"
 
@@ -59,29 +60,38 @@ public:
     TcpSocket m_receiver;
 };
 
-TEST_F(UnitTestError, Proto)
-{
-    UdpSocket receiver;
-    receiver.SetReadTimeout(1000);
-    char buf[1];
-    receiver.Read(buf, 1, nullptr, nullptr);
-}
-
 // Tests that SetReadTimeout breaks a blocking read and closes the socket.
-TEST_F(UnitTestError, ReadTimeout)
+TEST_F(UnitTestError, TcpReadTimeout)
 {
     Timeout timeout(std::chrono::seconds(3));
 
-    m_receiver.SetReadTimeout(1000);
+    m_receiver.SetReadTimeout(500);
 
-    auto start = std::chrono::steady_clock::now();
+    auto const start = std::chrono::steady_clock::now();
     uint8_t buf[1];
     ASSERT_THROW(m_receiver.Read(buf, 1), SocketError) << "Socket read did not throw.";
-    auto stop = std::chrono::steady_clock::now();
-    ASSERT_GT((stop - start), std::chrono::milliseconds(950)) << "Socket returned from read too early.";
-    ASSERT_LT((stop - start), std::chrono::milliseconds(1050)) << "Socket returend from read too late.";
+    auto const stop = std::chrono::steady_clock::now();
+    ASSERT_GT((stop - start), std::chrono::milliseconds(450)) << "Socket returned from read too early.";
+    ASSERT_LT((stop - start), std::chrono::milliseconds(550)) << "Socket returend from read too late.";
 
-    ASSERT_FALSE(m_receiver.IsConnected()); // timing out should close the socket
+    ASSERT_FALSE(m_receiver); // timing out should close the socket
+}
+
+TEST_F(UnitTestError, UdpReadTimeout)
+{
+    Timeout timeout(std::chrono::seconds(3));
+
+    UdpSocket receiver(TestGlobals::port);
+    receiver.SetReadTimeout(500);
+
+    auto const start = std::chrono::steady_clock::now();
+    uint8_t buf[1];
+    ASSERT_THROW(receiver.Read(buf, 1, nullptr, nullptr), SocketError) << "Socket read did not throw.";
+    auto const stop = std::chrono::steady_clock::now();
+    ASSERT_GT((stop - start), std::chrono::milliseconds(450)) << "Socket returned from read too early.";
+    ASSERT_LT((stop - start), std::chrono::milliseconds(550)) << "Socket returend from read too late.";
+
+    ASSERT_TRUE(receiver); // timing out should not close the socket
 }
 
 // Tests that closing the socket breaks a blocking read on a separate thread.
