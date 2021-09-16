@@ -77,7 +77,7 @@ void UdpSocketBase::SetReadTimeout(unsigned milliseconds)
 }
 
 // Shutdown and close the socket.
-void UdpSocketBase::Close()
+void UdpSocketBase::Close() noexcept
 {
     shutdown(m_socket.Get(), SD_BOTH);
     m_socket.Close();

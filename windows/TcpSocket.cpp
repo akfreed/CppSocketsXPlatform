@@ -186,7 +186,7 @@ bool TcpSocket::Read(void* dest, size_t len)
         m_socket.Close();
         m_readCancel.notify_all();
         throw;
-    }    
+    }
 }
 
 // returns the amount of bytes available in the stream

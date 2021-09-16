@@ -17,7 +17,6 @@
 #pragma once
 
 #include <WinsockContext.h>
-#include <ErrorCode.h>
 #include <SocketHandle.h>
 
 #include <cstdint>
@@ -39,10 +38,10 @@ public:
     bool IsConnected() const;
     void SetReadTimeout(unsigned milliseconds);
 
-    ErrorCode ShutdownSend() noexcept;
-    ErrorCode ShutdownReceive() noexcept;
-    ErrorCode ShutdownBoth() noexcept;
-    ErrorCode Close() noexcept;
+    void ShutdownSend();
+    void ShutdownReceive();
+    void ShutdownBoth() noexcept;
+    void Close() noexcept;
 
     void Write(void const* src, size_t len);
     bool Read(void* dest, size_t len);

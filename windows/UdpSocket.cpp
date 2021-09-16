@@ -142,18 +142,31 @@ void UdpSocket::Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddress, uint
         m_state = State::READING;
     }
 
-    m_socket.Read(dest, maxlen, out_ipAddress, out_port);
-
-    std::unique_lock<std::mutex> lock(m_socketLock);
-    if (m_state == State::SHUTTING_DOWN)
+    try
     {
-        m_state = State::CLOSED;
-        m_socket.Close();
-        m_readCancel.notify_all();
-        return;
+        m_socket.Read(dest, maxlen, out_ipAddress, out_port);
+
+        std::unique_lock<std::mutex> lock(m_socketLock);
+        if (m_state == State::SHUTTING_DOWN)
+            throw ProgramError("Socket was closed from another thread.");
+
+        m_state = State::OPEN;
+    }
+    catch (ProgramError const&)
+    {
+        std::unique_lock<std::mutex> lock(m_socketLock);
+        if (m_state == State::SHUTTING_DOWN)
+        {
+            m_state = State::CLOSED;
+            m_socket.Close();
+            m_readCancel.notify_all();
+            throw;
+        }
     }
 
-    m_state = State::OPEN;
+
+
+    
 }
 
 // returns the total amount of data in the buffer. 

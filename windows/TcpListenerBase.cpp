@@ -17,6 +17,7 @@
 #include <TcpListenerBase.h>
 
 #include <TcpSocketBase.h>
+#include <ErrorCode.h>
 #include <SocketError.h>
 
 #include <memory>
@@ -83,10 +84,10 @@ bool TcpListenerBase::IsListening() const
     return !!m_socket;
 }
 
-ErrorCode TcpListenerBase::Close()
+void TcpListenerBase::Close() noexcept
 {
     shutdown();
-    return m_socket.Close();
+    m_socket.Close();
 }
 
 TcpSocketBase TcpListenerBase::Accept()
@@ -118,9 +119,9 @@ TcpListenerBase::operator bool() const
     return IsListening();
 }
 
-ErrorCode TcpListenerBase::shutdown()
+void TcpListenerBase::shutdown() noexcept
 {
-    return (::shutdown(m_socket.Get(), SD_BOTH) == SOCKET_ERROR) ? ErrorCode(WSAGetLastError()) : ErrorCode();
+    ::shutdown(m_socket.Get(), SD_BOTH);
 }
 
 } }

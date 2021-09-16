@@ -16,6 +16,7 @@
 
 #include <TcpSocketBase.h>
 
+#include <ErrorCode.h>
 #include <SocketError.h>
 
 #include <memory>
@@ -92,26 +93,29 @@ void TcpSocketBase::SetReadTimeout(unsigned milliseconds)
         ErrorCode(WSAGetLastError()).Throw();
 }
 
-ErrorCode TcpSocketBase::ShutdownSend() noexcept
+void TcpSocketBase::ShutdownSend()
 {
-    return (shutdown(m_socket.Get(), SD_SEND) == SOCKET_ERROR) ? ErrorCode(WSAGetLastError()) : ErrorCode();
+    if (shutdown(m_socket.Get(), SD_SEND) == SOCKET_ERROR)
+        ErrorCode(WSAGetLastError()).Throw();
 }
 
-ErrorCode TcpSocketBase::ShutdownReceive() noexcept
+void TcpSocketBase::ShutdownReceive()
 {
-    return (shutdown(m_socket.Get(), SD_RECEIVE) == SOCKET_ERROR) ? ErrorCode(WSAGetLastError()) : ErrorCode();
+    if (shutdown(m_socket.Get(), SD_RECEIVE) == SOCKET_ERROR)
+        ErrorCode(WSAGetLastError()).Throw();
 }
 
-ErrorCode TcpSocketBase::ShutdownBoth() noexcept
+void TcpSocketBase::ShutdownBoth() noexcept
 {
-    return (shutdown(m_socket.Get(), SD_BOTH) == SOCKET_ERROR) ? ErrorCode(WSAGetLastError()) : ErrorCode();
+    shutdown(m_socket.Get(), SD_BOTH);
 }
 
 //! Shutdown and close the socket.
-ErrorCode TcpSocketBase::Close() noexcept
+void TcpSocketBase::Close() noexcept
 {
     ShutdownBoth();
-    return m_socket.Close();
+    m_socket.Close();
+    
 }
 
 void TcpSocketBase::Write(void const* src, size_t len)
@@ -134,12 +138,12 @@ bool TcpSocketBase::Read(void* dest, size_t len)
             throw ProgramError("Length must be less than int max.");
 
         int const lenAsInt = static_cast<int>(len);
-        int amountRead = recv(m_socket.Get(), reinterpret_cast<char*>(dest), lenAsInt, MSG_WAITALL);
+        int const amountRead = recv(m_socket.Get(), reinterpret_cast<char*>(dest), lenAsInt, MSG_WAITALL);
         if (amountRead == SOCKET_ERROR)
             ErrorCode(WSAGetLastError()).Throw();
-        if (amountRead == 0 && len > 0)
+        if (amountRead == 0 && len > 0) // Graceful close.
         {
-            ShutdownReceive().ThrowIfError();
+            ShutdownReceive();
             return false;
         }
         if (amountRead != lenAsInt)

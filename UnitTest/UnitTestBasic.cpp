@@ -20,6 +20,7 @@
 #include <TcpSerializer.h>
 #include <TcpSocket.h>
 #include <UdpSocket.h>
+#include <IpAddress.h>
 #include "Timeout.h"
 #include "TestGlobals.h"
 

@@ -17,7 +17,6 @@
 #pragma once
 
 #include <WinsockContext.h>
-#include <ErrorCode.h>
 #include <SocketHandle.h>
 
 #include <cstdint>
@@ -40,13 +39,13 @@ public:
 
     bool IsListening() const;
 
-    ErrorCode Close();
+    void Close() noexcept;
     TcpSocketBase Accept();
 
     explicit operator bool() const;
 
 private:
-    ErrorCode shutdown();
+    void shutdown() noexcept;
 
     WinsockContext m_winsockContext;
     SocketHandle m_socket;

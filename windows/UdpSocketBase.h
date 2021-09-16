@@ -18,11 +18,12 @@
 
 #include <WinsockContext.h>
 #include <SocketHandle.h>
-#include <IpAddress.h>
 
 #include <cstdint>
 
 namespace strapper { namespace net {
+
+class IpAddressV4;
 
 class UdpSocketBase
 {
@@ -38,7 +39,7 @@ public:
     bool IsOpen() const;
     void SetReadTimeout(unsigned milliseconds);
 
-    void Close();
+    void Close() noexcept;
 
     void Write(void const* src, size_t len, IpAddressV4 const& ipAddress, uint16_t port);
     void Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddress, uint16_t* out_port);

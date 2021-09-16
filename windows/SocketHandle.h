@@ -17,7 +17,6 @@
 #pragma once
 
 #include <SocketIncludes.h>
-#include <ErrorCode.h>
 
 namespace strapper { namespace net {
 
@@ -35,7 +34,7 @@ public:
 
     explicit operator bool() const;
     SOCKET const& Get() const;
-    ErrorCode Close();
+    void Close() noexcept;
 
 private:
     SOCKET m_socketId = INVALID_SOCKET;
