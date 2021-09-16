@@ -163,10 +163,6 @@ void UdpSocket::Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddress, uint
             throw;
         }
     }
-
-
-
-    
 }
 
 // returns the total amount of data in the buffer. 

@@ -19,6 +19,7 @@
 #include <TcpSocket.h>
 #include <TcpSerializer.h>
 #include <TcpListener.h>
+#include <UdpSocket.h>
 #include <SocketError.h>
 #include "TestGlobals.h"
 #include "Timeout.h"
@@ -57,6 +58,14 @@ public:
     TcpSocket m_sender;
     TcpSocket m_receiver;
 };
+
+TEST_F(UnitTestError, Proto)
+{
+    UdpSocket receiver;
+    receiver.SetReadTimeout(1000);
+    char buf[1];
+    receiver.Read(buf, 1, nullptr, nullptr);
+}
 
 // Tests that SetReadTimeout breaks a blocking read and closes the socket.
 TEST_F(UnitTestError, ReadTimeout)
