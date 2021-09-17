@@ -19,6 +19,7 @@
 
 #include <SocketError.h>
 
+#include <cassert>
 #include <string>
 
 namespace strapper { namespace net {
@@ -42,42 +43,52 @@ namespace strapper { namespace net {
     FUNC(WSAENOTCONN) \
     FUNC(WSAENOTSOCK) \
     FUNC(WSAEOPNOTSUPP) \
+    FUNC(WSAEPROCLIM) \
     FUNC(WSAESHUTDOWN) \
     FUNC(WSAETIMEDOUT) \
     FUNC(WSAEWOULDBLOCK) \
-    FUNC(WSANOTINITIALISED)
+    FUNC(WSANOTINITIALISED) \
+    FUNC(WSASYSNOTREADY) \
+    FUNC(WSAVERNOTSUPPORTED)
 
 #define NAME_SWITCH(name) \
     case name: return #name " (" + std::to_string(name) + ")";
 
-namespace {
-
-std::string GetName(int errorCode)
+std::string ErrorCode::GetErrorName(int nativeErrorCode)
 {
-    switch (errorCode)
+    switch (nativeErrorCode)
     {
         CODES(NAME_SWITCH)
     default:
-        return std::to_string(errorCode);
+        return std::to_string(nativeErrorCode);
     }
 }
 
+ErrorCode::ErrorCode(std::exception_ptr exception)
+    : m_exception(std::move(exception))
+{
+    if (m_exception)
+    {
+        try
+        {
+            std::rethrow_exception(m_exception);
+        }
+        catch (SocketError const& e)
+        {
+            m_nativeErrorCode = e.NativeCode();
+            m_what = e.what();
+        }
+        catch (ProgramError const& e)
+        {
+            m_what = e.what();
+        }
+    }
 }
 
-ErrorCode::ErrorCode(int errorCode /* = 0 */)
-    : m_nativeErrorCode(errorCode)
-    , m_name(GetName(m_nativeErrorCode))
-{ }
-
-void ErrorCode::ThrowIfError() const
+void ErrorCode::Rethrow() const
 {
-    if (*this)
-        throw SocketError(*this);
-}
-
-void ErrorCode::Throw() const
-{
-    throw SocketError(*this);
+    assert(m_exception);
+    std::rethrow_exception(m_exception);
 }
 
 } }

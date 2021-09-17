@@ -57,9 +57,9 @@ private:
     Winsock()
     {
         WSADATA wsaData{};
-        int result = WSAStartup(MAKEWORD(2, 2), &wsaData);
+        int const result = WSAStartup(MAKEWORD(2, 2), &wsaData);
         if (result != 0)
-            throw ProgramError("Unable to initializer Winsock. WSA error: " + std::to_string(result));
+            throw SocketError(result);
     }
 
     static std::mutex s_mutex;

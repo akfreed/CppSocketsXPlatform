@@ -16,7 +16,6 @@
 
 #include <TcpSocketBase.h>
 
-#include <ErrorCode.h>
 #include <SocketError.h>
 
 #include <memory>
@@ -38,8 +37,9 @@ SocketHandle Connect(std::string const& host, uint16_t port)
 
     {
         addrinfo* hil = nullptr;
-        int const error = getaddrinfo(host.c_str(), std::to_string(port).c_str(), &hostInfo, &hil);
-        if (error != 0 || !hil)
+        if (getaddrinfo(host.c_str(), std::to_string(port).c_str(), &hostInfo, &hil) != 0)
+            return {};
+        if (!hil)
             return {};
         hostInfoList.reset(hil);
     }
@@ -51,8 +51,7 @@ SocketHandle Connect(std::string const& host, uint16_t port)
     if (!socket)
         return {};
 
-    int const error = connect(socket.Get(), hostInfoList->ai_addr, static_cast<int>(hostInfoList->ai_addrlen));
-    if (error == SOCKET_ERROR)
+    if (connect(socket.Get(), hostInfoList->ai_addr, static_cast<int>(hostInfoList->ai_addrlen)) == SOCKET_ERROR)
         return {};
 
     return socket;
@@ -90,19 +89,19 @@ void TcpSocketBase::SetReadTimeout(unsigned milliseconds)
 {
     DWORD const arg = milliseconds;
     if (setsockopt(m_socket.Get(), SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<char const*>(&arg), sizeof(arg)) == SOCKET_ERROR)
-        ErrorCode(WSAGetLastError()).Throw();
+        throw SocketError(WSAGetLastError());
 }
 
 void TcpSocketBase::ShutdownSend()
 {
     if (shutdown(m_socket.Get(), SD_SEND) == SOCKET_ERROR)
-        ErrorCode(WSAGetLastError()).Throw();
+        throw SocketError(WSAGetLastError());
 }
 
 void TcpSocketBase::ShutdownReceive()
 {
     if (shutdown(m_socket.Get(), SD_RECEIVE) == SOCKET_ERROR)
-        ErrorCode(WSAGetLastError()).Throw();
+        throw SocketError(WSAGetLastError());
 }
 
 void TcpSocketBase::ShutdownBoth() noexcept
@@ -124,7 +123,7 @@ void TcpSocketBase::Write(void const* src, size_t len)
         throw ProgramError("Length must be less than int max.");
 
     if (send(m_socket.Get(), reinterpret_cast<char const*>(src), static_cast<int>(len), 0) == SOCKET_ERROR)
-        ErrorCode(WSAGetLastError()).Throw();
+        throw SocketError(WSAGetLastError());
 }
 
 //! Reads len bytes into given buffer.
@@ -140,7 +139,7 @@ bool TcpSocketBase::Read(void* dest, size_t len)
         int const lenAsInt = static_cast<int>(len);
         int const amountRead = recv(m_socket.Get(), reinterpret_cast<char*>(dest), lenAsInt, MSG_WAITALL);
         if (amountRead == SOCKET_ERROR)
-            ErrorCode(WSAGetLastError()).Throw();
+            throw SocketError(WSAGetLastError());
         if (amountRead == 0 && len > 0) // Graceful close.
         {
             ShutdownReceive();
@@ -165,7 +164,7 @@ unsigned TcpSocketBase::DataAvailable()
 {
     unsigned long bytesAvailable = 0;
     if (ioctlsocket(m_socket.Get(), FIONREAD, &bytesAvailable) == SOCKET_ERROR)
-        ErrorCode(WSAGetLastError()).Throw();
+        throw SocketError(WSAGetLastError());
 
     if (bytesAvailable > std::numeric_limits<unsigned>::max())
         bytesAvailable = std::numeric_limits<unsigned>::max();

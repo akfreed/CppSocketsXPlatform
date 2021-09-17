@@ -16,7 +16,6 @@
 
 #include <UdpSocketBase.h>
 
-#include <ErrorCode.h>
 #include <SocketError.h>
 #include <IpAddress.h>
 
@@ -73,7 +72,7 @@ void UdpSocketBase::SetReadTimeout(unsigned milliseconds)
 {
     DWORD const arg = milliseconds;
     if (setsockopt(m_socket.Get(), SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<char const*>(&arg), sizeof(arg)) == SOCKET_ERROR)
-        ErrorCode(WSAGetLastError()).Throw();
+        throw SocketError(WSAGetLastError());
 }
 
 // Shutdown and close the socket.
@@ -95,13 +94,13 @@ void UdpSocketBase::Write(void const* src, size_t len, IpAddressV4 const& ipAddr
     if (success == 0)
         throw ProgramError("Invalid IP address: " + ipAddress.ToString('.'));
     if (success == -1)
-        ErrorCode(WSAGetLastError()).Throw();
+        throw SocketError(WSAGetLastError());
     if (success != 1)
         throw ProgramError("Unknown error.");
 
-    int amountWritten = sendto(m_socket.Get(), reinterpret_cast<const char*>(src), static_cast<int>(len), 0, reinterpret_cast<sockaddr*>(&info), sizeof(info));
+    int const amountWritten = sendto(m_socket.Get(), reinterpret_cast<const char*>(src), static_cast<int>(len), 0, reinterpret_cast<sockaddr*>(&info), sizeof(info));
     if (amountWritten == SOCKET_ERROR)
-        ErrorCode(WSAGetLastError()).Throw();
+        throw SocketError(WSAGetLastError());
 }
 
     //if (amountRead == SOCKET_ERROR)
@@ -157,7 +156,7 @@ void UdpSocketBase::Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddress, 
     if (amountRead == 0)
         throw ProgramError("Socket was closed.");
     if (amountRead == SOCKET_ERROR)
-        ErrorCode(WSAGetLastError()).Throw();
+        throw SocketError(WSAGetLastError());
 
     if ((out_ipAddress || out_port) && (infoLen != sizeof(info)))
         throw ProgramError("Read returned unexpected endpoint info size.");
@@ -175,7 +174,7 @@ unsigned UdpSocketBase::DataAvailable() const
 {
     unsigned long bytesAvailable = 0;
     if (ioctlsocket(m_socket.Get(), FIONREAD, &bytesAvailable) == SOCKET_ERROR)
-        ErrorCode(WSAGetLastError()).Throw();
+        throw SocketError(WSAGetLastError());
 
     if (bytesAvailable > std::numeric_limits<unsigned>::max())
         bytesAvailable = std::numeric_limits<unsigned>::max();

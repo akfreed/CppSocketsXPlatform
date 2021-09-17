@@ -17,24 +17,28 @@
 #pragma once
 
 #include <string>
+#include <exception>
 
 namespace strapper { namespace net {
 
 class ErrorCode
 {
 public:
-    explicit ErrorCode(int errorCode = 0);
+    static std::string GetErrorName(int nativeErrorCode);
+
+    ErrorCode() = default;
+    explicit ErrorCode(std::exception_ptr exception);
 
     int NativeCode() const { return m_nativeErrorCode; }
-    std::string const& Name() const { return m_name; }
-    explicit operator bool() const { return m_nativeErrorCode != 0; }
+    std::string const& What() const { return m_what; }
+    explicit operator bool() const { return !!m_exception; }
 
-    void ThrowIfError() const;
-    void Throw() const;
+    void Rethrow() const;
 
 private:
+    std::exception_ptr m_exception;
     int m_nativeErrorCode = 0;
-    std::string m_name;
+    std::string m_what = GetErrorName(0);
 };
 
 } }

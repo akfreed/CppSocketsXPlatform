@@ -17,7 +17,6 @@
 #include <TcpListenerBase.h>
 
 #include <TcpSocketBase.h>
-#include <ErrorCode.h>
 #include <SocketError.h>
 
 #include <memory>
@@ -39,8 +38,9 @@ SocketHandle Start(uint16_t port)
 
     {
         addrinfo* hil = nullptr;
-        int const error = getaddrinfo(nullptr, std::to_string(port).c_str(), &hostInfo, &hil);
-        if (error != 0 || !hil)
+        if (getaddrinfo(nullptr, std::to_string(port).c_str(), &hostInfo, &hil) != 0)
+            return {};
+        if (!hil)
             return {};
         hostInfoList.reset(hil);
     }
@@ -56,12 +56,10 @@ SocketHandle Start(uint16_t port)
         return {};
     // */
 
-    int error = bind(sock.Get(), hostInfoList->ai_addr, static_cast<int>(hostInfoList->ai_addrlen));
-    if (error == SOCKET_ERROR)
+    if (bind(sock.Get(), hostInfoList->ai_addr, static_cast<int>(hostInfoList->ai_addrlen)) == SOCKET_ERROR)
         return {};
 
-    error = listen(sock.Get(), 128);
-    if (error == SOCKET_ERROR)
+    if (listen(sock.Get(), 128) == SOCKET_ERROR)
         return {};
 
     return sock;
@@ -102,7 +100,7 @@ TcpSocketBase TcpListenerBase::Accept()
                 int const error = WSAGetLastError();
                 if (error == WSAECONNRESET && retries < 10)
                     continue;
-                ErrorCode(error).Throw();
+                throw SocketError(error);
             }
             return TcpSocketBase::Attorney::accept(std::move(SocketHandle(clientId)));
         }

@@ -60,6 +60,7 @@ SOCKET const& SocketHandle::Get() const
 void SocketHandle::Close() noexcept
 {
     closesocket(m_socketId);
+    m_socketId = INVALID_SOCKET;
 }
 
 } }

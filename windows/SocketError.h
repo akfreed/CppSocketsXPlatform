@@ -34,28 +34,30 @@ public:
 
     char const* what() const noexcept override { return m_what.c_str(); }
 
-private:
+protected:
     std::string m_what = "Program Error.";
 };
 
 class SocketError : public ProgramError
 {
 public:
-    SocketError() = default;
+    SocketError()
+        : SocketError(0)
+    { }
 
-    explicit SocketError(ErrorCode const& errorCode)
-        : ProgramError(errorCode ? "SocketError: A socket API call returned " + errorCode.Name() + "." 
-                                 : "SocketError: Unknown cause.")
-        , m_errorCode(errorCode)
+    explicit SocketError(int nativeErrorCode)
+        : ProgramError(nativeErrorCode ? "SocketError: A socket API call returned " + ErrorCode::GetErrorName(nativeErrorCode) + "."
+                                       : "SocketError: Unknown cause.")
+        , m_nativeCode(nativeErrorCode)
     { }
 
     int NativeCode() const
     {
-        return m_errorCode.NativeCode();
+        return m_nativeCode;
     }
 
-private:
-    ErrorCode m_errorCode;
+protected:
+    int m_nativeCode = 0;
 };
 
 } }

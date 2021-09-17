@@ -116,7 +116,7 @@ void UdpSocket::Close() noexcept
         shutdown(m_socketId, SD_BOTH);
         // If there is a blocked read on a separate thread, the socket shutdown will unblock it. Wait for it to finish.
         m_readCancel.wait(lock, [this]() { return m_state == State::CLOSED; });
-        break;  // fall out
+        break;
     }
 }
 
