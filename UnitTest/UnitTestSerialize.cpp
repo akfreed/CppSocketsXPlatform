@@ -115,13 +115,12 @@ TEST_F(UnitTestSerialize, SendRecvDouble)
 
 TEST_F(UnitTestSerialize, SendRecvCharString)
 {
-    char s[101] = "Hello, World!";
-    s_sender->WriteString(s);
+    std::string const out = "Hello, World!";
+    s_sender->Write(out);
 
-    char msg[101];
-    memset(msg, 0xFF, 101);
-    ASSERT_TRUE(s_receiver->ReadString(msg, 101));
-    ASSERT_EQ(std::strcmp(s, msg), 0);
+    std::string in;
+    ASSERT_TRUE(s_receiver->Read(in));
+    ASSERT_EQ(in, out);
 }
 
 } } }

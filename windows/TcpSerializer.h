@@ -18,6 +18,9 @@
 
 #include <TcpSocket.h>
 
+#include <cstddef>
+#include <string>
+
 namespace strapper { namespace net {
 
 class TcpSerializer
@@ -34,13 +37,13 @@ public:
     void Write(bool b);
     void Write(int32_t int32);
     void Write(double d);
-    void WriteString(const char* str);
+    void Write(std::string const& s);
 
     bool Read(char& dest);
     bool Read(bool& dest);
     bool Read(int32_t& dest);
     bool Read(double& dest);
-    int ReadString(char* c, int maxlen);
+    bool Read(std::string& dest);
 
 private:
     TcpSocket m_socket;

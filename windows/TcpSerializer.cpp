@@ -19,6 +19,7 @@
 #include <SocketError.h>
 
 #include <cassert>
+#include <cstring>
 
 namespace strapper { namespace net {
 
@@ -43,52 +44,41 @@ void TcpSerializer::Write(char c)
 
 void TcpSerializer::Write(bool b)
 {
-    const char c = static_cast<char>(b);
-    m_socket.Write(&c, 1);
+    uint8_t const buf = b ? 1 : 0;
+    m_socket.Write(&buf, 1);
 }
 
 void TcpSerializer::Write(int32_t int32)
 {
-    static_assert(sizeof(int32_t) == 4, "Function not compatible with this architecture.");
-    static_assert(sizeof(char) == 1, "Function not compatible with this architecture.");
-
-    char buffer[sizeof(int32_t)];
-
     int32 = htonl(int32);  // convert to big endian
-    memcpy(buffer, &int32, sizeof(int32));
-
-    m_socket.Write(buffer, 4);
+    m_socket.Write(&int32, sizeof(int32));
 }
 
 void TcpSerializer::Write(double d)
 {
-    static_assert(sizeof(unsigned long long) == 8, "Function not compatible with this architecture.");
-    static_assert(sizeof(double) == 8, "Function not compatible with this architecture.");
-    static_assert(sizeof(char) == 1, "Function not compatible with this architecture.");
+    static_assert(sizeof(unsigned long long) == sizeof(double), "Function not compatible with this compiler.");
 
-    char buffer[sizeof(double)];
+    uint8_t buffer[sizeof(double)];
 
     // convert to big endian
     unsigned long long in;
-    memcpy(&in, &d, sizeof(d));
+    std::memcpy(&in, &d, sizeof(d));
 
     for (int i = sizeof(double) - 1; i >= 0; --i)
     {
-        buffer[i] = static_cast<char>(in & 0xFF);
+        buffer[i] = static_cast<uint8_t>(in & 0xFF);
         in >>= 8;
     }
 
-    m_socket.Write(buffer, 8);
+    m_socket.Write(buffer, sizeof(double));
 }
 
-void TcpSerializer::WriteString(const char* str)
+void TcpSerializer::Write(std::string const& s)
 {
-    int len = static_cast<int>(strlen(str)); // todo: Use size_t.
-    if (len > MAX_STRING_LEN)
-        len = MAX_STRING_LEN;
-
+    int const len = (s.length() > MAX_STRING_LEN) ? MAX_STRING_LEN : static_cast<int>(s.length());
     Write(len);
-    m_socket.Write(str, len);
+    if (len > 0)
+        m_socket.Write(s.c_str(), len);
 }
 
 //----------------------------------------------------------------------------
@@ -100,40 +90,28 @@ bool TcpSerializer::Read(char& dest)
 
 bool TcpSerializer::Read(bool& dest)
 {
-    char buf;
+    uint8_t buf;
     bool result = m_socket.Read(&buf, 1);
     if (result)
-        dest = static_cast<bool>(buf);
+        dest = buf == 0 ? false : true;
     return result;
 }
 
 bool TcpSerializer::Read(int32_t& dest)
 {
-    static_assert(sizeof(int32_t) == 4, "Function not compatible with this architecture.");
-    static_assert(sizeof(char) == 1, "Function not compatible with this architecture.");
-
-    char buffer[sizeof(int32_t)];
-
-    bool result = m_socket.Read(buffer, 4);
-
+    bool result = m_socket.Read(&dest, sizeof(dest));
     if (result)
-    {
-        memcpy(&dest, buffer, sizeof(dest));
         dest = ntohl(dest);  // convert to host endian
-    }
     return result;
 }
 
 bool TcpSerializer::Read(double& dest)
 {
-    static_assert(sizeof(unsigned long long) == 8, "Function not compatible with this architecture.");
-    static_assert(sizeof(double) == 8, "Function not compatible with this architecture.");
-    static_assert(sizeof(char) == 1, "Function not compatible with this architecture.");
+    static_assert(sizeof(unsigned long long) == sizeof(double), "Function not compatible with this compiler.");
 
-    char buffer[sizeof(double)];
+    uint8_t buffer[sizeof(double)];
 
-    bool result = m_socket.Read(buffer, 8);
-
+    bool result = m_socket.Read(buffer, sizeof(double));
     if (result)
     {
         // convert to host endian
@@ -141,44 +119,27 @@ bool TcpSerializer::Read(double& dest)
         for (unsigned i = 0; i < sizeof(double); ++i)
         {
             out <<= 8;
-            out |= buffer[i] & 0xFF;
+            out |= buffer[i];
         }
 
-        memcpy(&dest, &out, sizeof(dest));
+        std::memcpy(&dest, &out, sizeof(dest));
     }
     return result;
 }
 
 // maxlen is the size of the buffer
 // if successful, the string will always be null-terminated
-int TcpSerializer::ReadString(char* c, int maxlen)
+bool TcpSerializer::Read(std::string& s)
 {
-    if (maxlen < 1)
-    {
-        throw ProgramError("Max length must be greater than 0.");
-    }
-
     int len;
     if (!Read(len))
-        return -1;
+        return false;
 
-    if (len < 1 || len > maxlen)
-    {
-        // other end is corrupted or is not following the protocol.
-        assert(false);  // todo: development only. Please remove from final version
-        m_socket.Close();
-        return -1;
-    }
+    if (len < 0 || len > MAX_STRING_LEN) // other end is corrupted or is not following the protocol.
+        throw SocketError(0);
 
-    if (!m_socket.Read(c, len))
-        return -1;
-
-    if (len < maxlen)
-        c[len++] = '\0';
-    else
-        c[len - 1] = '\0';
-
-    return len;
+    s.resize(static_cast<size_t>(len));
+    return m_socket.Read(&*(s.begin()), static_cast<size_t>(len));
 }
 
 } }
