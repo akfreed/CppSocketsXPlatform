@@ -18,7 +18,7 @@
 
 #include <TcpSocket.h>
 
-#include <cstddef>
+#include <cstdint>
 #include <string>
 
 namespace strapper { namespace net {
@@ -26,7 +26,7 @@ namespace strapper { namespace net {
 class TcpSerializer
 {
 public:
-    static constexpr int MAX_STRING_LEN = 4096;
+    static constexpr int MAX_STRING_LEN = 1024 * 1024;
 
     explicit TcpSerializer(TcpSocket&& socket);
 

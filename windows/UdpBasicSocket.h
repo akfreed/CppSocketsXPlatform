@@ -19,6 +19,7 @@
 #include <WinsockContext.h>
 #include <SocketHandle.h>
 
+#include <cstddef>
 #include <cstdint>
 
 namespace strapper { namespace net {
