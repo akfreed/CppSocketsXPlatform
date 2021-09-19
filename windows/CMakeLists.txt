@@ -16,24 +16,24 @@ add_library(Network STATIC
     SocketHandle.cpp
     SocketHandle.h
     SocketIncludes.h
+    TcpBasicListener.cpp
+    TcpBasicListener.h
+    TcpBasicSocket.cpp
+    TcpBasicSocket.h
     TcpListener.cpp
     TcpListener.h
-    TcpListenerBase.cpp
-    TcpListenerBase.h
     TcpListenerEc.cpp
     TcpListenerEc.h
     TcpSerializer.cpp
     TcpSerializer.h
     TcpSocket.cpp
     TcpSocket.h
-    TcpSocketBase.cpp
-    TcpSocketBase.h
     TcpSocketEc.cpp
     TcpSocketEc.h
+    UdpBasicSocket.cpp
+    UdpBasicSocket.h
     UdpSocket.cpp
     UdpSocket.h
-    UdpSocketBase.cpp
-    UdpSocketBase.h
     UdpSocketEc.cpp
     UdpSocketEc.h
     WinsockContext.cpp

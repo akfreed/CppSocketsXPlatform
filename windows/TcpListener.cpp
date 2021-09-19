@@ -115,7 +115,7 @@ TcpSocket TcpListener::Accept()
 
     try
     {
-        TcpSocketBase newClient = m_listener.Accept();
+        TcpBasicSocket newClient = m_listener.Accept();
 
         std::unique_lock<std::mutex> lock(m_lock);
         if (m_state == State::SHUTTING_DOWN)

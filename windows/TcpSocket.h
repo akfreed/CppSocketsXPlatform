@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <TcpSocketBase.h>
+#include <TcpBasicSocket.h>
 
 #include <mutex>
 #include <condition_variable>
@@ -53,7 +53,7 @@ public:
     class Attorney
     {
         friend class TcpListener;
-        static TcpSocket accept(TcpSocketBase&& socket) { return TcpSocket(std::move(socket)); }
+        static TcpSocket accept(TcpBasicSocket&& socket) { return TcpSocket(std::move(socket)); }
     };
 
 private:
@@ -65,11 +65,11 @@ private:
         CLOSED
     };
 
-    explicit TcpSocket(TcpSocketBase&& socket);
+    explicit TcpSocket(TcpBasicSocket&& socket);
     
     mutable std::mutex m_socketLock;
     std::condition_variable m_readCancel;
-    TcpSocketBase m_socket;
+    TcpBasicSocket m_socket;
     State m_state = State::CLOSED;
 };
 

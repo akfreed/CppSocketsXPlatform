@@ -18,46 +18,33 @@
 
 #include <WinsockContext.h>
 #include <SocketHandle.h>
+#include <TcpBasicSocket.h>
 
 #include <cstdint>
-#include <string>
 
 namespace strapper { namespace net {
 
-class TcpSocketBase
+class TcpBasicListener
 {
+    friend class TcpListener; // todo: remove
 public:
-    TcpSocketBase() = default;
-    TcpSocketBase(std::string const& host, uint16_t port);
-    TcpSocketBase(TcpSocketBase const&) = delete;
-    TcpSocketBase(TcpSocketBase&&) = default;
-    TcpSocketBase& operator=(TcpSocketBase const&) = delete;
-    TcpSocketBase& operator=(TcpSocketBase&&) = default;
-    ~TcpSocketBase();
+    TcpBasicListener() = default;
+    explicit TcpBasicListener(uint16_t port);
+    TcpBasicListener(TcpBasicListener const&) = delete;
+    TcpBasicListener(TcpBasicListener&&) = default;
+    TcpBasicListener& operator=(TcpBasicListener const&) = delete;
+    TcpBasicListener& operator=(TcpBasicListener&&) = default;
+    ~TcpBasicListener();
 
-    bool IsConnected() const;
-    void SetReadTimeout(unsigned milliseconds);
+    bool IsListening() const;
 
-    void ShutdownSend();
-    void ShutdownReceive();
-    void ShutdownBoth() noexcept;
     void Close() noexcept;
-
-    void Write(void const* src, size_t len);
-    bool Read(void* dest, size_t len);
-
-    unsigned DataAvailable();
+    TcpBasicSocket Accept();
 
     explicit operator bool() const;
 
-    class Attorney
-    {
-        friend class TcpListenerBase;
-        static TcpSocketBase accept(SocketHandle&& socket) { return TcpSocketBase(std::move(socket)); }
-    };
-
 private:
-    explicit TcpSocketBase(SocketHandle&& socket);
+    void shutdown() noexcept;
 
     WinsockContext m_winsockContext;
     SocketHandle m_socket;

@@ -14,7 +14,7 @@
 // limitations under the License.
 // ==================================================================
 
-#include <UdpSocketBase.h>
+#include <UdpBasicSocket.h>
 
 #include <SocketError.h>
 #include <IpAddress.h>
@@ -46,17 +46,17 @@ SocketHandle MakeSocket(uint16_t myport)
 }
 
 //! 0 for any.
-UdpSocketBase::UdpSocketBase(uint16_t myport)
+UdpBasicSocket::UdpBasicSocket(uint16_t myport)
     : m_socket(MakeSocket(myport))
 { }
 
-UdpSocketBase::~UdpSocketBase()
+UdpBasicSocket::~UdpBasicSocket()
 {
     if (*this)
         Close();
 }
 
-bool UdpSocketBase::IsOpen() const
+bool UdpBasicSocket::IsOpen() const
 {
     return !!m_socket;
 }
@@ -65,26 +65,26 @@ bool UdpSocketBase::IsOpen() const
 // Only use this feature as a robustness mechanism.
 // (e.g. so you don't block forever if the connection is somehow silently lost.)
 // Don't use this as a form of non-blocking read.
-void UdpSocketBase::SetReadTimeout(unsigned milliseconds)
+void UdpBasicSocket::SetReadTimeout(unsigned milliseconds)
 {
     DWORD const arg = milliseconds;
     if (setsockopt(m_socket.Get(), SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<char const*>(&arg), sizeof(arg)) == SOCKET_ERROR)
         throw SocketError(WSAGetLastError());
 }
 
-void UdpSocketBase::Shutdown() noexcept
+void UdpBasicSocket::Shutdown() noexcept
 {
     shutdown(m_socket.Get(), SD_BOTH);
 }
 
 // Shutdown and close the socket.
-void UdpSocketBase::Close() noexcept
+void UdpBasicSocket::Close() noexcept
 {
     Shutdown();
     m_socket.Close();
 }
 
-void UdpSocketBase::Write(void const* src, size_t len, IpAddressV4 const& ipAddress, uint16_t port)
+void UdpBasicSocket::Write(void const* src, size_t len, IpAddressV4 const& ipAddress, uint16_t port)
 {
     if (len > std::numeric_limits<int>::max())
         throw ProgramError("Length must be less than int max.");
@@ -147,7 +147,7 @@ void UdpSocketBase::Write(void const* src, size_t len, IpAddressV4 const& ipAddr
     //    }
     //}
 
-void UdpSocketBase::Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddress, uint16_t* out_port)
+void UdpBasicSocket::Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddress, uint16_t* out_port)
 {
     sockaddr_in info{};
     int infoLen = sizeof(info);
@@ -172,7 +172,7 @@ void UdpSocketBase::Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddress, 
 // returns the total amount of data in the buffer. 
 // A call to Read will not necessarily return this much data, since the buffer may contain many datagrams.
 // returns -1 on error
-unsigned UdpSocketBase::DataAvailable() const
+unsigned UdpBasicSocket::DataAvailable() const
 {
     unsigned long bytesAvailable = 0;
     if (ioctlsocket(m_socket.Get(), FIONREAD, &bytesAvailable) == SOCKET_ERROR)
@@ -184,7 +184,7 @@ unsigned UdpSocketBase::DataAvailable() const
     return bytesAvailable;
 }
 
-UdpSocketBase::operator bool() const
+UdpBasicSocket::operator bool() const
 {
     return IsOpen();
 }

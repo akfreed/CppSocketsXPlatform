@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <UdpSocketBase.h>
+#include <UdpBasicSocket.h>
 
 #include <mutex>
 #include <condition_variable>
@@ -59,7 +59,7 @@ private:
 
     mutable std::mutex m_socketLock;
     std::condition_variable m_readCancel;
-    UdpSocketBase m_socket;
+    UdpBasicSocket m_socket;
     State m_state = State::CLOSED;
 };
 

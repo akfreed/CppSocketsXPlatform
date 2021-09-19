@@ -18,34 +18,38 @@
 
 #include <WinsockContext.h>
 #include <SocketHandle.h>
-#include <TcpBasicSocket.h>
 
 #include <cstdint>
 
 namespace strapper { namespace net {
 
-class TcpBasicListener
+class IpAddressV4;
+
+class UdpBasicSocket
 {
-    friend class TcpListener; // todo: remove
 public:
-    TcpBasicListener() = default;
-    explicit TcpBasicListener(uint16_t port);
-    TcpBasicListener(TcpBasicListener const&) = delete;
-    TcpBasicListener(TcpBasicListener&&) = default;
-    TcpBasicListener& operator=(TcpBasicListener const&) = delete;
-    TcpBasicListener& operator=(TcpBasicListener&&) = default;
-    ~TcpBasicListener();
+    UdpBasicSocket() = default;
+    explicit UdpBasicSocket(uint16_t myport);
+    UdpBasicSocket(UdpBasicSocket const&) = delete;
+    UdpBasicSocket(UdpBasicSocket&& other) = default;
+    UdpBasicSocket& operator=(UdpBasicSocket const&) = delete;
+    UdpBasicSocket& operator=(UdpBasicSocket&& other) = default;
+    ~UdpBasicSocket();
 
-    bool IsListening() const;
+    bool IsOpen() const;
+    void SetReadTimeout(unsigned milliseconds);
 
+    void Shutdown() noexcept;
     void Close() noexcept;
-    TcpBasicSocket Accept();
+
+    void Write(void const* src, size_t len, IpAddressV4 const& ipAddress, uint16_t port);
+    void Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddress, uint16_t* out_port);
+
+    unsigned DataAvailable() const;
 
     explicit operator bool() const;
 
-private:
-    void shutdown() noexcept;
-
+private:    
     WinsockContext m_winsockContext;
     SocketHandle m_socket;
 };

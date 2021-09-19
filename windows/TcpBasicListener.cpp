@@ -14,7 +14,7 @@
 // limitations under the License.
 // ==================================================================
 
-#include <TcpListenerBase.h>
+#include <TcpBasicListener.h>
 
 #include <SocketError.h>
 
@@ -66,28 +66,28 @@ SocketHandle Start(uint16_t port)
 
 }
 
-TcpListenerBase::TcpListenerBase(uint16_t port)
+TcpBasicListener::TcpBasicListener(uint16_t port)
     : m_socket(Start(port))
 { }
 
-TcpListenerBase::~TcpListenerBase()
+TcpBasicListener::~TcpBasicListener()
 {
     if (*this)
         Close();
 }
 
-bool TcpListenerBase::IsListening() const
+bool TcpBasicListener::IsListening() const
 {
     return !!m_socket;
 }
 
-void TcpListenerBase::Close() noexcept
+void TcpBasicListener::Close() noexcept
 {
     shutdown();
     m_socket.Close();
 }
 
-TcpSocketBase TcpListenerBase::Accept()
+TcpBasicSocket TcpBasicListener::Accept()
 {
     try
     {
@@ -101,7 +101,7 @@ TcpSocketBase TcpListenerBase::Accept()
                     continue;
                 throw SocketError(error);
             }
-            return TcpSocketBase::Attorney::accept(std::move(SocketHandle(clientId)));
+            return TcpBasicSocket::Attorney::accept(std::move(SocketHandle(clientId)));
         }
     }
     catch (ProgramError const&)
@@ -111,12 +111,12 @@ TcpSocketBase TcpListenerBase::Accept()
     }
 }
 
-TcpListenerBase::operator bool() const
+TcpBasicListener::operator bool() const
 {
     return IsListening();
 }
 
-void TcpListenerBase::shutdown() noexcept
+void TcpBasicListener::shutdown() noexcept
 {
     ::shutdown(m_socket.Get(), SD_BOTH);
 }

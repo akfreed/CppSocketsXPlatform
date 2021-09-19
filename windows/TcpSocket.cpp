@@ -32,7 +32,7 @@ TcpSocket::TcpSocket(std::string const& host, uint16_t port)
 }
 
 // special private constructor used only by TcpListener.Accept(), which has a friend function
-TcpSocket::TcpSocket(TcpSocketBase&& socket)
+TcpSocket::TcpSocket(TcpBasicSocket&& socket)
     : m_socket(std::move(socket))
     , m_state(m_socket ? State::CONNECTED : State::CLOSED)
 { }

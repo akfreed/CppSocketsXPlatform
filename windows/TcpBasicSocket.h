@@ -20,36 +20,45 @@
 #include <SocketHandle.h>
 
 #include <cstdint>
+#include <string>
 
 namespace strapper { namespace net {
 
-class IpAddressV4;
-
-class UdpSocketBase
+class TcpBasicSocket
 {
 public:
-    UdpSocketBase() = default;
-    explicit UdpSocketBase(uint16_t myport);
-    UdpSocketBase(UdpSocketBase const&) = delete;
-    UdpSocketBase(UdpSocketBase&& other) = default;
-    UdpSocketBase& operator=(UdpSocketBase const&) = delete;
-    UdpSocketBase& operator=(UdpSocketBase&& other) = default;
-    ~UdpSocketBase();
+    TcpBasicSocket() = default;
+    TcpBasicSocket(std::string const& host, uint16_t port);
+    TcpBasicSocket(TcpBasicSocket const&) = delete;
+    TcpBasicSocket(TcpBasicSocket&&) = default;
+    TcpBasicSocket& operator=(TcpBasicSocket const&) = delete;
+    TcpBasicSocket& operator=(TcpBasicSocket&&) = default;
+    ~TcpBasicSocket();
 
-    bool IsOpen() const;
+    bool IsConnected() const;
     void SetReadTimeout(unsigned milliseconds);
 
-    void Shutdown() noexcept;
+    void ShutdownSend();
+    void ShutdownReceive();
+    void ShutdownBoth() noexcept;
     void Close() noexcept;
 
-    void Write(void const* src, size_t len, IpAddressV4 const& ipAddress, uint16_t port);
-    void Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddress, uint16_t* out_port);
+    void Write(void const* src, size_t len);
+    bool Read(void* dest, size_t len);
 
-    unsigned DataAvailable() const;
+    unsigned DataAvailable();
 
     explicit operator bool() const;
 
-private:    
+    class Attorney
+    {
+        friend class TcpBasicListener;
+        static TcpBasicSocket accept(SocketHandle&& socket) { return TcpBasicSocket(std::move(socket)); }
+    };
+
+private:
+    explicit TcpBasicSocket(SocketHandle&& socket);
+
     WinsockContext m_winsockContext;
     SocketHandle m_socket;
 };

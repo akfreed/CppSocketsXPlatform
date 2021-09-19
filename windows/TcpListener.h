@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <TcpListenerBase.h>
+#include <TcpBasicListener.h>
 #include <TcpSocket.h>
 
 #include <mutex>
@@ -55,7 +55,7 @@ private:
 
     mutable std::mutex m_lock;
     std::condition_variable m_acceptCancel;
-    TcpListenerBase m_listener;
+    TcpBasicListener m_listener;
     State m_state = State::CLOSED;
 };
 
