@@ -18,7 +18,6 @@
 
 #include <TcpListener.h>
 
-#include <TcpSocket.h>
 #include <SocketError.h>
 
 #include <cassert>
@@ -27,8 +26,10 @@ namespace strapper { namespace net {
 
 TcpListener::TcpListener(uint16_t port)
     : m_listener(port)
-    , m_state(m_listener ? State::OPEN : State::CLOSED)
-{ }
+    , m_state(State::OPEN)
+{
+    assert(m_listener);
+}
 
 TcpListener::TcpListener(TcpListener&& other) noexcept
     : TcpListener()

@@ -16,13 +16,18 @@
 
 #include <SocketHandle.h>
 
+#include <SocketError.h>
+
 #include <utility>
 
 namespace strapper { namespace net {
 
 SocketHandle::SocketHandle(int family, int socktype, int protocol)
     : m_socketId(socket(family, socktype, protocol))
-{ }
+{
+    if (m_socketId == INVALID_SOCKET)
+        throw SocketError(WSAGetLastError());
+}
 
 SocketHandle::SocketHandle(SOCKET fd)
     : m_socketId(fd)

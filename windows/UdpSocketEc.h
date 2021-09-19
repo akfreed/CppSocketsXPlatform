@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2018, 2021 Alexander K. Freed
+// Copyright 2021 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,38 +16,34 @@
 
 #pragma once
 
-#include <WinsockContext.h>
-#include <SocketHandle.h>
-#include <TcpSocketBase.h>
-
-#include <cstdint>
+#include <UdpSocket.h>
 
 namespace strapper { namespace net {
 
-class TcpListenerBase
+class ErrorCode;
+
+class UdpSocketEc
 {
-    friend class TcpListener; // todo: remove
 public:
-    TcpListenerBase() = default;
-    explicit TcpListenerBase(uint16_t port);
-    TcpListenerBase(TcpListenerBase const&) = delete;
-    TcpListenerBase(TcpListenerBase&&) = default;
-    TcpListenerBase& operator=(TcpListenerBase const&) = delete;
-    TcpListenerBase& operator=(TcpListenerBase&&) = default;
-    ~TcpListenerBase();
+    UdpSocketEc() = default;
+    explicit UdpSocketEc(uint16_t myport, ErrorCode* ec);
 
-    bool IsListening() const;
+    bool IsOpen() const;
+    void SetReadTimeout(unsigned milliseconds, ErrorCode* ec);
 
-    void Close() noexcept;
-    TcpSocketBase Accept();
+    void Close();
+
+    void Write(void const* src, size_t len, IpAddressV4 const& ipAddress, uint16_t port, ErrorCode* ec);
+    void Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddress, uint16_t* out_port, ErrorCode* ec);
+
+    unsigned DataAvailable(ErrorCode* ec) const;
 
     explicit operator bool() const;
 
-private:
-    void shutdown() noexcept;
+    UdpSocket&& Convert();
 
-    WinsockContext m_winsockContext;
-    SocketHandle m_socket;
+private:
+    UdpSocket m_socket;
 };
 
 } }

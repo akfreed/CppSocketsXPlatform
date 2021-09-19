@@ -28,7 +28,7 @@ class IpAddressV4;
 class UdpSocketBase
 {
 public:
-    UdpSocketBase();
+    UdpSocketBase() = default;
     explicit UdpSocketBase(uint16_t myport);
     UdpSocketBase(UdpSocketBase const&) = delete;
     UdpSocketBase(UdpSocketBase&& other) = default;
@@ -39,6 +39,7 @@ public:
     bool IsOpen() const;
     void SetReadTimeout(unsigned milliseconds);
 
+    void Shutdown() noexcept;
     void Close() noexcept;
 
     void Write(void const* src, size_t len, IpAddressV4 const& ipAddress, uint16_t port);

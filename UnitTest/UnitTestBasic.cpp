@@ -53,7 +53,7 @@ TEST_F(UnitTestBasic, TcpSelfConnect)
 
 TEST_F(UnitTestBasic, UdpCreate)
 {
-    UdpSocket client;
+    UdpSocket client(0);
     ASSERT_TRUE(client);
     UdpSocket host(TestGlobals::port);
     ASSERT_TRUE(host);

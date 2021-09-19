@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2018, 2021 Alexander K. Freed
+// Copyright 2021 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,47 +16,37 @@
 
 #pragma once
 
-#include <TcpListenerBase.h>
 #include <TcpSocket.h>
-
-#include <mutex>
-#include <condition_variable>
 
 namespace strapper { namespace net {
 
-class TcpListener
+class ErrorCode;
+
+class TcpSocketEc
 {
 public:
-    TcpListener() = default;
-    explicit TcpListener(uint16_t port);
-    TcpListener(TcpListener const&) = delete;
-    TcpListener(TcpListener&&) noexcept;
-    TcpListener& operator=(TcpListener const&) = delete;
-    TcpListener& operator=(TcpListener&&) noexcept;
-    ~TcpListener();
+    TcpSocketEc() = default;
+    TcpSocketEc(std::string const& host, uint16_t port, ErrorCode* ec);
+    explicit TcpSocketEc(TcpSocket&& socket);
 
-    friend void swap(TcpListener& left, TcpListener& right);
+    bool IsConnected() const;
+    void SetReadTimeout(unsigned milliseconds, ErrorCode* ec);
 
-    bool IsListening() const;
+    void ShutdownSend(ErrorCode* ec);
+    void ShutdownBoth();
+    void Close();
 
-    void Close() noexcept;
-    TcpSocket Accept();
+    void Write(void const* src, size_t len, ErrorCode* ec);
+    bool Read(void* dest, size_t len, ErrorCode* ec);
+
+    unsigned DataAvailable(ErrorCode* ec);
 
     explicit operator bool() const;
 
-private:
-    enum class State
-    {
-        OPEN,
-        ACCEPTING,
-        SHUTTING_DOWN,
-        CLOSED
-    };
+    TcpSocket&& Convert();
 
-    mutable std::mutex m_lock;
-    std::condition_variable m_acceptCancel;
-    TcpListenerBase m_listener;
-    State m_state = State::CLOSED;
+private:
+    TcpSocket m_socket;
 };
 
 } }

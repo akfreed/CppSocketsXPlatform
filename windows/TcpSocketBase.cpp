@@ -18,6 +18,7 @@
 
 #include <SocketError.h>
 
+#include <cassert>
 #include <memory>
 #include <limits>
 
@@ -37,22 +38,22 @@ SocketHandle Connect(std::string const& host, uint16_t port)
 
     {
         addrinfo* hil = nullptr;
-        if (getaddrinfo(host.c_str(), std::to_string(port).c_str(), &hostInfo, &hil) != 0)
-            return {};
+        int const error = getaddrinfo(host.c_str(), std::to_string(port).c_str(), &hostInfo, &hil);
+        if (error != 0)
+            throw SocketError(error);
         if (!hil)
-            return {};
+            throw SocketError(0);
         hostInfoList.reset(hil);
     }
 
     if (hostInfoList->ai_addrlen > std::numeric_limits<int>::max())
-        return {};
+        throw SocketError(0);
 
     SocketHandle socket(hostInfoList->ai_family, hostInfoList->ai_socktype, hostInfoList->ai_protocol);
-    if (!socket)
-        return {};
+    assert(socket);
 
     if (connect(socket.Get(), hostInfoList->ai_addr, static_cast<int>(hostInfoList->ai_addrlen)) == SOCKET_ERROR)
-        return {};
+        throw SocketError(WSAGetLastError());
 
     return socket;
 }

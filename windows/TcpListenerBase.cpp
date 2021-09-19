@@ -16,9 +16,9 @@
 
 #include <TcpListenerBase.h>
 
-#include <TcpSocketBase.h>
 #include <SocketError.h>
 
+#include <cassert>
 #include <memory>
 
 namespace strapper { namespace net {
@@ -38,29 +38,28 @@ SocketHandle Start(uint16_t port)
 
     {
         addrinfo* hil = nullptr;
-        if (getaddrinfo(nullptr, std::to_string(port).c_str(), &hostInfo, &hil) != 0)
-            return {};
+        int const error = getaddrinfo(nullptr, std::to_string(port).c_str(), &hostInfo, &hil);
+        if (error != 0)
+            throw SocketError(error);
         if (!hil)
-            return {};
+            throw SocketError(0);
         hostInfoList.reset(hil);
     }
 
     SocketHandle sock = SocketHandle(hostInfoList->ai_family, hostInfoList->ai_socktype, hostInfoList->ai_protocol);
-    if (!sock)
-        return {};
+    assert(sock);
 
     /*
     BOOL const yes = true;
-    int error = setsockopt(sock.Get(), SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<char const*>(&yes), sizeof(yes));
-    if (error == SOCKET_ERROR)
-        return {};
+    if (setsockopt(sock.Get(), SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<char const*>(&yes), sizeof(yes)) == SOCKET_ERROR)
+        throw SocketError(WSAGetLastError());
     // */
 
     if (bind(sock.Get(), hostInfoList->ai_addr, static_cast<int>(hostInfoList->ai_addrlen)) == SOCKET_ERROR)
-        return {};
+        throw SocketError(WSAGetLastError());
 
     if (listen(sock.Get(), 128) == SOCKET_ERROR)
-        return {};
+        throw SocketError(WSAGetLastError());
 
     return sock;
 }

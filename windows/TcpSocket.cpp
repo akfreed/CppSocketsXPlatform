@@ -26,8 +26,10 @@ namespace strapper { namespace net {
 // constructor connects to host:port
 TcpSocket::TcpSocket(std::string const& host, uint16_t port)
     : m_socket(host, port)
-    , m_state(m_socket ? State::CONNECTED : State::CLOSED)
-{ }
+    , m_state(State::CONNECTED)
+{
+    assert(m_socket);
+}
 
 // special private constructor used only by TcpListener.Accept(), which has a friend function
 TcpSocket::TcpSocket(TcpSocketBase&& socket)

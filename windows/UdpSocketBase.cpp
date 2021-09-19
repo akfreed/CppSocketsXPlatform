@@ -19,6 +19,7 @@
 #include <SocketError.h>
 #include <IpAddress.h>
 
+#include <cassert>
 #include <limits>
 
 namespace strapper { namespace net {
@@ -29,8 +30,7 @@ namespace {
 SocketHandle MakeSocket(uint16_t myport)
 {
     SocketHandle socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    if (!socket)
-        return {};
+    assert(socket);
 
     sockaddr_in myInfo{};
     myInfo.sin_family = AF_INET;
@@ -38,17 +38,14 @@ SocketHandle MakeSocket(uint16_t myport)
     myInfo.sin_port = htons(myport);
 
     if (bind(socket.Get(), reinterpret_cast<sockaddr*>(&myInfo), sizeof(myInfo)) == SOCKET_ERROR)
-        return {};
+        throw SocketError(WSAGetLastError());
 
     return socket;
 }
 
 }
 
-UdpSocketBase::UdpSocketBase()
-    : m_socket(MakeSocket(0))
-{ }
-
+//! 0 for any.
 UdpSocketBase::UdpSocketBase(uint16_t myport)
     : m_socket(MakeSocket(myport))
 { }
@@ -75,10 +72,15 @@ void UdpSocketBase::SetReadTimeout(unsigned milliseconds)
         throw SocketError(WSAGetLastError());
 }
 
+void UdpSocketBase::Shutdown() noexcept
+{
+    shutdown(m_socket.Get(), SD_BOTH);
+}
+
 // Shutdown and close the socket.
 void UdpSocketBase::Close() noexcept
 {
-    shutdown(m_socket.Get(), SD_BOTH);
+    Shutdown();
     m_socket.Close();
 }
 

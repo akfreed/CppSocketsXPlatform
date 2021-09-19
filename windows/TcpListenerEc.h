@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2018, 2021 Alexander K. Freed
+// Copyright 2021 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,47 +16,30 @@
 
 #pragma once
 
-#include <TcpListenerBase.h>
-#include <TcpSocket.h>
-
-#include <mutex>
-#include <condition_variable>
+#include <TcpListener.h>
+#include <TcpSocketEc.h>
 
 namespace strapper { namespace net {
 
-class TcpListener
+class ErrorCode;
+
+class TcpListenerEc
 {
 public:
-    TcpListener() = default;
-    explicit TcpListener(uint16_t port);
-    TcpListener(TcpListener const&) = delete;
-    TcpListener(TcpListener&&) noexcept;
-    TcpListener& operator=(TcpListener const&) = delete;
-    TcpListener& operator=(TcpListener&&) noexcept;
-    ~TcpListener();
-
-    friend void swap(TcpListener& left, TcpListener& right);
+    TcpListenerEc() = default;
+    explicit TcpListenerEc(uint16_t port, ErrorCode* ec);
 
     bool IsListening() const;
 
-    void Close() noexcept;
-    TcpSocket Accept();
+    void Close();
+    TcpSocketEc Accept(ErrorCode* ec);
 
     explicit operator bool() const;
 
-private:
-    enum class State
-    {
-        OPEN,
-        ACCEPTING,
-        SHUTTING_DOWN,
-        CLOSED
-    };
+    TcpListener&& Convert();
 
-    mutable std::mutex m_lock;
-    std::condition_variable m_acceptCancel;
-    TcpListenerBase m_listener;
-    State m_state = State::CLOSED;
+private:
+    TcpListener m_listener;
 };
 
 } }

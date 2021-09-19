@@ -26,7 +26,7 @@ namespace strapper { namespace net {
 class UdpSocket
 {
 public:
-    UdpSocket();
+    UdpSocket() = default;
     explicit UdpSocket(uint16_t myport);
     UdpSocket(UdpSocket const&) = delete;
     UdpSocket(UdpSocket&& other) noexcept;
@@ -61,7 +61,6 @@ private:
     std::condition_variable m_readCancel;
     UdpSocketBase m_socket;
     State m_state = State::CLOSED;
-    SOCKET m_socketId = INVALID_SOCKET;
 };
 
 } }

@@ -22,14 +22,12 @@
 
 namespace strapper { namespace net {
 
-UdpSocket::UdpSocket()
-    : m_state(m_socket ? State::OPEN : State::CLOSED)
-{ }
-
 UdpSocket::UdpSocket(uint16_t myport)
     : m_socket(myport)
-    , m_state(m_socket ? State::OPEN : State::CLOSED)
-{ }
+    , m_state(State::OPEN)
+{
+    assert(m_socket);
+}
 
 UdpSocket::UdpSocket(UdpSocket&& other) noexcept
     : UdpSocket()
@@ -113,7 +111,7 @@ void UdpSocket::Close() noexcept
 
     case State::READING:
         m_state = State::SHUTTING_DOWN;
-        shutdown(m_socketId, SD_BOTH);
+        m_socket.Shutdown();
         // If there is a blocked read on a separate thread, the socket shutdown will unblock it. Wait for it to finish.
         m_readCancel.wait(lock, [this]() { return m_state == State::CLOSED; });
         break;

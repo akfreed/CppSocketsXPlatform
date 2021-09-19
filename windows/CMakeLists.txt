@@ -20,16 +20,22 @@ add_library(Network STATIC
     TcpListener.h
     TcpListenerBase.cpp
     TcpListenerBase.h
+    TcpListenerEc.cpp
+    TcpListenerEc.h
     TcpSerializer.cpp
     TcpSerializer.h
     TcpSocket.cpp
     TcpSocket.h
     TcpSocketBase.cpp
     TcpSocketBase.h
+    TcpSocketEc.cpp
+    TcpSocketEc.h
     UdpSocket.cpp
     UdpSocket.h
     UdpSocketBase.cpp
     UdpSocketBase.h
+    UdpSocketEc.cpp
+    UdpSocketEc.h
     WinsockContext.cpp
     WinsockContext.h
 )
