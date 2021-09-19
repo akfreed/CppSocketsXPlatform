@@ -81,7 +81,7 @@ TEST_F(UnitTestEndian, CheckInt)
     ASSERT_TRUE(std::equal(expected, expected + 4, readBuffer));
 
     int32_t readInt = 0;
-    ASSERT_TRUE(s_receiver->Read(readInt));
+    ASSERT_TRUE(s_receiver->Read(&readInt));
     std::memcpy(readBuffer, &readInt, sizeof(readInt));
     ASSERT_TRUE(std::equal(readBuffer, readBuffer + 4, valBuffer));
 }
@@ -104,7 +104,7 @@ TEST_F(UnitTestEndian, CheckDouble)
     ASSERT_TRUE(std::equal(expected, expected + 8, readBuffer));
 
     double readDouble = 0;
-    ASSERT_TRUE(s_receiver->Read(readDouble));
+    ASSERT_TRUE(s_receiver->Read(&readDouble));
     std::memcpy(readBuffer, &readDouble, sizeof(readDouble));
     ASSERT_TRUE(std::equal(readBuffer, readBuffer + 8, valBuffer));
 }

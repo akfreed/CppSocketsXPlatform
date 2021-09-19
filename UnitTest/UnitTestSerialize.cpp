@@ -73,7 +73,7 @@ TEST_F(UnitTestSerialize, SendRecvChar)
     const char sentData = 'f';
     s_sender->Write(sentData);
     char recvData{};
-    ASSERT_TRUE(s_receiver->Read(recvData));
+    ASSERT_TRUE(s_receiver->Read(&recvData));
     ASSERT_EQ(recvData, sentData);
 }
 
@@ -85,11 +85,11 @@ TEST_F(UnitTestSerialize, SendRecvBool)
     s_sender->Write(s);
 
     bool b = true;
-    ASSERT_TRUE(s_receiver->Read(b));
+    ASSERT_TRUE(s_receiver->Read(&b));
     ASSERT_EQ(b, false);
-    ASSERT_TRUE(s_receiver->Read(b));
+    ASSERT_TRUE(s_receiver->Read(&b));
     ASSERT_EQ(b, true);
-    ASSERT_TRUE(s_receiver->Read(b));
+    ASSERT_TRUE(s_receiver->Read(&b));
     ASSERT_EQ(b, true);
 }
 
@@ -99,7 +99,7 @@ TEST_F(UnitTestSerialize, SendRecvInt32)
     s_sender->Write(sentData);
 
     int recvData{};
-    ASSERT_TRUE(s_receiver->Read(recvData));
+    ASSERT_TRUE(s_receiver->Read(&recvData));
     ASSERT_EQ(recvData, sentData);
 }
 
@@ -109,7 +109,7 @@ TEST_F(UnitTestSerialize, SendRecvDouble)
     s_sender->Write(sentData);
 
     double recvData{};
-    ASSERT_TRUE(s_receiver->Read(recvData));
+    ASSERT_TRUE(s_receiver->Read(&recvData));
     ASSERT_EQ(recvData, sentData);
 }
 
@@ -119,7 +119,7 @@ TEST_F(UnitTestSerialize, SendRecvCharString)
     s_sender->Write(out);
 
     std::string in;
-    ASSERT_TRUE(s_receiver->Read(in));
+    ASSERT_TRUE(s_receiver->Read(&in));
     ASSERT_EQ(in, out);
 }
 

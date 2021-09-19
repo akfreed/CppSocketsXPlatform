@@ -39,11 +39,11 @@ public:
     void Write(double d);
     void Write(std::string const& s);
 
-    bool Read(char& dest);
-    bool Read(bool& dest);
-    bool Read(int32_t& dest);
-    bool Read(double& dest);
-    bool Read(std::string& dest);
+    bool Read(char* dest);
+    bool Read(bool* dest);
+    bool Read(int32_t* dest);
+    bool Read(double* dest);
+    bool Read(std::string* dest);
 
 private:
     TcpSocket m_socket;

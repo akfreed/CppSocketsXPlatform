@@ -136,7 +136,7 @@ TEST_F(UnitTestBasic, DataAvailable)
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     ASSERT_GT(receiver.Socket().DataAvailable(), 0u);
-    ASSERT_TRUE(receiver.Read(i));
+    ASSERT_TRUE(receiver.Read(&i));
     ASSERT_EQ(receiver.Socket().DataAvailable(), 0u);
 }
 

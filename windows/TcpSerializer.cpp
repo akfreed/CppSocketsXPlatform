@@ -83,31 +83,39 @@ void TcpSerializer::Write(std::string const& s)
 
 //----------------------------------------------------------------------------
 
-bool TcpSerializer::Read(char& dest)
+bool TcpSerializer::Read(char* dest)
 {
-    return m_socket.Read(&dest, 1);
+    if (!dest)
+        throw ProgramError("Null pointer.");
+    return m_socket.Read(dest, 1);
 }
 
-bool TcpSerializer::Read(bool& dest)
+bool TcpSerializer::Read(bool* dest)
 {
+    if (!dest)
+        throw ProgramError("Null pointer.");
     uint8_t buf;
     bool result = m_socket.Read(&buf, 1);
     if (result)
-        dest = buf == 0 ? false : true;
+        *dest = (buf == 0 ? false : true);
     return result;
 }
 
-bool TcpSerializer::Read(int32_t& dest)
+bool TcpSerializer::Read(int32_t* dest)
 {
-    bool result = m_socket.Read(&dest, sizeof(dest));
+    if (!dest)
+        throw ProgramError("Null pointer.");
+    bool result = m_socket.Read(dest, sizeof(*dest));
     if (result)
-        dest = ntohl(dest);  // convert to host endian
+        *dest = ntohl(*dest);  // convert to host endian
     return result;
 }
 
-bool TcpSerializer::Read(double& dest)
+bool TcpSerializer::Read(double* dest)
 {
     static_assert(sizeof(unsigned long long) == sizeof(double), "Function not compatible with this compiler.");
+    if (!dest)
+        throw ProgramError("Null pointer.");
 
     uint8_t buffer[sizeof(double)];
 
@@ -122,24 +130,27 @@ bool TcpSerializer::Read(double& dest)
             out |= buffer[i];
         }
 
-        std::memcpy(&dest, &out, sizeof(dest));
+        std::memcpy(dest, &out, sizeof(*dest));
     }
     return result;
 }
 
 // maxlen is the size of the buffer
 // if successful, the string will always be null-terminated
-bool TcpSerializer::Read(std::string& s)
+bool TcpSerializer::Read(std::string* dest)
 {
+    if (!dest)
+        throw ProgramError("Null pointer.");
+
     int len;
-    if (!Read(len))
+    if (!Read(&len))
         return false;
 
     if (len < 0 || len > MAX_STRING_LEN) // other end is corrupted or is not following the protocol.
         throw SocketError(0);
 
-    s.resize(static_cast<size_t>(len));
-    return m_socket.Read(&*(s.begin()), static_cast<size_t>(len));
+    dest->resize(static_cast<size_t>(len));
+    return m_socket.Read(&*(dest->begin()), static_cast<size_t>(len));
 }
 
 } }
