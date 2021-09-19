@@ -42,7 +42,7 @@ public:
     void Close() noexcept;
 
     void Write(void const* src, size_t len, IpAddressV4 const& ipAddress, uint16_t port);
-    void Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddress, uint16_t* out_port);
+    unsigned Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddress, uint16_t* out_port);
 
     unsigned DataAvailable() const;
 

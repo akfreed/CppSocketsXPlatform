@@ -120,6 +120,8 @@ void TcpBasicSocket::Close() noexcept
 
 void TcpBasicSocket::Write(void const* src, size_t len)
 {
+    if (len == 0)
+        throw ProgramError("Length must be greater than 0.");
     if (len > std::numeric_limits<int>::max())
         throw ProgramError("Length must be less than int max.");
 
@@ -134,6 +136,8 @@ bool TcpBasicSocket::Read(void* dest, size_t len)
 {
     try
     {
+        if (len == 0)
+            throw ProgramError("Length must be greater than 0.");
         if (len > std::numeric_limits<int>::max())
             throw ProgramError("Length must be less than int max.");
 

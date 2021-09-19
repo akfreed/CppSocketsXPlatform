@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2018 Alexander K. Freed
+// Copyright 2018, 2021 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,44 +14,27 @@
 // limitations under the License.
 // ==================================================================
 
-// This is the only file in the project and it simply runs a UDP echo server. 
-
-#include "WinsockContextManager.h"
-#include <iostream>
 #include "EchoServers.h"
 
+#include <exception>
+#include <iostream>
+
+using namespace strapper::net;
 
 int main()
 {
-    WinsockContextManager wcm;
-    if (!wcm.IsInitialized())
+    try
     {
-        std::cout << "Unable to initialize winsock.\n";
-        return 4;
+        UdpEchoServer(11111);
+        return EXIT_SUCCESS;
     }
-
-    int result = UdpEchoServer(11111);
-
-    switch (result)
+    catch (std::exception const& e)
     {
-    case 0:
-        std::cout << "Graceful close.\n";
-        return 0;
-        break;
-
-    case 1:
-        std::cout << "ERROR: Socket Error.\n";
-        return 1;
-        break;
-
-    case 2:
-        std::cout << "Other end terminated connection.\n";
-        return 3;
-        break;
-
-    default:
-        std::cout << "ERROR: Unknown return code.\n";
-        return 5;
-        break;
+        std::cout << "Exception occured.\n" << e.what() << std::endl;
     }
+    catch (...)
+    {
+        std::cout << "Unknown exception occured." << std::endl;
+    }
+    return EXIT_FAILURE;
 }

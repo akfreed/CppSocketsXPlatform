@@ -69,16 +69,17 @@ void UdpSocketEc::Write(void const* src, size_t len, IpAddressV4 const& ipAddres
     }
 }
 
-void UdpSocketEc::Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddress, uint16_t* out_port, ErrorCode* ec)
+unsigned UdpSocketEc::Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddress, uint16_t* out_port, ErrorCode* ec)
 {
     try
     {
-        m_socket.Read(dest, maxlen, out_ipAddress, out_port);
+        return m_socket.Read(dest, maxlen, out_ipAddress, out_port);
     }
     catch (ProgramError const&)
     {
         if (ec)
             *ec = ErrorCode(std::current_exception());
+        return 0;
     }
 }
 

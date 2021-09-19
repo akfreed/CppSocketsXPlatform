@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2018 Alexander K. Freed
+// Copyright 2018, 2021 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,18 +14,13 @@
 // limitations under the License.
 // ==================================================================
 
-// Contains prototypes for the TCP and UDP echo server functions.
-
 #pragma once
 
-// return 0 for success
-// return 1 for listener error
-// return 2 for accept error
-// return 3 for unexpected close
-int TcpEchoServer(const char* port);
+#include <cstdint>
 
+namespace strapper { namespace net {
 
-// return 0 for success
-// return 1 for socket error
-// return 2 for unexpected close
-int UdpEchoServer(unsigned short port);
+void TcpEchoServer(uint16_t port);
+void UdpEchoServer(uint16_t port);
+
+} }

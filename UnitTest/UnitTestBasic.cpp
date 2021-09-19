@@ -101,19 +101,19 @@ TEST_F(UnitTestBasic, UdpSendRecvBuf)
 
     char recvData[6] = { 0, 0, 0, 0, 0, 0 };
     uint16_t senderPort = 0;
-    receiver.Read(recvData, 5, nullptr, nullptr);
+    ASSERT_EQ(receiver.Read(recvData, 5, nullptr, nullptr), 5);
     ASSERT_TRUE(std::equal(recvData, recvData + 5, sentData));
 
     sender.Write(sentData + 3, 3, ip, port);
     sender.Write(sentData, 3, ip, port);
 
     IpAddressV4 senderIp;
-    receiver.Read(recvData, 3, &senderIp, &senderPort);
+    ASSERT_EQ(receiver.Read(recvData, 3, &senderIp, &senderPort), 3);
     auto expected = { 4, 5, 6, 4, 5, 0 };
     ASSERT_TRUE(std::equal(recvData, recvData + 6, expected.begin()));
     ASSERT_EQ(senderIp.ToString(), ip.ToString());
 
-    receiver.Read(recvData, 4, &senderIp, &senderPort);
+    ASSERT_EQ(receiver.Read(recvData, 40, &senderIp, &senderPort), 3);
     expected = { 1, 2, 3, 4, 5, 0 };
     ASSERT_TRUE(std::equal(recvData, recvData + 6, expected.begin()));
     ASSERT_EQ(senderIp.ToString(), ip.ToString());

@@ -86,6 +86,8 @@ void UdpBasicSocket::Close() noexcept
 
 void UdpBasicSocket::Write(void const* src, size_t len, IpAddressV4 const& ipAddress, uint16_t port)
 {
+    if (len == 0)
+        throw ProgramError("Length must be greater than 0.");
     if (len > std::numeric_limits<int>::max())
         throw ProgramError("Length must be less than int max.");
 
@@ -147,10 +149,12 @@ void UdpBasicSocket::Write(void const* src, size_t len, IpAddressV4 const& ipAdd
     //    }
     //}
 
-void UdpBasicSocket::Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddress, uint16_t* out_port)
+unsigned UdpBasicSocket::Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddress, uint16_t* out_port)
 {
     sockaddr_in info{};
     int infoLen = sizeof(info);
+    if (maxlen == 0)
+        throw ProgramError("Max length must be greater than 0.");
     if (maxlen > std::numeric_limits<int>::max())
         throw ProgramError("Max length must be less than int max.");
 
@@ -167,6 +171,8 @@ void UdpBasicSocket::Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddress,
         *out_ipAddress = IpAddressV4(info.sin_addr.s_addr);
     if (out_port)
         *out_port = ntohs(info.sin_port);
+
+    return static_cast<unsigned>(amountRead);
 }
 
 // returns the total amount of data in the buffer. 

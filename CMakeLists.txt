@@ -34,7 +34,7 @@ elseif(LINUX OR UNIX OR APPLE)
     add_subdirectory(posix)
     include_directories(posix)
 endif()
-#add_subdirectory(EchoServers) todo: restore
+add_subdirectory(EchoServers)
 add_subdirectory(UnitTest)
 
 # Set Unit Tests as the start-up project

@@ -34,7 +34,7 @@ public:
     void Close();
 
     void Write(void const* src, size_t len, IpAddressV4 const& ipAddress, uint16_t port, ErrorCode* ec);
-    void Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddress, uint16_t* out_port, ErrorCode* ec);
+    unsigned Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddress, uint16_t* out_port, ErrorCode* ec);
 
     unsigned DataAvailable(ErrorCode* ec) const;
 

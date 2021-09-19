@@ -129,7 +129,7 @@ void UdpSocket::Write(void const* src, size_t len, IpAddressV4 const& ipAddress,
     return m_socket.Write(src, len, ipAddress, port);
 }
 
-void UdpSocket::Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddress, uint16_t* out_port)
+unsigned UdpSocket::Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddress, uint16_t* out_port)
 {
     {
         std::lock_guard<std::mutex> lock(m_socketLock);
@@ -142,13 +142,14 @@ void UdpSocket::Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddress, uint
 
     try
     {
-        m_socket.Read(dest, maxlen, out_ipAddress, out_port);
+        auto amountRead = m_socket.Read(dest, maxlen, out_ipAddress, out_port);
 
         std::unique_lock<std::mutex> lock(m_socketLock);
         if (m_state == State::SHUTTING_DOWN)
             throw ProgramError("Socket was closed from another thread.");
 
         m_state = State::OPEN;
+        return amountRead;
     }
     catch (ProgramError const&)
     {
