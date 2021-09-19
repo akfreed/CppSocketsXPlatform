@@ -5,9 +5,9 @@ add_library(EchoServers STATIC
 )
 target_include_directories(EchoServers PUBLIC .)
 target_link_libraries(EchoServers
-    Network
+    StrapperNet
 )
-target_compile_options(Network PRIVATE ${WARNING_FLAGS})
+target_compile_options(EchoServers PRIVATE ${WARNING_FLAGS})
 
 
 # Tcp Echo Server
@@ -15,7 +15,6 @@ add_executable(TcpEcho
     TcpEchoMain.cpp
 )
 target_link_libraries(TcpEcho
-    Network
     EchoServers
 )
 target_compile_options(TcpEcho PRIVATE ${WARNING_FLAGS})
@@ -28,7 +27,6 @@ add_executable(UdpEcho
     UdpEchoMain.cpp
 )
 target_link_libraries(UdpEcho
-    Network
     EchoServers
 )
 target_compile_options(UdpEcho PRIVATE ${WARNING_FLAGS})

@@ -26,14 +26,7 @@ find_package(Threads REQUIRED)
 add_subdirectory(thirdparty/)
 
 # Projects
-# Use different source files for sockets depending on platform
-if(WIN32)
-    add_subdirectory(windows)
-    include_directories(windows)
-elseif(LINUX OR UNIX OR APPLE)
-    add_subdirectory(posix)
-    include_directories(posix)
-endif()
+add_subdirectory(StrapperNet)
 add_subdirectory(EchoServers)
 add_subdirectory(UnitTest)
 

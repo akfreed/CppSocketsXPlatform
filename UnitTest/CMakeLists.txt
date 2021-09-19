@@ -11,7 +11,7 @@ add_executable(UnitTest
 )
 target_link_libraries(UnitTest
     gtest
-    Network
+    StrapperNet
 )
 target_compile_options(UnitTest PRIVATE ${WARNING_FLAGS})
 # set Visual Studio working directory
