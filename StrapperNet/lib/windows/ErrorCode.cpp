@@ -68,7 +68,7 @@ namespace strapper { namespace net {
     FUNC(WSASYSNOTREADY) \
     FUNC(WSATRY_AGAIN) \
     FUNC(WSATYPE_NOT_FOUND) \
-    FUNC(WSAVERNOTSUPPORTED)
+    FUNC(WSAVERNOTSUPPORTED) \
 
 #define NAME_SWITCH(name) \
     case name: return #name " (" + std::to_string(name) + ")";
