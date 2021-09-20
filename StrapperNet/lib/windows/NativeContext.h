@@ -24,20 +24,7 @@ namespace strapper { namespace net {
 class NativeContext
 {
 public:
-    static std::shared_ptr<NativeContext> Get()
-    {
-        static std::weak_ptr<NativeContext> s_instance;
-
-        std::lock_guard<std::mutex> lock(s_mutex);
-
-        std::shared_ptr<NativeContext> context = s_instance.lock();
-        if (!context)
-        {
-            context.reset(new NativeContext());
-            s_instance = context;
-        }
-        return context;
-    }
+    static std::shared_ptr<NativeContext> Get();
 
     NativeContext(NativeContext const&) = delete;
     NativeContext(NativeContext&&) = delete;
@@ -50,12 +37,6 @@ private:
     NativeContext();
 
     static std::mutex s_mutex;
-};
-
-class SystemContext
-{
-private:
-    std::shared_ptr<NativeContext> m_context = NativeContext::Get();
 };
 
 } }

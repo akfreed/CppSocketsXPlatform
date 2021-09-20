@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <strapper/net/NativeContext.h>
+#include <strapper/net/SystemContext.h>
 #include <strapper/net/SocketHandle.h>
 
 #include <cstddef>
