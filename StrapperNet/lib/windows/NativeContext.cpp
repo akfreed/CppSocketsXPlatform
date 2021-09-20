@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2021 Alexander K. Freed
+// Copyright 2018, 2021 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,34 +14,28 @@
 // limitations under the License.
 // ==================================================================
 
-#pragma once
+#include "SocketIncludes.h"
+#include <strapper/net/NativeContext.h>
 
-#include <memory>
+#include <strapper/net/SocketError.h>
 
 namespace strapper { namespace net {
 
-struct SocketFd;
+std::mutex NativeContext::s_mutex;
 
-class SocketHandle
+NativeContext::~NativeContext()
 {
-public:
-    SocketHandle();
-    SocketHandle(int family, int socktype, int protocol);
-    explicit SocketHandle(SocketFd const& fd);
-    SocketHandle(SocketHandle const&) = delete;
-    SocketHandle(SocketHandle&& other) noexcept;
-    SocketHandle& operator=(SocketHandle const&) = delete;
-    SocketHandle& operator=(SocketHandle&& other) noexcept;
-    ~SocketHandle();
+    std::lock_guard<std::mutex> lock(s_mutex);
+    WSACleanup();
+}
 
-    void Close() noexcept;
-
-    SocketFd const& Get() const;
-    SocketFd const& operator*() const;
-    explicit operator bool() const;
-
-private:
-    std::unique_ptr<SocketFd> m_socketId;
-};
+// Lock before calling.
+NativeContext::NativeContext()
+{
+    WSADATA wsaData{};
+    int const result = WSAStartup(MAKEWORD(2, 2), &wsaData);
+    if (result != 0)
+        throw SocketError(result);
+}
 
 } }

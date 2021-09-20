@@ -14,12 +14,12 @@
 // limitations under the License.
 // ==================================================================
 
-#include <TcpListener.h>
-#include <TcpSerializer.h>
-#include <UdpSocket.h>
-#include <IpAddress.h>
-
 #include "EchoServers.h"
+
+#include <strapper/net/TcpListener.h>
+#include <strapper/net/TcpSerializer.h>
+#include <strapper/net/UdpSocket.h>
+#include <strapper/net/IpAddress.h>
 
 #include <string>
 #include <iostream>
@@ -52,7 +52,6 @@ void UdpEchoServer(uint16_t port)
 {
     UdpSocket client(port);
 
-    int amountRead;
     unsigned constexpr MAX = 1000;
     char message[MAX + 1]{};
 

@@ -16,11 +16,11 @@
 
 #include <gtest/gtest.h>
 
+#include <strapper/net/TcpSocket.h>
+#include <strapper/net/TcpSerializer.h>
+#include <strapper/net/TcpListener.h>
 #include "TestGlobals.h"
 #include "Timeout.h"
-#include "TcpSocket.h"
-#include "TcpSerializer.h"
-#include "TcpListener.h"
 
 #include <cstdint>
 #include <cstring>

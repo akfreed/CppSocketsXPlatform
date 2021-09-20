@@ -16,15 +16,14 @@
 
 #pragma once
 
-#include <WinsockContext.h>
+#include <strapper/net/NativeContext.h>
 #include <strapper/net/SocketHandle.h>
+#include <strapper/net/IpAddress.h>
 
 #include <cstddef>
 #include <cstdint>
 
 namespace strapper { namespace net {
-
-class IpAddressV4;
 
 class UdpBasicSocket
 {
@@ -50,8 +49,8 @@ public:
 
     explicit operator bool() const;
 
-private:    
-    WinsockContext m_winsockContext;
+private:
+    SystemContext m_context;
     SocketHandle m_socket;
 };
 

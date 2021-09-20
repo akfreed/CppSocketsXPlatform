@@ -16,32 +16,16 @@
 
 #pragma once
 
-#include <memory>
+#include "SocketIncludes.h"
 
 namespace strapper { namespace net {
 
-struct SocketFd;
-
-class SocketHandle
+struct SocketFd
 {
-public:
-    SocketHandle();
-    SocketHandle(int family, int socktype, int protocol);
-    explicit SocketHandle(SocketFd const& fd);
-    SocketHandle(SocketHandle const&) = delete;
-    SocketHandle(SocketHandle&& other) noexcept;
-    SocketHandle& operator=(SocketHandle const&) = delete;
-    SocketHandle& operator=(SocketHandle&& other) noexcept;
-    ~SocketHandle();
+    SOCKET& operator*() { return m_fd; }
+    SOCKET const& operator*() const { return m_fd; }
 
-    void Close() noexcept;
-
-    SocketFd const& Get() const;
-    SocketFd const& operator*() const;
-    explicit operator bool() const;
-
-private:
-    std::unique_ptr<SocketFd> m_socketId;
+    SOCKET m_fd = INVALID_SOCKET;
 };
 
 } }

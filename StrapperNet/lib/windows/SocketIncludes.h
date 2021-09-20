@@ -38,6 +38,9 @@
 #ifndef NOMINMAX
     #define NOMINMAX
 #endif
+#ifndef INCL_EXTRA_HTON_FUNCTIONS
+    #define INCL_EXTRA_HTON_FUNCTIONS
+#endif
 #include <winsock2.h>
 #include <ws2tcpip.h>
 //#include <iphlpapi.h>

@@ -14,13 +14,13 @@
 // limitations under the License.
 // ==================================================================
 
-#include <SocketIncludes.h>
 #include <gtest/gtest.h>
 
-#include <IpAddress.h>
-#include <SocketError.h>
+#include <strapper/net/IpAddress.h>
+#include <strapper/net/SocketError.h>
+#include <strapper/net/Endian.h>
+
 #include <string>
-#include <algorithm>
 
 namespace strapper { namespace net { namespace test {
 
@@ -81,7 +81,7 @@ TEST_F(UnitTestIpAddress, ToInt)
 {
     ASSERT_EQ(IpAddressV4("0:0:0:0").ToInt(), 0u);
     ASSERT_EQ(IpAddressV4("255:255:255:255").ToInt(), 0xFFFFFFFFu);
-    ASSERT_EQ(IpAddressV4("1:2:3:4").ToInt(), htonl(0x01020304));
+    ASSERT_EQ(IpAddressV4("1:2:3:4").ToInt(), EndianGloss(0x01020304));
 }
 
 TEST_F(UnitTestIpAddress, Any)
@@ -97,8 +97,8 @@ TEST_F(UnitTestIpAddress, ConstructFromInt)
     using Array = std::array<uint8_t, 4>;
     ASSERT_EQ(IpAddressV4(0).ToInt(), 0u);
     ASSERT_EQ(IpAddressV4(0xFFFFFFFF).ToInt(), 0xFFFFFFFFu);
-    ASSERT_EQ(IpAddressV4(htonl(0xABCDEF01)).ToInt(), htonl(0xABCDEF01u));
-    ASSERT_EQ(IpAddressV4(htonl(0xABCDEF01)).ToString(), "171:205:239:1");
+    ASSERT_EQ(IpAddressV4(EndianGloss(0xABCDEF01)).ToInt(), EndianGloss(0xABCDEF01u));
+    ASSERT_EQ(IpAddressV4(EndianGloss(0xABCDEF01)).ToString(), "171:205:239:1");
 }
 
 } } }

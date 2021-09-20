@@ -14,34 +14,28 @@
 // limitations under the License.
 // ==================================================================
 
-#pragma once
+#include "SocketIncludes.h"
+#include <strapper/net/Endian.h>
 
-#include <memory>
+#include <cstring>
 
 namespace strapper { namespace net {
 
-struct SocketFd;
-
-class SocketHandle
+void EndianGloss(int32_t* i32)
 {
-public:
-    SocketHandle();
-    SocketHandle(int family, int socktype, int protocol);
-    explicit SocketHandle(SocketFd const& fd);
-    SocketHandle(SocketHandle const&) = delete;
-    SocketHandle(SocketHandle&& other) noexcept;
-    SocketHandle& operator=(SocketHandle const&) = delete;
-    SocketHandle& operator=(SocketHandle&& other) noexcept;
-    ~SocketHandle();
+    *i32 = htonl(*i32);
+}
 
-    void Close() noexcept;
+int32_t EndianGloss(int32_t i32)
+{
+    return htonl(i32);
+}
 
-    SocketFd const& Get() const;
-    SocketFd const& operator*() const;
-    explicit operator bool() const;
-
-private:
-    std::unique_ptr<SocketFd> m_socketId;
-};
+//! Be careful not to assign anything to this double until it's back to host form.
+void EndianGloss(double* d)
+{
+    auto const ull = htond(*d);
+    std::memcpy(d, &ull, sizeof(ull));
+}
 
 } }

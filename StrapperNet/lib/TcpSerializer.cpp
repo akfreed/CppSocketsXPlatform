@@ -17,6 +17,7 @@
 #include <strapper/net/TcpSerializer.h>
 
 #include <strapper/net/SocketError.h>
+#include <strapper/net/Endian.h>
 
 #include <cassert>
 #include <cstring>
@@ -50,27 +51,14 @@ void TcpSerializer::Write(bool b)
 
 void TcpSerializer::Write(int32_t int32)
 {
-    int32 = htonl(int32);  // convert to big endian
+    EndianGloss(&int32);
     m_socket.Write(&int32, sizeof(int32));
 }
 
 void TcpSerializer::Write(double d)
 {
-    static_assert(sizeof(unsigned long long) == sizeof(double), "Function not compatible with this compiler.");
-
-    uint8_t buffer[sizeof(double)];
-
-    // convert to big endian
-    unsigned long long in;
-    std::memcpy(&in, &d, sizeof(d));
-
-    for (int i = sizeof(double) - 1; i >= 0; --i)
-    {
-        buffer[i] = static_cast<uint8_t>(in & 0xFF);
-        in >>= 8;
-    }
-
-    m_socket.Write(buffer, sizeof(double));
+    EndianGloss(&d);
+    m_socket.Write(&d, sizeof(double));
 }
 
 void TcpSerializer::Write(std::string const& s)
@@ -107,7 +95,7 @@ bool TcpSerializer::Read(int32_t* dest)
         throw ProgramError("Null pointer.");
     bool result = m_socket.Read(dest, sizeof(*dest));
     if (result)
-        *dest = ntohl(*dest);  // convert to host endian
+        EndianGloss(dest);
     return result;
 }
 
@@ -117,21 +105,9 @@ bool TcpSerializer::Read(double* dest)
     if (!dest)
         throw ProgramError("Null pointer.");
 
-    uint8_t buffer[sizeof(double)];
-
-    bool result = m_socket.Read(buffer, sizeof(double));
+    bool result = m_socket.Read(dest, sizeof(*dest));
     if (result)
-    {
-        // convert to host endian
-        unsigned long long out = 0;
-        for (unsigned i = 0; i < sizeof(double); ++i)
-        {
-            out <<= 8;
-            out |= buffer[i];
-        }
-
-        std::memcpy(dest, &out, sizeof(*dest));
-    }
+        EndianGloss(dest);
     return result;
 }
 

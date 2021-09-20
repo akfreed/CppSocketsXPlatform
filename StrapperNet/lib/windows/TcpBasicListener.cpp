@@ -14,9 +14,11 @@
 // limitations under the License.
 // ==================================================================
 
+#include "SocketIncludes.h"
 #include <strapper/net/TcpBasicListener.h>
 
 #include <strapper/net/SocketError.h>
+#include "SocketFd.h"
 
 #include <cassert>
 #include <memory>
@@ -55,10 +57,10 @@ SocketHandle Start(uint16_t port)
         throw SocketError(WSAGetLastError());
     // */
 
-    if (bind(sock.Get(), hostInfoList->ai_addr, static_cast<int>(hostInfoList->ai_addrlen)) == SOCKET_ERROR)
+    if (bind(**sock, hostInfoList->ai_addr, static_cast<int>(hostInfoList->ai_addrlen)) == SOCKET_ERROR)
         throw SocketError(WSAGetLastError());
 
-    if (listen(sock.Get(), 128) == SOCKET_ERROR)
+    if (listen(**sock, 128) == SOCKET_ERROR)
         throw SocketError(WSAGetLastError());
 
     return sock;
@@ -93,7 +95,7 @@ TcpBasicSocket TcpBasicListener::Accept()
     {
         for (int retries = 0; ; ++retries)
         {
-            SOCKET clientId = accept(m_socket.Get(), nullptr, nullptr);  // todo: implement args 2 and 3
+            SOCKET clientId = accept(**m_socket, nullptr, nullptr);  // todo: implement args 2 and 3
             if (clientId == INVALID_SOCKET)
             {
                 int const error = WSAGetLastError();
@@ -101,7 +103,7 @@ TcpBasicSocket TcpBasicListener::Accept()
                     continue;
                 throw SocketError(error);
             }
-            return TcpBasicSocket::Attorney::accept(std::move(SocketHandle(clientId)));
+            return TcpBasicSocket::Attorney::accept(SocketHandle(SocketFd{ clientId }));
         }
     }
     catch (ProgramError const&)
@@ -118,7 +120,7 @@ TcpBasicListener::operator bool() const
 
 void TcpBasicListener::shutdown() noexcept
 {
-    ::shutdown(m_socket.Get(), SD_BOTH);
+    ::shutdown(**m_socket, SD_BOTH);
 }
 
 } }

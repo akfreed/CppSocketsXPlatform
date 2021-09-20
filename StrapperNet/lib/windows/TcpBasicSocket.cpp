@@ -14,9 +14,11 @@
 // limitations under the License.
 // ==================================================================
 
+#include "SocketIncludes.h"
 #include <strapper/net/TcpBasicSocket.h>
 
 #include <strapper/net/SocketError.h>
+#include "SocketFd.h"
 
 #include <cassert>
 #include <memory>
@@ -52,7 +54,7 @@ SocketHandle Connect(std::string const& host, uint16_t port)
     SocketHandle socket(hostInfoList->ai_family, hostInfoList->ai_socktype, hostInfoList->ai_protocol);
     assert(socket);
 
-    if (connect(socket.Get(), hostInfoList->ai_addr, static_cast<int>(hostInfoList->ai_addrlen)) == SOCKET_ERROR)
+    if (connect(**socket, hostInfoList->ai_addr, static_cast<int>(hostInfoList->ai_addrlen)) == SOCKET_ERROR)
         throw SocketError(WSAGetLastError());
 
     return socket;
@@ -89,25 +91,25 @@ bool TcpBasicSocket::IsConnected() const
 void TcpBasicSocket::SetReadTimeout(unsigned milliseconds)
 {
     DWORD const arg = milliseconds;
-    if (setsockopt(m_socket.Get(), SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<char const*>(&arg), sizeof(arg)) == SOCKET_ERROR)
+    if (setsockopt(**m_socket, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<char const*>(&arg), sizeof(arg)) == SOCKET_ERROR)
         throw SocketError(WSAGetLastError());
 }
 
 void TcpBasicSocket::ShutdownSend()
 {
-    if (shutdown(m_socket.Get(), SD_SEND) == SOCKET_ERROR)
+    if (shutdown(**m_socket, SD_SEND) == SOCKET_ERROR)
         throw SocketError(WSAGetLastError());
 }
 
 void TcpBasicSocket::ShutdownReceive()
 {
-    if (shutdown(m_socket.Get(), SD_RECEIVE) == SOCKET_ERROR)
+    if (shutdown(**m_socket, SD_RECEIVE) == SOCKET_ERROR)
         throw SocketError(WSAGetLastError());
 }
 
 void TcpBasicSocket::ShutdownBoth() noexcept
 {
-    shutdown(m_socket.Get(), SD_BOTH);
+    shutdown(**m_socket, SD_BOTH);
 }
 
 //! Shutdown and close the socket.
@@ -125,7 +127,7 @@ void TcpBasicSocket::Write(void const* src, size_t len)
     if (len > std::numeric_limits<int>::max())
         throw ProgramError("Length must be less than int max.");
 
-    if (send(m_socket.Get(), reinterpret_cast<char const*>(src), static_cast<int>(len), 0) == SOCKET_ERROR)
+    if (send(**m_socket, reinterpret_cast<char const*>(src), static_cast<int>(len), 0) == SOCKET_ERROR)
         throw SocketError(WSAGetLastError());
 }
 
@@ -142,7 +144,7 @@ bool TcpBasicSocket::Read(void* dest, size_t len)
             throw ProgramError("Length must be less than int max.");
 
         int const lenAsInt = static_cast<int>(len);
-        int const amountRead = recv(m_socket.Get(), reinterpret_cast<char*>(dest), lenAsInt, MSG_WAITALL);
+        int const amountRead = recv(**m_socket, reinterpret_cast<char*>(dest), lenAsInt, MSG_WAITALL);
         if (amountRead == SOCKET_ERROR)
             throw SocketError(WSAGetLastError());
         if (amountRead == 0 && len > 0) // Graceful close.
@@ -168,7 +170,7 @@ bool TcpBasicSocket::Read(void* dest, size_t len)
 unsigned TcpBasicSocket::DataAvailable()
 {
     unsigned long bytesAvailable = 0;
-    if (ioctlsocket(m_socket.Get(), FIONREAD, &bytesAvailable) == SOCKET_ERROR)
+    if (ioctlsocket(**m_socket, FIONREAD, &bytesAvailable) == SOCKET_ERROR)
         throw SocketError(WSAGetLastError());
 
     if (bytesAvailable > std::numeric_limits<unsigned>::max())

@@ -16,12 +16,12 @@
 
 #include <gtest/gtest.h>
 
-#include <TcpSocket.h>
-#include <TcpSerializer.h>
-#include <TcpListener.h>
-#include <UdpSocket.h>
-#include <SocketError.h>
-#include <UdpSocket.h>
+#include <strapper/net/TcpSocket.h>
+#include <strapper/net/TcpSerializer.h>
+#include <strapper/net/TcpListener.h>
+#include <strapper/net/UdpSocket.h>
+#include <strapper/net/SocketError.h>
+#include <strapper/net/UdpSocket.h>
 #include "TestGlobals.h"
 #include "Timeout.h"
 

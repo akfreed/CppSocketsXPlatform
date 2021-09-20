@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <WinsockContext.h>
+#include <strapper/net/NativeContext.h>
 #include <strapper/net/SocketHandle.h>
 #include <strapper/net/TcpBasicSocket.h>
 
@@ -46,7 +46,7 @@ public:
 private:
     void shutdown() noexcept;
 
-    WinsockContext m_winsockContext;
+    SystemContext m_context;
     SocketHandle m_socket;
 };
 

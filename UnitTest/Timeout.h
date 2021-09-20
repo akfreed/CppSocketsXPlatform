@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <SocketError.h>
+#include <strapper/net/SocketError.h>
 
 #include <thread>
 #include <mutex>

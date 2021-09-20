@@ -14,37 +14,28 @@
 // limitations under the License.
 // ==================================================================
 
+#include "SocketIncludes.h"
 #include <strapper/net/SocketHandle.h>
 
 #include <strapper/net/SocketError.h>
-
-#include <utility>
+#include "SocketFd.h"
 
 namespace strapper { namespace net {
 
+SocketHandle::SocketHandle() = default;
+SocketHandle::SocketHandle(SocketHandle && other) noexcept = default;
+SocketHandle& SocketHandle::operator=(SocketHandle && other) noexcept = default;
+
 SocketHandle::SocketHandle(int family, int socktype, int protocol)
-    : m_socketId(socket(family, socktype, protocol))
+    : m_socketId(new SocketFd{ socket(family, socktype, protocol) })
 {
-    if (m_socketId == INVALID_SOCKET)
+    if (m_socketId->m_fd == INVALID_SOCKET)
         throw SocketError(WSAGetLastError());
 }
 
-SocketHandle::SocketHandle(SOCKET fd)
-    : m_socketId(fd)
+SocketHandle::SocketHandle(SocketFd const& fd)
+    : m_socketId(new SocketFd{ fd })
 { }
-
-SocketHandle::SocketHandle(SocketHandle&& other) noexcept
-    : SocketHandle()
-{
-    std::swap(m_socketId, other.m_socketId);
-}
-
-SocketHandle& SocketHandle::operator=(SocketHandle&& other) noexcept
-{
-    SocketHandle temp(std::move(other));
-    std::swap(m_socketId, temp.m_socketId);
-    return *this;
-}
 
 SocketHandle::~SocketHandle()
 {
@@ -52,20 +43,25 @@ SocketHandle::~SocketHandle()
         Close();
 }
 
-SocketHandle::operator bool() const
-{
-    return m_socketId != INVALID_SOCKET;
-}
-
-SOCKET const& SocketHandle::Get() const
-{
-    return m_socketId;
-}
-
 void SocketHandle::Close() noexcept
 {
-    closesocket(m_socketId);
-    m_socketId = INVALID_SOCKET;
+    closesocket(m_socketId->m_fd);
+    m_socketId->m_fd = INVALID_SOCKET;
+}
+
+SocketFd const& SocketHandle::Get() const
+{
+    return *m_socketId;
+}
+
+SocketFd const& SocketHandle::operator*() const
+{
+    return *m_socketId;
+}
+
+SocketHandle::operator bool() const
+{
+    return m_socketId && m_socketId->m_fd != INVALID_SOCKET;
 }
 
 } }

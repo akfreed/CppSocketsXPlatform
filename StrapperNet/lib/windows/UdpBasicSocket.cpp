@@ -14,10 +14,11 @@
 // limitations under the License.
 // ==================================================================
 
+#include "SocketIncludes.h"
 #include <strapper/net/UdpBasicSocket.h>
 
 #include <strapper/net/SocketError.h>
-#include <strapper/net/IpAddress.h>
+#include "SocketFd.h"
 
 #include <cassert>
 #include <limits>
@@ -37,7 +38,7 @@ SocketHandle MakeSocket(uint16_t myport)
     myInfo.sin_addr.s_addr = htonl(INADDR_ANY);
     myInfo.sin_port = htons(myport);
 
-    if (bind(socket.Get(), reinterpret_cast<sockaddr*>(&myInfo), sizeof(myInfo)) == SOCKET_ERROR)
+    if (bind(**socket, reinterpret_cast<sockaddr*>(&myInfo), sizeof(myInfo)) == SOCKET_ERROR)
         throw SocketError(WSAGetLastError());
 
     return socket;
@@ -68,13 +69,13 @@ bool UdpBasicSocket::IsOpen() const
 void UdpBasicSocket::SetReadTimeout(unsigned milliseconds)
 {
     DWORD const arg = milliseconds;
-    if (setsockopt(m_socket.Get(), SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<char const*>(&arg), sizeof(arg)) == SOCKET_ERROR)
+    if (setsockopt(**m_socket, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<char const*>(&arg), sizeof(arg)) == SOCKET_ERROR)
         throw SocketError(WSAGetLastError());
 }
 
 void UdpBasicSocket::Shutdown() noexcept
 {
-    shutdown(m_socket.Get(), SD_BOTH);
+    shutdown(**m_socket, SD_BOTH);
 }
 
 // Shutdown and close the socket.
@@ -102,7 +103,7 @@ void UdpBasicSocket::Write(void const* src, size_t len, IpAddressV4 const& ipAdd
     if (success != 1)
         throw ProgramError("Unknown error.");
 
-    int const amountWritten = sendto(m_socket.Get(), reinterpret_cast<const char*>(src), static_cast<int>(len), 0, reinterpret_cast<sockaddr*>(&info), sizeof(info));
+    int const amountWritten = sendto(**m_socket, reinterpret_cast<const char*>(src), static_cast<int>(len), 0, reinterpret_cast<sockaddr*>(&info), sizeof(info));
     if (amountWritten == SOCKET_ERROR)
         throw SocketError(WSAGetLastError());
 }
@@ -158,7 +159,7 @@ unsigned UdpBasicSocket::Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddr
     if (maxlen > std::numeric_limits<int>::max())
         throw ProgramError("Max length must be less than int max.");
 
-    int const amountRead = recvfrom(m_socket.Get(), reinterpret_cast<char*>(dest), static_cast<int>(maxlen), 0, reinterpret_cast<sockaddr*>(&info), &infoLen);
+    int const amountRead = recvfrom(**m_socket, reinterpret_cast<char*>(dest), static_cast<int>(maxlen), 0, reinterpret_cast<sockaddr*>(&info), &infoLen);
     if (amountRead == 0)
         throw ProgramError("Socket was closed.");
     if (amountRead == SOCKET_ERROR)
@@ -181,7 +182,7 @@ unsigned UdpBasicSocket::Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddr
 unsigned UdpBasicSocket::DataAvailable() const
 {
     unsigned long bytesAvailable = 0;
-    if (ioctlsocket(m_socket.Get(), FIONREAD, &bytesAvailable) == SOCKET_ERROR)
+    if (ioctlsocket(**m_socket, FIONREAD, &bytesAvailable) == SOCKET_ERROR)
         throw SocketError(WSAGetLastError());
 
     if (bytesAvailable > std::numeric_limits<unsigned>::max())

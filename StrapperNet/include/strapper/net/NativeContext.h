@@ -16,21 +16,46 @@
 
 #pragma once
 
-#include "SocketIncludes.h"
-
 #include <memory>
+#include <mutex>
 
 namespace strapper { namespace net {
 
-class Winsock;
-
-class WinsockContext
+class NativeContext
 {
 public:
-    WinsockContext();
+    static std::shared_ptr<NativeContext> Get()
+    {
+        static std::weak_ptr<NativeContext> s_instance;
+
+        std::lock_guard<std::mutex> lock(s_mutex);
+
+        std::shared_ptr<NativeContext> context = s_instance.lock();
+        if (!context)
+        {
+            context.reset(new NativeContext());
+            s_instance = context;
+        }
+        return context;
+    }
+
+    NativeContext(NativeContext const&) = delete;
+    NativeContext(NativeContext&&) = delete;
+    NativeContext& operator=(NativeContext const&) = delete;
+    NativeContext& operator=(NativeContext&&) = delete;
+
+    ~NativeContext();
 
 private:
-    std::shared_ptr<Winsock> m_handle;
+    NativeContext();
+
+    static std::mutex s_mutex;
+};
+
+class SystemContext
+{
+private:
+    std::shared_ptr<NativeContext> m_context = NativeContext::Get();
 };
 
 } }

@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <WinsockContext.h>
+#include <strapper/net/NativeContext.h>
 #include <strapper/net/SocketHandle.h>
 
 #include <cstddef>
@@ -60,7 +60,7 @@ public:
 private:
     explicit TcpBasicSocket(SocketHandle&& socket);
 
-    WinsockContext m_winsockContext;
+    SystemContext m_context;
     SocketHandle m_socket;
 };
 
