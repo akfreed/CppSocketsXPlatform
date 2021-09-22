@@ -1,14 +1,8 @@
+file(GLOB_RECURSE SRCS *.h *.cpp)
+
 # Unit Tests
 add_executable(UnitTest
-    UnitTestBasic.cpp
-    UnitTestEndian.cpp
-    UnitTestError.cpp
-    UnitTestSerialize.cpp
-    TestGlobals.cpp
-    TestGlobals.h
-    Timeout.h
-    UnitTestIpAddress.cpp
-    UnitTestMain.cpp
+    ${SRCS}
 )
 target_link_libraries(UnitTest
     gtest

@@ -50,7 +50,7 @@ SocketHandle Connect(std::string const& host, uint16_t port)
     }
 
     if (hostInfoList->ai_addrlen > std::numeric_limits<int>::max())
-        throw ProgramError("getaddrinfo returned invalid length.")
+        throw ProgramError("getaddrinfo returned invalid length.");
 
     SocketHandle socket(hostInfoList->ai_family, hostInfoList->ai_socktype, hostInfoList->ai_protocol);
     assert(socket);
