@@ -94,7 +94,6 @@ TEST_F(UnitTestIpAddress, Any)
 
 TEST_F(UnitTestIpAddress, ConstructFromInt)
 {
-    using Array = std::array<uint8_t, 4>;
     ASSERT_EQ(IpAddressV4(0).ToInt(), 0u);
     ASSERT_EQ(IpAddressV4(0xFFFFFFFF).ToInt(), 0xFFFFFFFFu);
     ASSERT_EQ(IpAddressV4(EndianGloss(0xABCDEF01)).ToInt(), EndianGloss(0xABCDEF01u));

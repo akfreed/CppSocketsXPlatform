@@ -14,11 +14,13 @@
 // limitations under the License.
 // ==================================================================
 
-#include "SocketIncludes.h"
 #include <strapper/net/SocketHandle.h>
 
 #include <strapper/net/SocketError.h>
 #include "SocketFd.h"
+
+#include <sys/socket.h>
+#include <unistd.h>
 
 namespace strapper { namespace net {
 
@@ -29,8 +31,8 @@ SocketHandle& SocketHandle::operator=(SocketHandle && other) noexcept = default;
 SocketHandle::SocketHandle(int family, int socktype, int protocol)
     : m_socketId(new SocketFd{socket(family, socktype, protocol)})
 {
-    if (m_socketId->m_fd == INVALID_SOCKET)
-        throw SocketError(WSAGetLastError());
+    if (m_socketId->m_fd == SocketFd::INVALID_SOCKET)
+        throw SocketError(errno);
 }
 
 SocketHandle::SocketHandle(SocketFd const& fd)
@@ -47,7 +49,7 @@ void SocketHandle::Close() noexcept
 {
     if (m_socketId)
     {
-        closesocket(m_socketId->m_fd);
+        close(m_socketId->m_fd); // todo: Report errors somehow.
         m_socketId.reset();
     }
 }
@@ -64,7 +66,7 @@ SocketFd const& SocketHandle::operator*() const
 
 SocketHandle::operator bool() const
 {
-    return m_socketId && m_socketId->m_fd != INVALID_SOCKET;
+    return m_socketId && m_socketId->m_fd != SocketFd::INVALID_SOCKET;
 }
 
 } }

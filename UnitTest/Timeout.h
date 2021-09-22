@@ -32,9 +32,10 @@ public:
     Timeout() = default;
 
     template <typename Rep, typename Period>
-    explicit Timeout(const std::chrono::duration<Rep, Period>& timeout)
-        : m_thread(&Timeout::WaitThread<Rep, Period>, this, timeout)
-    { }
+    explicit Timeout(std::chrono::duration<Rep, Period> timeout)
+    {
+        m_thread = std::thread(&Timeout::WaitThread<Rep, Period>, this, timeout);
+    }
 
     Timeout(const Timeout&) = delete;
     Timeout(Timeout&&) = delete;
@@ -60,7 +61,7 @@ public:
 
 private:
     template <typename Rep, typename Period>
-    void WaitThread(const std::chrono::duration<Rep, Period>& timeout)
+    void WaitThread(std::chrono::duration<Rep, Period> timeout)
     {
         try
         {
@@ -79,10 +80,10 @@ private:
         }
     }
 
-    std::thread m_thread;
     std::mutex m_mutex;
     std::condition_variable m_cv;
     bool m_complete = false;
+    std::thread m_thread;
 };
 
 } } }

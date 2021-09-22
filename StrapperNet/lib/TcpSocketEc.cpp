@@ -80,7 +80,7 @@ void TcpSocketEc::Write(void const* src, size_t len, ErrorCode* ec)
     {
         m_socket.Write(src, len);
     }
-    catch (ProgramError const)
+    catch (ProgramError const&)
     {
         if (ec)
             *ec = ErrorCode(std::current_exception());
@@ -93,7 +93,7 @@ bool TcpSocketEc::Read(void* dest, size_t len, ErrorCode* ec)
     {
         return m_socket.Read(dest, len);
     }
-    catch (ProgramError const)
+    catch (ProgramError const&)
     {
         if (ec)
             *ec = ErrorCode(std::current_exception());
@@ -107,7 +107,7 @@ unsigned TcpSocketEc::DataAvailable(ErrorCode* ec)
     {
         return m_socket.DataAvailable();
     }
-    catch (ProgramError const)
+    catch (ProgramError const&)
     {
         if (ec)
             *ec = ErrorCode(std::current_exception());

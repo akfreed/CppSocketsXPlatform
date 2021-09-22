@@ -4,6 +4,7 @@ add_executable(UnitTest
     UnitTestEndian.cpp
     UnitTestError.cpp
     UnitTestSerialize.cpp
+    TestGlobals.cpp
     TestGlobals.h
     Timeout.h
     UnitTestIpAddress.cpp

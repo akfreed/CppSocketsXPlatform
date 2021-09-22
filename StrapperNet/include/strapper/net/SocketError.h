@@ -46,8 +46,8 @@ public:
     { }
 
     explicit SocketError(int nativeErrorCode)
-        : ProgramError(nativeErrorCode ? "SocketError: A socket API call returned " + ErrorCode::GetErrorName(nativeErrorCode) + "."
-                                       : "SocketError: Unknown cause.")
+        : ProgramError(nativeErrorCode != 0 ? "SocketError: A socket API call returned " + ErrorCode::GetErrorName(nativeErrorCode) + "."
+                                            : "SocketError: Unknown cause.")
         , m_nativeCode(nativeErrorCode)
     { }
 

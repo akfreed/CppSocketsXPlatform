@@ -48,12 +48,12 @@ void TerminateHandler()
 
 } } }
 
-int main()
+int main(int argc, char** argv)
 {
     try
     {
         std::set_terminate(strapper::net::test::TerminateHandler);
-        testing::InitGoogleTest();
+        testing::InitGoogleTest(&argc, argv);
         return RUN_ALL_TESTS();
     }
     catch (std::exception const& e)

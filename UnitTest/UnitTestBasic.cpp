@@ -30,6 +30,7 @@
 #include <chrono>
 #include <algorithm>
 #include <thread>
+#include <vector>
 
 namespace strapper { namespace net { namespace test {
 
@@ -79,7 +80,7 @@ TEST_F(UnitTestBasic, TcpSendRecvBuf)
     sender.Write(sentData, 3);
 
     ASSERT_TRUE(receiver.Read(recvData, 2));
-    auto expected = { 4, 5, 3, 4, 5, 0 };
+    std::vector<int> expected = { 4, 5, 3, 4, 5, 0 };
     ASSERT_TRUE(std::equal(recvData, recvData + 6, expected.begin()));
 
     ASSERT_TRUE(receiver.Read(recvData, 4));
@@ -109,7 +110,7 @@ TEST_F(UnitTestBasic, UdpSendRecvBuf)
 
     IpAddressV4 senderIp;
     ASSERT_EQ(receiver.Read(recvData, 3, &senderIp, &senderPort), 3);
-    auto expected = { 4, 5, 6, 4, 5, 0 };
+    std::vector<char> expected = { 4, 5, 6, 4, 5, 0 };
     ASSERT_TRUE(std::equal(recvData, recvData + 6, expected.begin()));
     ASSERT_EQ(senderIp.ToString(), ip.ToString());
 

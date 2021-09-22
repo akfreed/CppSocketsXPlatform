@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2021 Alexander K. Freed
+// Copyright 2018, 2021 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,23 +14,10 @@
 // limitations under the License.
 // ==================================================================
 
-#pragma once
+#include "TestGlobals.h"
 
-namespace strapper { namespace net {
+namespace strapper { namespace net { namespace test {
 
-struct SocketFd
-{
-    static int constexpr INVALID_SOCKET = -1;
-    static int constexpr SOCKET_ERROR = -1;
+char constexpr TestGlobals::localhost[];
 
-    explicit SocketFd(int fd)
-        : m_fd(fd)
-    { }
-
-    int& operator*() { return m_fd; }
-    int const& operator*() const { return m_fd; }
-
-    int m_fd = INVALID_SOCKET;
-};
-
-} }
+} } }

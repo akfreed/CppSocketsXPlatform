@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2018 Alexander K. Freed
+// Copyright 2018, 2021 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,9 +22,9 @@ namespace strapper { namespace net { namespace test {
 
 struct TestGlobals
 {
-    static constexpr char localhost[] = "127.0.0.1";
-    static constexpr uint16_t port = 11111;
-    static constexpr uint16_t port2 = 11112;
+    static char constexpr localhost[] = "127.0.0.1";
+    static uint16_t constexpr port = 11111;
+    static uint16_t constexpr  port2 = 11112;
 };
 
 } } }

@@ -128,7 +128,6 @@ TcpSocket TcpListener::Accept()
     {
         std::unique_lock<std::mutex> lock(m_lock);
         m_state = State::CLOSED;
-        m_listener.Close();
         m_acceptCancel.notify_all();
         throw;
     }

@@ -21,6 +21,7 @@
 #include <strapper/net/UdpSocket.h>
 #include <strapper/net/IpAddress.h>
 
+#include <cstring>
 #include <string>
 #include <iostream>
 

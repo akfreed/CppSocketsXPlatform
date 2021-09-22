@@ -100,7 +100,7 @@ TEST_F(UnitTestError, DISABLED_CloseFromOtherThread)
 {
     Timeout timeout(std::chrono::seconds(3));
 
-    std::atomic<bool> hasUnblocked = false;
+    std::atomic<bool> hasUnblocked{false};
 
     // Read on a separate thread.
     auto task = std::async(std::launch::async, [this, &hasUnblocked]() {

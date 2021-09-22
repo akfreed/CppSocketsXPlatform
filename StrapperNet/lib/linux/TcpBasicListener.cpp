@@ -14,11 +14,13 @@
 // limitations under the License.
 // ==================================================================
 
-#include "SocketIncludes.h"
 #include <strapper/net/TcpBasicListener.h>
 
 #include <strapper/net/SocketError.h>
 #include "SocketFd.h"
+
+#include <sys/socket.h>
+#include <netdb.h>
 
 #include <cassert>
 #include <memory>
@@ -32,7 +34,7 @@ SocketHandle Start(uint16_t port)
     addrinfo hostInfo{};
     hostInfo.ai_family = AF_INET;
     hostInfo.ai_socktype = SOCK_STREAM;
-    hostInfo.ai_protocol = IPPROTO_TCP;
+    hostInfo.ai_protocol = IPPROTO_TCP; //todo: confirm
     hostInfo.ai_flags = AI_PASSIVE;
 
     auto lFreeList = [](addrinfo* p) { freeaddrinfo(p); };
@@ -52,17 +54,15 @@ SocketHandle Start(uint16_t port)
     SocketHandle socket = SocketHandle(hostInfoList->ai_family, hostInfoList->ai_socktype, hostInfoList->ai_protocol);
     assert(socket);
 
-    /*
-    BOOL const yes = true;
-    if (setsockopt(**socket, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<char const*>(&yes), sizeof(yes)) == SOCKET_ERROR)
-        throw SocketError(WSAGetLastError());
-    // */
+    int const yes = 1;
+    if (setsockopt(**socket, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) == SocketFd::SOCKET_ERROR)
+        throw SocketError(errno);
 
-    if (bind(**socket, hostInfoList->ai_addr, static_cast<int>(hostInfoList->ai_addrlen)) == SOCKET_ERROR)
-        throw SocketError(WSAGetLastError());
+    if (bind(**socket, hostInfoList->ai_addr, hostInfoList->ai_addrlen) == SocketFd::SOCKET_ERROR)
+        throw SocketError(errno);
 
-    if (listen(**socket, 128) == SOCKET_ERROR)
-        throw SocketError(WSAGetLastError());
+    if (listen(**socket, 128) == SocketFd::SOCKET_ERROR)
+        throw SocketError(errno);
 
     return socket;
 }
@@ -96,12 +96,11 @@ TcpBasicSocket TcpBasicListener::Accept()
     {
         while (true)
         {
-            SOCKET clientId = accept(**m_socket, nullptr, nullptr);  // todo: implement args 2 and 3
-            if (clientId != INVALID_SOCKET)
+            int clientId = accept(**m_socket, nullptr, nullptr);  // todo: implement args 2 and 3
+            if (clientId != SocketFd::INVALID_SOCKET)
                 return TcpBasicSocket::Attorney::accept(SocketHandle(SocketFd{ clientId }));
-            int const error = WSAGetLastError();
-            if (error != WSAECONNRESET)
-                throw SocketError(error);
+            if (errno != ECONNABORTED && errno != EINTR)
+                throw SocketError(errno);
         }
     }
     catch (ProgramError const&)
@@ -119,7 +118,7 @@ TcpBasicListener::operator bool() const
 void TcpBasicListener::shutdown() noexcept
 {
     if (m_socket)
-        ::shutdown(**m_socket, SD_BOTH);
+        ::shutdown(**m_socket, SHUT_RDWR);
 }
 
 } }

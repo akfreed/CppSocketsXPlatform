@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2018 Alexander K. Freed
+// Copyright 2021 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,16 +14,33 @@
 // limitations under the License.
 // ==================================================================
 
-// The WinsockContextManager is used for the Windows version of the API. It
-// is just a dummy class in the Linux API.
+#include <strapper/net/Endian.h>
 
-#pragma once
+#include <arpa/inet.h>
+#include <endian.h>
 
-class WinsockContextManager
+#include <cstring>
+
+namespace strapper { namespace net {
+
+void EndianGloss(int32_t* i32)
 {
-public:
-    bool IsInitialized()
-    {
-        return true;
-    }
-};
+    *i32 = htonl(*i32);
+}
+
+int32_t EndianGloss(int32_t i32)
+{
+    return htonl(i32);
+}
+
+//! Be careful not to assign anything to this double until it's back to host form.
+void EndianGloss(double* d)
+{
+    static_assert(sizeof(*d) == 8, "Function not compatible with this compiler.");
+    uint64_t u64;
+    std::memcpy(&u64, d, sizeof(u64));
+    u64 = htobe64(u64);
+    std::memcpy(d, &u64, sizeof(u64));
+}
+
+} }

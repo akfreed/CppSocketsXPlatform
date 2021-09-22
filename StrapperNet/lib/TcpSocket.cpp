@@ -185,7 +185,6 @@ bool TcpSocket::Read(void* dest, size_t len)
     {
         std::unique_lock<std::mutex> lock(m_socketLock);
         m_state = State::CLOSED;
-        m_socket.Close();
         m_readCancel.notify_all();
         throw;
     }

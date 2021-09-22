@@ -14,11 +14,14 @@
 // limitations under the License.
 // ==================================================================
 
-#include "SocketIncludes.h"
 #include <strapper/net/TcpBasicSocket.h>
 
 #include <strapper/net/SocketError.h>
 #include "SocketFd.h"
+
+#include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <netdb.h>
 
 #include <cassert>
 #include <memory>
@@ -49,14 +52,14 @@ SocketHandle Connect(std::string const& host, uint16_t port)
         hostInfoList.reset(hil);
     }
 
-    if (hostInfoList->ai_addrlen > std::numeric_limits<int>::max())
-        throw ProgramError("getaddrinfo returned invalid length.")
-
     SocketHandle socket(hostInfoList->ai_family, hostInfoList->ai_socktype, hostInfoList->ai_protocol);
     assert(socket);
 
-    if (connect(**socket, hostInfoList->ai_addr, static_cast<int>(hostInfoList->ai_addrlen)) == SOCKET_ERROR)
-        throw SocketError(WSAGetLastError());
+    while (connect(**socket, hostInfoList->ai_addr, hostInfoList->ai_addrlen) == SocketFd::SOCKET_ERROR)
+    {
+        if (errno != EINTR)
+            throw SocketError(errno);
+    }
 
     return socket;
 }
@@ -84,34 +87,39 @@ bool TcpBasicSocket::IsConnected() const
     return !!m_socket;
 }
 
-//! If this timeout is reached, the socket will be closed. Thank you, Windows.
-//! Only use this feature as a robustness mechanism.
-//! (e.g. so you don't block forever if the connection is somehow silently lost.)
-//! Don't use this as a form of non-blocking read.
+// To keep compatibility with the Windows version, if this timeout is reached,
+// the socket will be closed. Thank you, Windows.
+// Only use this feature as a robustness mechanism.
+// (e.g. so you don't block forever if the connection is somehow silently lost.)
+// Don't use this as a form of non-blocking read.
+// after setting this, a timed out read will return -1
+// you should check errno
 //! 0 = no timeout (forever) and is the default setting
 void TcpBasicSocket::SetReadTimeout(unsigned milliseconds)
 {
-    DWORD const arg = milliseconds;
-    if (setsockopt(**m_socket, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<char const*>(&arg), sizeof(arg)) == SOCKET_ERROR)
-        throw SocketError(WSAGetLastError());
+    timeval t;
+    t.tv_sec = milliseconds / 1000;
+    t.tv_usec = (milliseconds % 1000) * 1000;
+    if (setsockopt(**m_socket, SOL_SOCKET, SO_RCVTIMEO, &t, sizeof(timeval)) == SocketFd::SOCKET_ERROR)
+        throw SocketError(errno);
 }
 
 void TcpBasicSocket::ShutdownSend()
 {
-    if (shutdown(**m_socket, SD_SEND) == SOCKET_ERROR)
-        throw SocketError(WSAGetLastError());
+    if (shutdown(**m_socket, SHUT_WR) == SocketFd::SOCKET_ERROR)
+        throw SocketError(errno);
 }
 
 void TcpBasicSocket::ShutdownReceive()
 {
-    if (shutdown(**m_socket, SD_RECEIVE) == SOCKET_ERROR)
-        throw SocketError(WSAGetLastError());
+    if (shutdown(**m_socket, SHUT_RD) == SocketFd::SOCKET_ERROR)
+        throw SocketError(errno);
 }
 
 void TcpBasicSocket::ShutdownBoth() noexcept
 {
     if (m_socket)
-        shutdown(**m_socket, SD_BOTH);
+        shutdown(**m_socket, SHUT_RDWR);
 }
 
 //! Shutdown and close the socket.
@@ -125,11 +133,12 @@ void TcpBasicSocket::Write(void const* src, size_t len)
 {
     if (len == 0)
         throw ProgramError("Length must be greater than 0.");
-    if (len > std::numeric_limits<int>::max())
-        throw ProgramError("Length must be less than int max.");
 
-    if (send(**m_socket, reinterpret_cast<char const*>(src), static_cast<int>(len), 0) == SOCKET_ERROR)
-        throw SocketError(WSAGetLastError());
+    while (send(**m_socket, src, len, 0) == SocketFd::SOCKET_ERROR)
+    {
+        if (errno != EINTR)
+            throw SocketError(errno);
+    }
 }
 
 //! Reads len bytes into given buffer.
@@ -141,21 +150,25 @@ bool TcpBasicSocket::Read(void* dest, size_t len)
     {
         if (len == 0)
             throw ProgramError("Length must be greater than 0.");
-        if (len > std::numeric_limits<int>::max())
-            throw ProgramError("Length must be less than int max.");
+        if (len > static_cast<size_t>(std::numeric_limits<ssize_t>::max()))
+            throw ProgramError("Length must be less than ssize_t max.");
+        ssize_t const lenAsLongInt = static_cast<ssize_t>(len);
 
-        int const lenAsInt = static_cast<int>(len);
-        int const amountRead = recv(**m_socket, reinterpret_cast<char*>(dest), lenAsInt, MSG_WAITALL);
-        if (amountRead == SOCKET_ERROR)
-            throw SocketError(WSAGetLastError());
-        if (amountRead == 0 && len > 0) // Graceful close.
+        ssize_t amountRead = 0;
+        do
+        {
+            amountRead = recv(**m_socket, dest, len, MSG_WAITALL);
+        } while (amountRead == SocketFd::SOCKET_ERROR && errno == EINTR);
+        if (amountRead == SocketFd::SOCKET_ERROR)
+            throw SocketError(errno);
+        if (amountRead == lenAsLongInt)
+            return true;
+        if (amountRead == 0) // Graceful close.
         {
             ShutdownReceive();
             return false;
         }
-        if (amountRead != lenAsInt)
-            throw ProgramError("Other side closed before all bytes were received.");
-        return true;
+        throw ProgramError("Other side closed before all bytes were received.");
     }
     catch (ProgramError const&)
     {
@@ -170,14 +183,14 @@ bool TcpBasicSocket::Read(void* dest, size_t len)
 //! May be smaller than the actual number of bytes available
 unsigned TcpBasicSocket::DataAvailable()
 {
-    unsigned long bytesAvailable = 0;
-    if (ioctlsocket(**m_socket, FIONREAD, &bytesAvailable) == SOCKET_ERROR)
-        throw SocketError(WSAGetLastError());
+    int bytesAvailable = 0;
+    if (ioctl(**m_socket, FIONREAD, &bytesAvailable) == SocketFd::SOCKET_ERROR)
+        throw SocketError(errno);
 
-    if (bytesAvailable > std::numeric_limits<unsigned>::max())
-        bytesAvailable = std::numeric_limits<unsigned>::max();
+    if (bytesAvailable < 0)
+        throw ProgramError("ioctl returned invalid value.");
 
-    return bytesAvailable;
+    return static_cast<unsigned>(bytesAvailable);
 }
 
 TcpBasicSocket::operator bool() const
