@@ -95,27 +95,29 @@ TEST_F(UnitTestError, UdpReadTimeout)
 }
 
 // Tests that closing the socket breaks a blocking read on a separate thread.
-// todo: Fix for windows by closing the socket before waiting.
-TEST_F(UnitTestError, DISABLED_CloseFromOtherThread)
+TEST_F(UnitTestError, UnblockRead)
 {
     Timeout timeout(std::chrono::seconds(3));
 
-    std::atomic<bool> hasUnblocked{false};
-
     // Read on a separate thread.
-    auto task = std::async(std::launch::async, [this, &hasUnblocked]() {
+    auto task = std::async(std::launch::async, [this]() {
         char buf[1];
-        m_receiver.Read(buf, 1);
-        hasUnblocked = true;
+        try
+        {
+            m_receiver.Read(buf, 1);
+        }
+        catch (std::exception const& e)
+        {
+            std::cout << e.what() << std::endl;
+        }
     });
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(200));
     // Make sure the read is still blocking.
-    ASSERT_FALSE(hasUnblocked) << (m_receiver.IsConnected() ? "Socket returned from read too early." : "Socket closed.");
-
+    ASSERT_EQ(task.wait_for(std::chrono::milliseconds(200)), std::future_status::timeout) << (m_receiver.IsConnected() ? "Socket returned from read too early." : "Socket closed.");
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
-    m_receiver.Close();  // This call should block until the operation is done.
-    ASSERT_FALSE(m_receiver.IsConnected());
+    m_receiver.Close(); // This call should block until the operation is done.
+    ASSERT_FALSE(m_receiver);
+    task.wait();
 }
 
 } } }

@@ -111,7 +111,11 @@ void TcpBasicSocket::ShutdownReceive()
 void TcpBasicSocket::ShutdownBoth() noexcept
 {
     if (m_socket)
+    {
         shutdown(**m_socket, SD_BOTH);
+        // In winsock, shutdown doesn't cancel a blocking read.
+        CancelIoEx(reinterpret_cast<HANDLE>(**m_socket), nullptr);
+    }
 }
 
 //! Shutdown and close the socket.
