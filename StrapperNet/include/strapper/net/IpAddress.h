@@ -26,6 +26,7 @@ class IpAddressV4
 {
 public:
     static IpAddressV4 const Any;
+    static IpAddressV4 const Loopback;
 
     IpAddressV4() = default;
     IpAddressV4(std::string const& ip);
