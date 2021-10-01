@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2018 Alexander K. Freed
+// Copyright 2021 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,190 +14,54 @@
 // limitations under the License.
 // ==================================================================
 
-// Contains main and some non-templated utility functions.
+#include <gtest/gtest.h>
 
-#include "TcpListener.h"
-#include "TcpSocket.h"
-#include "UdpSocket.h"
-
-#include <cstring>
-#include <string>
-#include <vector>
-#include <array>
 #include <iostream>
 
-#include "TestReport.h"
+namespace strapper { namespace net { namespace test {
 
-#include "UnitTestMain.h"
-
-
-//============================================================================
-// prototypes
-
-extern TestReport TestBasic();
-extern TestReport TestEndian();
-extern TestReport TestError();
-
-
-//============================================================================
-// globals
-
-bool g_mustTerminate = false;
-    // The main thread must call std::terminate() instead of return
-    // This is used when a thread could not be joined, but the program could continue.
-    // For example, a thread blocked on read and never returned.
-
-
-//============================================================================
-// non-templated utility functions 
-
-TestReport SelfConnect(const char* port, TcpSocket& clientOut, TcpSocket& hostOut)
+void TerminateHandler()
 {
-    std::string portString(port);
-    std::string name = "SelfConnect (port " + portString + ")";
-    TestReport report(std::move(name), "Creates a TCP connection to 127.0.0.1. Starts a listener, connects/accepts, then closes the listener.");
-
-    TcpListener listener(port);
-    if (!listener.IsValid())
+    std::exception_ptr currentException = std::current_exception();
+    std::cout << "std::terminate called." << std::endl;
+    if (!currentException)
     {
-        report.ResultNotes = "Unable to start listener.";
-        return report;
+        std::cout << "    No current exception." << std::endl;
     }
-
-    TcpSocket newClient("127.0.0.1", port);
-    if (!newClient.IsConnected())
-    {
-        report.ResultNotes = "Unable to connect client to listener.";
-        return report;
-    }
-
-    TcpSocket newHost = listener.Accept();
-    if (!newClient.IsConnected())
-    {
-        report.ResultNotes = "Accept error.";
-        return report;
-    }
-
-    clientOut = std::move(newClient);
-    hostOut = std::move(newHost);
-
-    report.Passed = true;
-    return report;
-}
-
-
-TestReport SelfConnect(unsigned short port, UdpSocket& clientOut, UdpSocket& hostOut)
-{
-    std::string portString = std::to_string(port);
-    std::string name = "SelfConnect (port " + portString + ")";
-    TestReport report(std::move(name), "Opens 2 UDP sockets. One is bound to the given port. Both point to 127.0.0.1.");
-
-    clientOut = UdpSocket("127.0.0.1", port);
-    if (!IsValidSocket(clientOut))
-    {
-        report.ResultNotes = "Unable to open host socket.";
-        return report;
-    }
-
-    hostOut = UdpSocket(port);
-    if (!IsValidSocket(hostOut))
-    {
-        report.ResultNotes = "Unable to open client socket.";
-        return report;
-    }
-
-    report.Passed = true;
-    return report;
-}
-
-
-// These 3 functions allow a unifying function call API even though the functions are named differently for UdpSockets
-bool IsValidSocket(TcpSocket& socket)
-{
-    return socket.IsConnected();
-}
-
-
-bool IsValidSocket(TcpListener& listener)
-{
-    return listener.IsValid();
-}
-
-
-bool IsValidSocket(UdpSocket& socket)
-{
-    return socket.IsValid();
-}
-
-
-//----------------------------------------------------------------------------
-
-static void DisplayResults(const TestReport& report, std::string tabbing="")
-{
-    std::string message;
-
-    if (report.Skipped || report.FailedAssumptions)
-        message = "[SKIP] " + report.Name;
-    else if (report.Passed)
-        message = "[ OK ] " + report.Name;
     else
-        message = "[FAIL] " + report.Name;
-
-    if (report.ResultNotes != "")
-        message += " - " + report.ResultNotes;
-
-    std::cout << tabbing << message << std::endl;
-
-    // recursive call
-    for (auto subtest : report.SubTests)
-        DisplayResults(subtest, tabbing + "  ");
-}
-
-
-//============================================================================
-// Test Main
-
-static TestReport TestMain()
-{
-    TestReport top("Socket Test Suite", "");
-
-    WinsockContextManager wcm;
-    if (!wcm.IsInitialized())
     {
-        top.ResultNotes = "Unable to initialize winsock.\n";
-        return top;
-    }
-
-    top.SubTests.push_back(TestBasic());
-    top.SubTests.push_back(TestEndian());
-    top.SubTests.push_back(TestError());
-
-    top.Passed = true;
-    for (auto& subtest : top.SubTests)
-    {
-        if (!subtest.Passed)
+        try
         {
-            top.Passed = false;
-            break;
+            std::rethrow_exception(currentException);
+        }
+        catch (std::exception const& e)
+        {
+            std::cout << "    what: " << e.what() << std::endl;
+        }
+        catch (...)
+        {
+            std::cout << "    Unknown exception." << std::endl;
         }
     }
-
-    return top;
+    std::abort();
 }
 
+} } }
 
-//============================================================================
-// main
-
-int main()
+int main(int argc, char** argv)
 {
-    std::cout << "Running Tests..." << std::endl;
-
-    TestReport report = TestMain();
-    DisplayResults(report);
-
-    if (g_mustTerminate)
-        std::terminate();
-    else
-        return EXIT_SUCCESS;
+    try
+    {
+        std::set_terminate(strapper::net::test::TerminateHandler);
+        testing::InitGoogleTest(&argc, argv);
+        return RUN_ALL_TESTS();
+    }
+    catch (std::exception const& e)
+    {
+        std::cout << "Exception: " << e.what() << std::endl;
+    }
+    catch (...)
+    {
+        std::cout << "Unknown Exception." << std::endl;
+    }
 }

@@ -14,13 +14,43 @@
 // limitations under the License.
 // ==================================================================
 
-#pragma once
+#include "SocketIncludes.h"
+#include "NativeContext.h"
 
-#include <cstdint>
+#include <strapper/net/SocketError.h>
 
 namespace strapper { namespace net {
 
-void TcpEchoServer(uint16_t port);
-void UdpEchoServer(uint16_t port);
+std::mutex NativeContext::s_mutex;
+
+std::shared_ptr<NativeContext> NativeContext::Get()
+{
+    static std::weak_ptr<NativeContext> s_instance;
+
+    std::lock_guard<std::mutex> lock(s_mutex);
+
+    std::shared_ptr<NativeContext> context = s_instance.lock();
+    if (!context)
+    {
+        context.reset(new NativeContext());
+        s_instance = context;
+    }
+    return context;
+}
+
+// Lock before calling.
+NativeContext::NativeContext()
+{
+    WSADATA wsaData{};
+    int const result = WSAStartup(MAKEWORD(2, 2), &wsaData);
+    if (result != 0)
+        throw SocketError(result);
+}
+
+NativeContext::~NativeContext()
+{
+    std::lock_guard<std::mutex> lock(s_mutex);
+    WSACleanup();
+}
 
 } }

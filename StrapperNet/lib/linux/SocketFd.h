@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2018, 2021 Alexander K. Freed
+// Copyright 2021 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,27 +14,23 @@
 // limitations under the License.
 // ==================================================================
 
-#include "EchoServers.h"
+#pragma once
 
-#include <exception>
-#include <iostream>
+namespace strapper { namespace net {
 
-using namespace strapper::net;
-
-int main()
+struct SocketFd
 {
-    try
-    {
-        TcpEchoServer(11111);
-        return EXIT_SUCCESS;
-    }
-    catch (std::exception const& e)
-    {
-        std::cout << "Exception occured.\n" << e.what() << std::endl;
-    }
-    catch (...)
-    {
-        std::cout << "Unknown exception occured." << std::endl;
-    }
-    return EXIT_FAILURE;
-}
+    static int constexpr INVALID_SOCKET = -1;
+    static int constexpr SOCKET_ERROR = -1;
+
+    explicit SocketFd(int fd)
+        : m_fd(fd)
+    { }
+
+    int& operator*() { return m_fd; }
+    int const& operator*() const { return m_fd; }
+
+    int m_fd = INVALID_SOCKET;
+};
+
+} }

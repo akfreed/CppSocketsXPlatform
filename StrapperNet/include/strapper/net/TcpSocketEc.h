@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2018, 2021 Alexander K. Freed
+// Copyright 2021 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,11 +16,37 @@
 
 #pragma once
 
-#include <cstdint>
+#include <strapper/net/TcpSocket.h>
 
 namespace strapper { namespace net {
 
-void TcpEchoServer(uint16_t port);
-void UdpEchoServer(uint16_t port);
+class ErrorCode;
+
+class TcpSocketEc
+{
+public:
+    TcpSocketEc() = default;
+    TcpSocketEc(std::string const& host, uint16_t port, ErrorCode* ec);
+    explicit TcpSocketEc(TcpSocket&& socket);
+
+    bool IsConnected() const;
+    void SetReadTimeout(unsigned milliseconds, ErrorCode* ec);
+
+    void ShutdownSend(ErrorCode* ec);
+    void ShutdownBoth();
+    void Close();
+
+    void Write(void const* src, size_t len, ErrorCode* ec);
+    bool Read(void* dest, size_t len, ErrorCode* ec);
+
+    unsigned DataAvailable(ErrorCode* ec);
+
+    explicit operator bool() const;
+
+    TcpSocket&& Convert();
+
+private:
+    TcpSocket m_socket;
+};
 
 } }

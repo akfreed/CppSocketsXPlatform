@@ -1,14 +1,12 @@
+file(GLOB_RECURSE SRCS *.h *.cpp)
+
 # Unit Tests
 add_executable(UnitTest
-    Basic.cpp
-    Endian.cpp
-    Error.cpp
-    TestReport.h
-    UnitTestMain.cpp
-    UnitTestMain.h
+    ${SRCS}
 )
 target_link_libraries(UnitTest
-    Network
+    gtest
+    StrapperNet
 )
 target_compile_options(UnitTest PRIVATE ${WARNING_FLAGS})
 # set Visual Studio working directory

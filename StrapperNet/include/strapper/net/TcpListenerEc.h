@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2018, 2021 Alexander K. Freed
+// Copyright 2021 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,27 +14,32 @@
 // limitations under the License.
 // ==================================================================
 
-#include "EchoServers.h"
+#pragma once
 
-#include <exception>
-#include <iostream>
+#include <strapper/net/TcpListener.h>
+#include <strapper/net/TcpSocketEc.h>
 
-using namespace strapper::net;
+namespace strapper { namespace net {
 
-int main()
+class ErrorCode;
+
+class TcpListenerEc
 {
-    try
-    {
-        TcpEchoServer(11111);
-        return EXIT_SUCCESS;
-    }
-    catch (std::exception const& e)
-    {
-        std::cout << "Exception occured.\n" << e.what() << std::endl;
-    }
-    catch (...)
-    {
-        std::cout << "Unknown exception occured." << std::endl;
-    }
-    return EXIT_FAILURE;
-}
+public:
+    TcpListenerEc() = default;
+    explicit TcpListenerEc(uint16_t port, ErrorCode* ec);
+
+    bool IsListening() const;
+
+    void Close();
+    TcpSocketEc Accept(ErrorCode* ec);
+
+    explicit operator bool() const;
+
+    TcpListener&& Convert();
+
+private:
+    TcpListener m_listener;
+};
+
+} }

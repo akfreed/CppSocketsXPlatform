@@ -14,27 +14,17 @@
 // limitations under the License.
 // ==================================================================
 
-#include "EchoServers.h"
+#pragma once
 
-#include <exception>
-#include <iostream>
+#include <cstdint>
 
-using namespace strapper::net;
+namespace strapper { namespace net { namespace test {
 
-int main()
+struct TestGlobals
 {
-    try
-    {
-        TcpEchoServer(11111);
-        return EXIT_SUCCESS;
-    }
-    catch (std::exception const& e)
-    {
-        std::cout << "Exception occured.\n" << e.what() << std::endl;
-    }
-    catch (...)
-    {
-        std::cout << "Unknown exception occured." << std::endl;
-    }
-    return EXIT_FAILURE;
-}
+    static char constexpr localhost[] = "127.0.0.1";
+    static uint16_t constexpr port = 11111;
+    static uint16_t constexpr  port2 = 11112;
+};
+
+} } }

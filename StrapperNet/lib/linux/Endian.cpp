@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2018, 2021 Alexander K. Freed
+// Copyright 2021 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,27 +14,33 @@
 // limitations under the License.
 // ==================================================================
 
-#include "EchoServers.h"
+#include <strapper/net/Endian.h>
 
-#include <exception>
-#include <iostream>
+#include <arpa/inet.h>
+#include <endian.h>
 
-using namespace strapper::net;
+#include <cstring>
 
-int main()
+namespace strapper { namespace net {
+
+void EndianGloss(int32_t* i32)
 {
-    try
-    {
-        TcpEchoServer(11111);
-        return EXIT_SUCCESS;
-    }
-    catch (std::exception const& e)
-    {
-        std::cout << "Exception occured.\n" << e.what() << std::endl;
-    }
-    catch (...)
-    {
-        std::cout << "Unknown exception occured." << std::endl;
-    }
-    return EXIT_FAILURE;
+    *i32 = htonl(*i32);
 }
+
+int32_t EndianGloss(int32_t i32)
+{
+    return htonl(i32);
+}
+
+//! Be careful not to assign anything to this double until it's back to host form.
+void EndianGloss(double* d)
+{
+    static_assert(sizeof(*d) == 8, "Function not compatible with this compiler.");
+    uint64_t u64;
+    std::memcpy(&u64, d, sizeof(u64));
+    u64 = htobe64(u64);
+    std::memcpy(d, &u64, sizeof(u64));
+}
+
+} }

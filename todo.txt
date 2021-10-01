@@ -7,7 +7,6 @@ error handling / robustness
     sending to unopen port
     receiving message bigger than buffer
     data available
-    dumpreadbuffer
     
 binding 2 sockets to same port
     TCP listener

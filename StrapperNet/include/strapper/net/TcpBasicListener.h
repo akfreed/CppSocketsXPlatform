@@ -16,11 +16,38 @@
 
 #pragma once
 
+#include <strapper/net/SystemContext.h>
+#include <strapper/net/SocketHandle.h>
+#include <strapper/net/TcpBasicSocket.h>
+
 #include <cstdint>
 
 namespace strapper { namespace net {
 
-void TcpEchoServer(uint16_t port);
-void UdpEchoServer(uint16_t port);
+class TcpBasicListener
+{
+    friend class TcpListener; // todo: remove
+public:
+    TcpBasicListener() = default;
+    explicit TcpBasicListener(uint16_t port);
+    TcpBasicListener(TcpBasicListener const&) = delete;
+    TcpBasicListener(TcpBasicListener&&) = default;
+    TcpBasicListener& operator=(TcpBasicListener const&) = delete;
+    TcpBasicListener& operator=(TcpBasicListener&&) = default;
+    ~TcpBasicListener();
+
+    bool IsListening() const;
+
+    void Close() noexcept;
+    TcpBasicSocket Accept();
+
+    explicit operator bool() const;
+
+private:
+    void shutdown() noexcept;
+
+    SystemContext m_context;
+    SocketHandle m_socket;
+};
 
 } }

@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2018, 2021 Alexander K. Freed
+// Copyright 2021 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,11 +16,32 @@
 
 #pragma once
 
-#include <cstdint>
+#include <memory>
 
 namespace strapper { namespace net {
 
-void TcpEchoServer(uint16_t port);
-void UdpEchoServer(uint16_t port);
+struct SocketFd;
+
+class SocketHandle
+{
+public:
+    SocketHandle();
+    SocketHandle(int family, int socktype, int protocol);
+    explicit SocketHandle(SocketFd const& fd);
+    SocketHandle(SocketHandle const&) = delete;
+    SocketHandle(SocketHandle&& other) noexcept;
+    SocketHandle& operator=(SocketHandle const&) = delete;
+    SocketHandle& operator=(SocketHandle&& other) noexcept;
+    ~SocketHandle();
+
+    void Close() noexcept;
+
+    SocketFd const& Get() const;
+    SocketFd const& operator*() const;
+    explicit operator bool() const;
+
+private:
+    std::unique_ptr<SocketFd> m_socketId;
+};
 
 } }

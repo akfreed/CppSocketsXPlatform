@@ -14,27 +14,39 @@
 // limitations under the License.
 // ==================================================================
 
-#include "EchoServers.h"
+#pragma once
 
-#include <exception>
-#include <iostream>
+#include <strapper/net/TcpSocket.h>
 
-using namespace strapper::net;
+#include <cstdint>
+#include <string>
 
-int main()
+namespace strapper { namespace net {
+
+class TcpSerializer
 {
-    try
-    {
-        TcpEchoServer(11111);
-        return EXIT_SUCCESS;
-    }
-    catch (std::exception const& e)
-    {
-        std::cout << "Exception occured.\n" << e.what() << std::endl;
-    }
-    catch (...)
-    {
-        std::cout << "Unknown exception occured." << std::endl;
-    }
-    return EXIT_FAILURE;
-}
+public:
+    static constexpr int MAX_STRING_LEN = 1024 * 1024;
+
+    explicit TcpSerializer(TcpSocket&& socket);
+
+    const TcpSocket& Socket() const;
+    TcpSocket& Socket();
+
+    void Write(char c);
+    void Write(bool b);
+    void Write(int32_t int32);
+    void Write(double d);
+    void Write(std::string const& s);
+
+    bool Read(char* dest);
+    bool Read(bool* dest);
+    bool Read(int32_t* dest);
+    bool Read(double* dest);
+    bool Read(std::string* dest);
+
+private:
+    TcpSocket m_socket;
+};
+
+} }

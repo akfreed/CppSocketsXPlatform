@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2018, 2021 Alexander K. Freed
+// Copyright 2021 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,11 +16,34 @@
 
 #pragma once
 
-#include <cstdint>
+#include <strapper/net/UdpSocket.h>
 
 namespace strapper { namespace net {
 
-void TcpEchoServer(uint16_t port);
-void UdpEchoServer(uint16_t port);
+class ErrorCode;
+
+class UdpSocketEc
+{
+public:
+    UdpSocketEc() = default;
+    explicit UdpSocketEc(uint16_t myport, ErrorCode* ec);
+
+    bool IsOpen() const;
+    void SetReadTimeout(unsigned milliseconds, ErrorCode* ec);
+
+    void Close();
+
+    void Write(void const* src, size_t len, IpAddressV4 const& ipAddress, uint16_t port, ErrorCode* ec);
+    unsigned Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddress, uint16_t* out_port, ErrorCode* ec);
+
+    unsigned DataAvailable(ErrorCode* ec) const;
+
+    explicit operator bool() const;
+
+    UdpSocket&& Convert();
+
+private:
+    UdpSocket m_socket;
+};
 
 } }

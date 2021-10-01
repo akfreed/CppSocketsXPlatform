@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2018 Alexander K. Freed
+// Copyright 2018, 2021 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,67 +14,58 @@
 // limitations under the License.
 // ==================================================================
 
-// Contains the code for TCP and UDP echo servers. These are pretty simple.
-// They are one function each.
-
-#include "TcpListener.h"
-#include "TcpSocket.h"
-#include "UdpSocket.h"
-
-#include <cstring>
-
 #include "EchoServers.h"
 
+#include <strapper/net/TcpListener.h>
+#include <strapper/net/TcpSerializer.h>
+#include <strapper/net/UdpSocket.h>
+#include <strapper/net/IpAddress.h>
 
-// return 0 for success
-// return 1 for listener error
-// return 2 for accept error
-// return 3 for unexpected close
-int TcpEchoServer(const char* port)
+#include <cstring>
+#include <string>
+#include <iostream>
+
+namespace strapper { namespace net {
+
+void TcpEchoServer(uint16_t port)
 {
     TcpListener listener(port);
-    if (!listener.IsValid())
-        return 1;
-
-    TcpSocket client = listener.Accept();
+    TcpSerializer client(listener.Accept());
     listener.Close();
-    if (!client.IsConnected())
-        return 2;
 
-    char buf[1000];
-    buf[0] = '\0';
+    std::string message;
 
-    while (strncmp(buf, "exit", 5) != 0)
+    while (message != "exit")
     {
-        if (client.ReadString(buf, 1000) <= 0)
-            return 3;
-        client.WriteString(buf);
+        if (!client.Read(&message))
+        {
+            std::cout << "> Client gracefully closed the connection." << std::endl;
+            return;
+        }
+        std::cout << "> " << message << std::endl;
+        client.Write(message);
     }
-
-    return 0;
+    std::cout << "> Closing connection to client." << std::endl;
 }
 
 
-// return 0 for success
-// return 1 for socket error
-// return 2 for unexpected close
-int UdpEchoServer(unsigned short port)
+void UdpEchoServer(uint16_t port)
 {
     UdpSocket client(port);
-    if (!client.IsValid())
-        return 1;
 
-    int amountRead;
-    char buf[1000];
-    buf[0] = '\0';
+    unsigned constexpr MAX = 1000;
+    char message[MAX + 1]{};
 
-    while (strncmp(buf, "exit", 5) != 0)
+    while (strncmp(message, "exit", 5) != 0)
     {
-        amountRead = client.Read(buf, 1000);
-        if (amountRead < 0)
-            return 2;
-        client.Write(buf, amountRead);
+        IpAddressV4 ip;
+        uint16_t theirPort;
+        unsigned const amountRead = client.Read(message, MAX, &ip, &theirPort);
+        message[amountRead] = '\0';
+        std::cout << "> " << message << std::endl;
+        client.Write(message, amountRead, ip, theirPort);
     }
-
-    return 0;
+    std::cout << "> Closing socket." << std::endl;
 }
+
+} }

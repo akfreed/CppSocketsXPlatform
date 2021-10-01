@@ -14,27 +14,22 @@
 // limitations under the License.
 // ==================================================================
 
-#include "EchoServers.h"
+#pragma once
 
-#include <exception>
-#include <iostream>
+#include <memory>
+#include <mutex>
 
-using namespace strapper::net;
+namespace strapper { namespace net {
 
-int main()
+class NativeContext;
+
+class SystemContext
 {
-    try
-    {
-        TcpEchoServer(11111);
-        return EXIT_SUCCESS;
-    }
-    catch (std::exception const& e)
-    {
-        std::cout << "Exception occured.\n" << e.what() << std::endl;
-    }
-    catch (...)
-    {
-        std::cout << "Unknown exception occured." << std::endl;
-    }
-    return EXIT_FAILURE;
-}
+public:
+    SystemContext();
+
+private:
+    std::shared_ptr<NativeContext> m_context;
+};
+
+} }
