@@ -66,7 +66,7 @@ private:
     };
 
     explicit TcpSocket(TcpBasicSocket&& socket);
-    
+
     mutable std::mutex m_socketLock;
     std::condition_variable m_readCancel;
     TcpBasicSocket m_socket;

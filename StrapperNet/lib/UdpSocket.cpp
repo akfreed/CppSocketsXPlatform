@@ -166,7 +166,7 @@ unsigned UdpSocket::Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddress, 
     }
 }
 
-// returns the total amount of data in the buffer. 
+// returns the total amount of data in the buffer.
 // A call to Read will not necessarily return this much data, since the buffer may contain many datagrams
 unsigned UdpSocket::DataAvailable() const
 {
