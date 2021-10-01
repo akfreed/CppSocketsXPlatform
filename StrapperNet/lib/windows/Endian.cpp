@@ -21,18 +21,18 @@
 
 namespace strapper { namespace net {
 
-void EndianGloss(int32_t* i32)
+void nton(int32_t* i32)
 {
     *i32 = htonl(*i32);
 }
 
-int32_t EndianGloss(int32_t i32)
+int32_t nton(int32_t i32)
 {
     return htonl(i32);
 }
 
 //! Be careful not to assign anything to this double until it's back to host form.
-void EndianGloss(double* d)
+void nton(double* d)
 {
     auto const ull = htond(*d);
     std::memcpy(d, &ull, sizeof(ull));
