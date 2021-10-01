@@ -19,8 +19,7 @@ host/client info
 hostname/ip
 
 
-endiangloss -> nton
-IpAddress -> use in TcpSocket
+IpAddresV6 / DNS
 trailing whitespace & ending newline
 Is it ok if Write is locked?
 doxygen

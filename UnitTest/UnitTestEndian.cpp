@@ -50,6 +50,7 @@ public:
 
     void SetUp() override
     {
+        ASSERT_TRUE(s_sender);
         ASSERT_TRUE(s_sender->Socket().IsConnected());
         ASSERT_TRUE(s_receiver->Socket().IsConnected());
         // Since the sockets are re-used, a previous test failure can leave some data in the buffer.
