@@ -119,7 +119,10 @@ TcpBasicListener::operator bool() const
 void TcpBasicListener::shutdown() noexcept
 {
     if (m_socket)
+    {
         ::shutdown(**m_socket, SD_BOTH);
+        CancelIoEx(reinterpret_cast<HANDLE>(**m_socket), nullptr); // In winsock, shutdown doesn't cancel a blocking accept.
+    }
 }
 
 } }

@@ -95,7 +95,7 @@ TEST_F(UnitTestError, UdpReadTimeout)
 }
 
 // Tests that closing the socket breaks a blocking read on a separate thread.
-TEST_F(UnitTestError, UnblockRead)
+TEST_F(UnitTestError, UnblockReadTcp)
 {
     Timeout timeout(std::chrono::seconds(3));
 
@@ -108,7 +108,7 @@ TEST_F(UnitTestError, UnblockRead)
         }
         catch (std::exception const& e)
         {
-            std::cout << e.what() << std::endl;
+            std::cout << "Read failed successfully:\n" << e.what() << std::endl;
         }
     });
 
@@ -117,6 +117,61 @@ TEST_F(UnitTestError, UnblockRead)
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
     m_receiver.Close(); // This call should block until the operation is done.
     ASSERT_FALSE(m_receiver);
+    task.wait();
+}
+
+// Tests that closing the socket breaks a blocking read on a separate thread.
+TEST_F(UnitTestError, UnblockReadUdp)
+{
+    Timeout timeout(std::chrono::seconds(3));
+
+    // Read on a separate thread.
+    UdpSocket receiver(TestGlobals::port);
+    ASSERT_TRUE(receiver);
+    auto task = std::async(std::launch::async, [&receiver]() {
+        char buf[1];
+        try
+        {
+            receiver.Read(buf, 1, nullptr, nullptr);
+        }
+        catch (std::exception const& e)
+        {
+            std::cout << "Read failed successfully:\n" << e.what() << std::endl;
+        }
+    });
+
+    // Make sure the read is still blocking.
+    ASSERT_EQ(task.wait_for(std::chrono::milliseconds(200)), std::future_status::timeout) << (receiver ? "Socket returned from read too early." : "Socket closed.");
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    receiver.Close(); // This call should block until the operation is done.
+    ASSERT_FALSE(receiver);
+    task.wait();
+}
+
+// Tests that closing the socket breaks a blocking accept on a separate thread.
+TEST_F(UnitTestError, UnblockAccept)
+{
+    //Timeout timeout(std::chrono::seconds(3));
+
+    // Accept on a separate thread.
+    TcpListener listener(TestGlobals::port);
+    ASSERT_TRUE(listener);
+    auto task = std::async(std::launch::async, [&listener]() {
+        try
+        {
+            auto client = listener.Accept();
+        }
+        catch (std::exception const& e)
+        {
+            std::cout << "Accept failed successfully:\n" << e.what() << std::endl;
+        }
+        });
+
+    // Make sure the read is still blocking.
+    ASSERT_EQ(task.wait_for(std::chrono::milliseconds(200)), std::future_status::timeout) << (listener ? "Socket returned from read too early." : "Socket closed.");
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    listener.Close(); // This call should block until the operation is done.
+    ASSERT_FALSE(listener);
     task.wait();
 }
 
