@@ -26,7 +26,7 @@ UdpSocketEc::UdpSocketEc(uint16_t myport, ErrorCode* ec)
     {
         m_socket = UdpSocket(myport);
     }
-    catch (SocketError const&)
+    catch (ProgramError const&)
     {
         if (ec)
             *ec = ErrorCode(std::current_exception());

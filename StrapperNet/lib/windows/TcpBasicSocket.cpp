@@ -161,7 +161,7 @@ bool TcpBasicSocket::Read(void* dest, size_t len)
             throw ProgramError("Other side closed before all bytes were received.");
         return true;
     }
-    catch (ProgramError const&)
+    catch (...)
     {
         Close();
         throw;

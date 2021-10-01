@@ -124,7 +124,7 @@ TcpSocket TcpListener::Accept()
         m_state = State::OPEN;
         return TcpSocket::Attorney::accept(std::move(newClient));
     }
-    catch (ProgramError const&)
+    catch (...)
     {
         std::unique_lock<std::mutex> lock(m_lock);
         m_state = State::CLOSED;

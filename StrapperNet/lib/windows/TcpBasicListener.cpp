@@ -104,7 +104,7 @@ TcpBasicSocket TcpBasicListener::Accept()
                 throw SocketError(error);
         }
     }
-    catch (ProgramError const&)
+    catch (...)
     {
         Close();
         throw;

@@ -181,7 +181,7 @@ bool TcpSocket::Read(void* dest, size_t len)
         m_state = State::CONNECTED;
         return stillConnected;
     }
-    catch (ProgramError const&)
+    catch (...)
     {
         std::unique_lock<std::mutex> lock(m_socketLock);
         m_state = State::CLOSED;

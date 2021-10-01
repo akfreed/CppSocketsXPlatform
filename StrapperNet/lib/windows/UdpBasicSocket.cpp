@@ -166,7 +166,7 @@ unsigned UdpBasicSocket::Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddr
 
     int const amountRead = recvfrom(**m_socket, reinterpret_cast<char*>(dest), static_cast<int>(maxlen), 0, reinterpret_cast<sockaddr*>(&info), &infoLen);
     if (amountRead == 0)
-        throw ProgramError("Socket was closed.");
+        throw ProgramError("Socket was shut down.");
     if (amountRead == SOCKET_ERROR)
         throw SocketError(WSAGetLastError());
 

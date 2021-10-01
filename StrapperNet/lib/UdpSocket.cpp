@@ -151,7 +151,7 @@ unsigned UdpSocket::Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddress, 
         m_state = State::OPEN;
         return amountRead;
     }
-    catch (ProgramError const&)
+    catch (...)
     {
         std::unique_lock<std::mutex> lock(m_socketLock);
         if (m_state == State::SHUTTING_DOWN)

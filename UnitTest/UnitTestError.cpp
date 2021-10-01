@@ -106,7 +106,7 @@ TEST_F(UnitTestError, UnblockReadTcp)
         {
             m_receiver.Read(buf, 1);
         }
-        catch (std::exception const& e)
+        catch (ProgramError const& e)
         {
             std::cout << "Read failed successfully:\n" << e.what() << std::endl;
         }
@@ -134,7 +134,7 @@ TEST_F(UnitTestError, UnblockReadUdp)
         {
             receiver.Read(buf, 1, nullptr, nullptr);
         }
-        catch (std::exception const& e)
+        catch (ProgramError const& e)
         {
             std::cout << "Read failed successfully:\n" << e.what() << std::endl;
         }
@@ -161,7 +161,7 @@ TEST_F(UnitTestError, UnblockAccept)
         {
             auto client = listener.Accept();
         }
-        catch (std::exception const& e)
+        catch (ProgramError const& e)
         {
             std::cout << "Accept failed successfully:\n" << e.what() << std::endl;
         }
