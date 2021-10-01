@@ -26,7 +26,7 @@
 namespace strapper { namespace net {
 
 IpAddressV4 const IpAddressV4::Any{};
-IpAddressV4 const IpAddressV4::Loopback = "127.0.0.1";
+IpAddressV4 const IpAddressV4::Loopback{"127.0.0.1"};
 
 IpAddressV4::IpAddressV4(std::string const& ip)
 {
@@ -53,7 +53,7 @@ IpAddressV4::IpAddressV4(std::string const& ip)
         {
             throw error;
         }
-        
+
         if (ul > std::numeric_limits<uint8_t>::max())
             throw error;
 
