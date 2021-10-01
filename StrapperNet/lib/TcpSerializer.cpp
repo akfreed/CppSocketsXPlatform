@@ -51,13 +51,13 @@ void TcpSerializer::Write(bool b)
 
 void TcpSerializer::Write(int32_t int32)
 {
-    EndianGloss(&int32);
+    nton(&int32);
     m_socket.Write(&int32, sizeof(int32));
 }
 
 void TcpSerializer::Write(double d)
 {
-    EndianGloss(&d);
+    nton(&d);
     m_socket.Write(&d, sizeof(double));
 }
 
@@ -95,7 +95,7 @@ bool TcpSerializer::Read(int32_t* dest)
         throw ProgramError("Null pointer.");
     bool result = m_socket.Read(dest, sizeof(*dest));
     if (result)
-        EndianGloss(dest);
+        nton(dest);
     return result;
 }
 
@@ -107,7 +107,7 @@ bool TcpSerializer::Read(double* dest)
 
     bool result = m_socket.Read(dest, sizeof(*dest));
     if (result)
-        EndianGloss(dest);
+        nton(dest);
     return result;
 }
 

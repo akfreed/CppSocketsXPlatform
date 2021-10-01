@@ -20,8 +20,8 @@
 
 namespace strapper { namespace net {
 
-void EndianGloss(int32_t* i32);
-int32_t EndianGloss(int32_t i32);
-void EndianGloss(double* d);
+void nton(int32_t* i32);
+int32_t nton(int32_t i32);
+void nton(double* d);
 
 } }

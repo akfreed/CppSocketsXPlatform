@@ -1,22 +1,33 @@
 build a test suite
-
-things to test
-error handling / robustness
-    setreadtimeout (test with unplug test too)
-    closing from other thread (test with unplug test too)
-    sending to unopen port
-    receiving message bigger than buffer
-    data available
-    
-binding 2 sockets to same port
-    TCP listener
-    UDP 
+    error handling / robustness
+        setreadtimeout (test with unplug test too)
+        closing from other thread (test with unplug test too)
+        sending to unopen port
+        receiving message bigger than buffer
+        data available
+        
+    binding 2 sockets to same port
+        TCP listener
+        UDP 
+        
+    cross-language testing
+        int32 send/recv
+        double send/recv
     
 host/client info
 
 hostname/ip
 
-cross-language testing
-    int32 send/recv
-    double send/recv
 
+endiangloss -> nton
+IpAddress -> use in TcpSocket
+trailing whitespace & ending newline
+Is it ok if Write is locked?
+doxygen
+get rid of commented-out code in tcp listener
+IsConnected() is not accurate, since the socket can be shutdown
+serializing for Udp
+give exception guarantee for any exception
+look into what exception is thrown happens if the socket is Shutdown() (not closed) while reading/accepting
+reorganize project
+dlls

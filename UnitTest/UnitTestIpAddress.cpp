@@ -81,7 +81,7 @@ TEST_F(UnitTestIpAddress, ToInt)
 {
     ASSERT_EQ(IpAddressV4("0:0:0:0").ToInt(), 0u);
     ASSERT_EQ(IpAddressV4("255:255:255:255").ToInt(), 0xFFFFFFFFu);
-    ASSERT_EQ(IpAddressV4("1:2:3:4").ToInt(), EndianGloss(0x01020304));
+    ASSERT_EQ(IpAddressV4("1:2:3:4").ToInt(), nton(0x01020304));
 }
 
 TEST_F(UnitTestIpAddress, Any)
@@ -96,8 +96,8 @@ TEST_F(UnitTestIpAddress, ConstructFromInt)
 {
     ASSERT_EQ(IpAddressV4(0).ToInt(), 0u);
     ASSERT_EQ(IpAddressV4(0xFFFFFFFF).ToInt(), 0xFFFFFFFFu);
-    ASSERT_EQ(IpAddressV4(EndianGloss(0xABCDEF01)).ToInt(), EndianGloss(0xABCDEF01u));
-    ASSERT_EQ(IpAddressV4(EndianGloss(0xABCDEF01)).ToString(), "171:205:239:1");
+    ASSERT_EQ(IpAddressV4(nton(0xABCDEF01)).ToInt(), nton(0xABCDEF01u));
+    ASSERT_EQ(IpAddressV4(nton(0xABCDEF01)).ToString(), "171:205:239:1");
 }
 
 } } }
