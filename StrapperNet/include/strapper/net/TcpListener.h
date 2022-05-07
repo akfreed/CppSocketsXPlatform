@@ -24,15 +24,18 @@
 
 namespace strapper { namespace net {
 
+class ErrorCode;
+
 class TcpListener
 {
 public:
     TcpListener() = default;
     explicit TcpListener(uint16_t port);
+    TcpListener(uint16_t port, ErrorCode* ec);
     TcpListener(TcpListener const&) = delete;
-    TcpListener(TcpListener&&) noexcept;
+    TcpListener(TcpListener&& other) noexcept;
     TcpListener& operator=(TcpListener const&) = delete;
-    TcpListener& operator=(TcpListener&&) noexcept;
+    TcpListener& operator=(TcpListener&& other) noexcept;
     ~TcpListener();
 
     friend void swap(TcpListener& left, TcpListener& right);
@@ -41,6 +44,7 @@ public:
 
     void Close() noexcept;
     TcpSocket Accept();
+    TcpSocket Accept(ErrorCode* ec);
 
     explicit operator bool() const;
 

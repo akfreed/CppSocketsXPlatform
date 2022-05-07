@@ -29,6 +29,20 @@ UdpSocket::UdpSocket(uint16_t myport)
     assert(m_socket);
 }
 
+UdpSocket::UdpSocket(uint16_t myport, ErrorCode* ec)
+    : UdpSocket()
+{
+    try
+    {
+        *this = UdpSocket(myport);
+    }
+    catch (ProgramError const&)
+    {
+        if (ec)
+            *ec = ErrorCode(std::current_exception());
+    }
+}
+
 UdpSocket::UdpSocket(UdpSocket&& other) noexcept
     : UdpSocket()
 {
@@ -91,6 +105,19 @@ void UdpSocket::SetReadTimeout(unsigned milliseconds)
     m_socket.SetReadTimeout(milliseconds);
 }
 
+void UdpSocket::SetReadTimeout(unsigned milliseconds, ErrorCode* ec)
+{
+    try
+    {
+        SetReadTimeout(milliseconds);
+    }
+    catch (ProgramError const&)
+    {
+        if (ec)
+            *ec = ErrorCode(std::current_exception());
+    }
+}
+
 // Shutdown and close the socket.
 void UdpSocket::Close() noexcept
 {
@@ -127,6 +154,19 @@ void UdpSocket::Write(void const* src, size_t len, IpAddressV4 const& ipAddress,
         throw ProgramError("Socket was closed from another thread.");
 
     return m_socket.Write(src, len, ipAddress, port);
+}
+
+void UdpSocket::Write(void const* src, size_t len, IpAddressV4 const& ipAddress, uint16_t port, ErrorCode* ec)
+{
+    try
+    {
+        Write(src, len, ipAddress, port);
+    }
+    catch (ProgramError const&)
+    {
+        if (ec)
+            *ec = ErrorCode(std::current_exception());
+    }
 }
 
 unsigned UdpSocket::Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddress, uint16_t* out_port)
@@ -166,6 +206,20 @@ unsigned UdpSocket::Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddress, 
     }
 }
 
+unsigned UdpSocket::Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddress, uint16_t* out_port, ErrorCode* ec)
+{
+    try
+    {
+        return Read(dest, maxlen, out_ipAddress, out_port);
+    }
+    catch (ProgramError const&)
+    {
+        if (ec)
+            *ec = ErrorCode(std::current_exception());
+        return 0;
+    }
+}
+
 // returns the total amount of data in the buffer.
 // A call to Read will not necessarily return this much data, since the buffer may contain many datagrams
 unsigned UdpSocket::DataAvailable() const
@@ -179,6 +233,20 @@ unsigned UdpSocket::DataAvailable() const
         throw ProgramError("Socket was closed from another thread.");
 
     return m_socket.DataAvailable();
+}
+
+unsigned UdpSocket::DataAvailable(ErrorCode* ec) const
+{
+    try
+    {
+        return DataAvailable();
+    }
+    catch (ProgramError const&)
+    {
+        if (ec)
+            *ec = ErrorCode(std::current_exception());
+        return 0;
+    }
 }
 
 UdpSocket::operator bool() const

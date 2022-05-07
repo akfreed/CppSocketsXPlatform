@@ -31,6 +31,20 @@ TcpListener::TcpListener(uint16_t port)
     assert(m_listener);
 }
 
+TcpListener::TcpListener(uint16_t port, ErrorCode* ec)
+    : TcpListener()
+{
+    try
+    {
+        *this = TcpListener(port);
+    }
+    catch (ProgramError const&)
+    {
+        if (ec)
+            *ec = ErrorCode(std::current_exception());
+    }
+}
+
 TcpListener::TcpListener(TcpListener&& other) noexcept
     : TcpListener()
 {
@@ -130,6 +144,20 @@ TcpSocket TcpListener::Accept()
         m_state = State::CLOSED;
         m_acceptCancel.notify_all();
         throw;
+    }
+}
+
+TcpSocket TcpListener::Accept(ErrorCode* ec)
+{
+    try
+    {
+        return Accept();
+    }
+    catch (ProgramError const&)
+    {
+        if (ec)
+            *ec = ErrorCode(std::current_exception());
+        return {};
     }
 }
 

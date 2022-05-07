@@ -23,11 +23,14 @@
 
 namespace strapper { namespace net {
 
+class ErrorCode;
+
 class UdpSocket
 {
 public:
     UdpSocket() = default;
     explicit UdpSocket(uint16_t myport);
+    UdpSocket(uint16_t myport, ErrorCode* ec);
     UdpSocket(UdpSocket const&) = delete;
     UdpSocket(UdpSocket&& other) noexcept;
     UdpSocket& operator=(UdpSocket const&) = delete;
@@ -38,13 +41,17 @@ public:
 
     bool IsOpen() const;
     void SetReadTimeout(unsigned milliseconds);
+    void SetReadTimeout(unsigned milliseconds, ErrorCode* ec);
 
     void Close() noexcept;
 
     void Write(void const* src, size_t len, IpAddressV4 const& ipAddress, uint16_t port);
+    void Write(void const* src, size_t len, IpAddressV4 const& ipAddress, uint16_t port, ErrorCode* ec);
     unsigned Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddress, uint16_t* out_port);
+    unsigned Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddress, uint16_t* out_port, ErrorCode* ec);
 
     unsigned DataAvailable() const;
+    unsigned DataAvailable(ErrorCode* ec) const;
 
     explicit operator bool() const;
 
