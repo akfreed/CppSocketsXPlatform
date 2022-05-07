@@ -1,0 +1,15 @@
+repos:
+  - repo: https://github.com/pocc/pre-commit-hooks
+    rev: v1.3.5
+    hooks:
+      #- id: clang-format
+      #  args: ["-style={BasedOnStyle: WebKit, IndentWidth: 4}"]
+      #- id: clang-tidy
+      #  args: [-p=build]
+      #- id: oclint
+      #- id: uncrustify
+      #- id: cppcheck
+      #  args: [--language=c++, --library=googletest]
+      # - id: cpplint
+      #   args: [--filter="-build/c++11,-build/namespace,-readability/namespace,-whitespace/braces,-whitespace/comments,-whitespace/line_length,-whitespace/indent,-whitespace/newline"]
+      #- id: include-what-you-use

@@ -1,9 +1,11 @@
-cmake_minimum_required (VERSION 3.15)
+cmake_minimum_required(VERSION 3.15)
 
 # C++11
-set (CMAKE_CXX_STANDARD 11)
-set (CMAKE_CXX_STANDARD_REQUIRED ON)
-set (CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Solution
 project (CppSocketsXPlat)
@@ -17,7 +19,7 @@ if(MSVC)
     )
 elseif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
   # Update if necessary
-  set(WARNING_FLAGS -Wall -Wextra -pedantic -Werror -Wconversion)
+  set(WARNING_FLAGS -Wall -Wextra -pedantic -Wconversion -Werror)
 endif()
 
 
