@@ -247,7 +247,7 @@ TEST_F(UnitTestBasic, UdpSendRecvBufEc)
 }
 
 // Test the DataAvailable() function.
-TEST_F(UnitTestBasic, DataAvailableTcp)
+TEST_F(UnitTestBasic, TcpDataAvailable)
 {
     TcpListener listener(TestGlobals::port);
     ASSERT_TRUE(listener);
@@ -267,7 +267,8 @@ TEST_F(UnitTestBasic, DataAvailableTcp)
     ASSERT_EQ(receiver.Socket().DataAvailable(), 0u);
 }
 
-TEST_F(UnitTestBasic, DataAvailableTcpEc)
+// Test the DataAvailable() function.
+TEST_F(UnitTestBasic, TcpDataAvailableEc)
 {
     ErrorCode ec;
     TcpListener listener(TestGlobals::port, &ec);
@@ -295,7 +296,7 @@ TEST_F(UnitTestBasic, DataAvailableTcpEc)
 }
 
 // Test the DataAvailable() function.
-TEST_F(UnitTestBasic, DataAvailableUdp)
+TEST_F(UnitTestBasic, UdpDataAvailable)
 {
     UdpSocket sender(TestGlobals::port2);
     ASSERT_TRUE(sender);
@@ -340,7 +341,8 @@ TEST_F(UnitTestBasic, DataAvailableUdp)
     }
 }
 
-TEST_F(UnitTestBasic, DataAvailableUdpEc)
+// Test the DataAvailable() function.
+TEST_F(UnitTestBasic, UdpDataAvailableEc)
 {
     ErrorCode ec;
     UdpSocket sender(TestGlobals::port2, &ec);
