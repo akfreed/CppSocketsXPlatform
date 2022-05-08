@@ -72,7 +72,7 @@ TEST_F(UnitTestError, TcpReadTimeout)
     ASSERT_THROW(m_receiver.Read(buf, 1), SocketError) << "Socket read did not throw.";
     auto const stop = std::chrono::steady_clock::now();
     ASSERT_GT((stop - start), std::chrono::milliseconds(450)) << "Socket returned from read too early.";
-    ASSERT_LT((stop - start), std::chrono::milliseconds(550)) << "Socket returend from read too late.";
+    ASSERT_LT((stop - start), std::chrono::milliseconds(600)) << "Socket returend from read too late.";
 
     ASSERT_FALSE(m_receiver); // timing out should close the socket
 }
@@ -89,7 +89,7 @@ TEST_F(UnitTestError, UdpReadTimeout)
     ASSERT_THROW(receiver.Read(buf, 1, nullptr, nullptr), SocketError) << "Socket read did not throw.";
     auto const stop = std::chrono::steady_clock::now();
     ASSERT_GT((stop - start), std::chrono::milliseconds(450)) << "Socket returned from read too early.";
-    ASSERT_LT((stop - start), std::chrono::milliseconds(550)) << "Socket returend from read too late.";
+    ASSERT_LT((stop - start), std::chrono::milliseconds(600)) << "Socket returend from read too late.";
 
     ASSERT_TRUE(receiver); // timing out should not close the socket
 }
