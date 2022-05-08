@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2018, 2021 Alexander K. Freed
+// Copyright 2018-2022 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -52,12 +52,37 @@ TEST_F(UnitTestBasic, TcpSelfConnect)
     ASSERT_TRUE(host.IsConnected());
 }
 
+TEST_F(UnitTestBasic, TcpSelfConnectEc)
+{
+    ErrorCode ec;
+    TcpListener listener(TestGlobals::port, &ec);
+    ASSERT_TRUE(listener);
+    ASSERT_FALSE(ec);
+    TcpSocket client(TestGlobals::localhost, TestGlobals::port, &ec);
+    ASSERT_TRUE(client.IsConnected());
+    ASSERT_FALSE(ec);
+    TcpSocket host = listener.Accept(&ec);
+    ASSERT_FALSE(ec);
+    ASSERT_TRUE(host.IsConnected());
+}
+
 TEST_F(UnitTestBasic, UdpCreate)
 {
     UdpSocket client(0);
     ASSERT_TRUE(client);
     UdpSocket host(TestGlobals::port);
     ASSERT_TRUE(host);
+}
+
+TEST_F(UnitTestBasic, UdpCreateEc)
+{
+    ErrorCode ec;
+    UdpSocket client(0, &ec);
+    ASSERT_TRUE(client);
+    ASSERT_FALSE(ec);
+    UdpSocket host(TestGlobals::port, &ec);
+    ASSERT_TRUE(host);
+    ASSERT_FALSE(ec);
 }
 
 TEST_F(UnitTestBasic, TcpSendRecvBuf)
@@ -88,6 +113,44 @@ TEST_F(UnitTestBasic, TcpSendRecvBuf)
     ASSERT_TRUE(std::equal(recvData, recvData + 6, expected.begin()));
 }
 
+TEST_F(UnitTestBasic, TcpSendRecvBufEc)
+{
+    ErrorCode ec;
+    TcpListener listener(TestGlobals::port, &ec);
+    ASSERT_TRUE(listener);
+    ASSERT_FALSE(ec);
+    TcpSocket sender(TestGlobals::localhost, TestGlobals::port, &ec);
+    ASSERT_TRUE(sender.IsConnected());
+    ASSERT_FALSE(ec);
+    TcpSocket receiver = listener.Accept(&ec);
+    ASSERT_TRUE(receiver.IsConnected());
+    ASSERT_FALSE(ec);
+
+    char sentData[6] = { 1, 2, 3, 4, 5, 6 };
+    sender.Write(sentData, 5, &ec);
+    ASSERT_FALSE(ec);
+
+    char recvData[6] = { 0, 0, 0, 0, 0, 0 };
+    ASSERT_TRUE(receiver.Read(recvData, 5, &ec));
+    ASSERT_FALSE(ec);
+    ASSERT_TRUE(std::equal(recvData, recvData + 5, sentData));
+
+    sender.Write(sentData + 3, 3, &ec);
+    ASSERT_FALSE(ec);
+    sender.Write(sentData, 3, &ec);
+    ASSERT_FALSE(ec);
+
+    ASSERT_TRUE(receiver.Read(recvData, 2, &ec));
+    ASSERT_FALSE(ec);
+    std::vector<int> expected = { 4, 5, 3, 4, 5, 0 };
+    ASSERT_TRUE(std::equal(recvData, recvData + 6, expected.begin()));
+
+    ASSERT_TRUE(receiver.Read(recvData, 4, &ec));
+    ASSERT_FALSE(ec);
+    expected = { 6, 1, 2, 3, 5, 0 };
+    ASSERT_TRUE(std::equal(recvData, recvData + 6, expected.begin()));
+}
+
 TEST_F(UnitTestBasic, UdpSendRecvBuf)
 {
     IpAddressV4 const ip(TestGlobals::localhost);
@@ -97,11 +160,10 @@ TEST_F(UnitTestBasic, UdpSendRecvBuf)
     UdpSocket receiver(TestGlobals::port);
     ASSERT_TRUE(receiver);
 
-    char sentData[6] = { 1, 2, 3, 4, 5, 6 };
+    char const sentData[6] = { 1, 2, 3, 4, 5, 6 };
     sender.Write(sentData, 5, ip, port);
 
     char recvData[6] = { 0, 0, 0, 0, 0, 0 };
-    uint16_t senderPort = 0;
     ASSERT_EQ(receiver.Read(recvData, 5, nullptr, nullptr), 5);
     ASSERT_TRUE(std::equal(recvData, recvData + 5, sentData));
 
@@ -109,19 +171,83 @@ TEST_F(UnitTestBasic, UdpSendRecvBuf)
     sender.Write(sentData, 3, ip, port);
 
     IpAddressV4 senderIp;
+    uint16_t senderPort = 0;
     ASSERT_EQ(receiver.Read(recvData, 3, &senderIp, &senderPort), 3);
     std::vector<char> expected = { 4, 5, 6, 4, 5, 0 };
     ASSERT_TRUE(std::equal(recvData, recvData + 6, expected.begin()));
     ASSERT_EQ(senderIp.ToString(), ip.ToString());
+    ASSERT_EQ(senderPort, TestGlobals::port2);
 
     ASSERT_EQ(receiver.Read(recvData, 40, &senderIp, &senderPort), 3);
     expected = { 1, 2, 3, 4, 5, 0 };
     ASSERT_TRUE(std::equal(recvData, recvData + 6, expected.begin()));
     ASSERT_EQ(senderIp.ToString(), ip.ToString());
+    ASSERT_EQ(senderPort, TestGlobals::port2);
+
+    std::fill(recvData, recvData + 6, 0);
+    receiver.Write(sentData, 2, ip, TestGlobals::port2);
+    ASSERT_EQ(sender.Read(recvData, 40, &senderIp, &senderPort), 2);
+    expected = { 1, 2, 0, 0, 0, 0 };
+    ASSERT_TRUE(std::equal(recvData, recvData + 6, expected.begin()));
+    ASSERT_EQ(senderIp.ToString(), ip.ToString());
+    ASSERT_EQ(senderPort, port);
+}
+
+TEST_F(UnitTestBasic, UdpSendRecvBufEc)
+{
+    IpAddressV4 const ip(TestGlobals::localhost);
+    uint16_t const port = TestGlobals::port;
+    ErrorCode ec;
+    UdpSocket sender(TestGlobals::port2, &ec);
+    ASSERT_TRUE(sender);
+    ASSERT_FALSE(ec);
+    UdpSocket receiver(TestGlobals::port, &ec);
+    ASSERT_TRUE(receiver);
+    ASSERT_FALSE(ec);
+
+    char const sentData[6] = { 1, 2, 3, 4, 5, 6 };
+    sender.Write(sentData, 5, ip, port, &ec);
+    ASSERT_FALSE(ec);
+
+    char recvData[6] = { 0, 0, 0, 0, 0, 0 };
+    ASSERT_EQ(receiver.Read(recvData, 5, nullptr, nullptr, &ec), 5);
+    ASSERT_FALSE(ec);
+    ASSERT_TRUE(std::equal(recvData, recvData + 5, sentData));
+
+    sender.Write(sentData + 3, 3, ip, port, &ec);
+    ASSERT_FALSE(ec);
+    sender.Write(sentData, 3, ip, port, &ec);
+    ASSERT_FALSE(ec);
+
+    IpAddressV4 senderIp;
+    uint16_t senderPort = 0;
+    ASSERT_EQ(receiver.Read(recvData, 3, &senderIp, &senderPort, &ec), 3);
+    ASSERT_FALSE(ec);
+    std::vector<char> expected = { 4, 5, 6, 4, 5, 0 };
+    ASSERT_TRUE(std::equal(recvData, recvData + 6, expected.begin()));
+    ASSERT_EQ(senderIp.ToString(), ip.ToString());
+    ASSERT_EQ(senderPort, TestGlobals::port2);
+
+    ASSERT_EQ(receiver.Read(recvData, 40, &senderIp, &senderPort, &ec), 3);
+    ASSERT_FALSE(ec);
+    expected = { 1, 2, 3, 4, 5, 0 };
+    ASSERT_TRUE(std::equal(recvData, recvData + 6, expected.begin()));
+    ASSERT_EQ(senderIp.ToString(), ip.ToString());
+    ASSERT_EQ(senderPort, TestGlobals::port2);
+
+    std::fill(recvData, recvData + 6, 0);
+    receiver.Write(sentData, 2, ip, TestGlobals::port2, &ec);
+    ASSERT_FALSE(ec);
+    ASSERT_EQ(sender.Read(recvData, 40, &senderIp, &senderPort, &ec), 2);
+    ASSERT_FALSE(ec);
+    expected = { 1, 2, 0, 0, 0, 0 };
+    ASSERT_TRUE(std::equal(recvData, recvData + 6, expected.begin()));
+    ASSERT_EQ(senderIp.ToString(), ip.ToString());
+    ASSERT_EQ(senderPort, port);
 }
 
 // Test the DataAvailable() function.
-TEST_F(UnitTestBasic, DataAvailable)
+TEST_F(UnitTestBasic, DataAvailableTcp)
 {
     TcpListener listener(TestGlobals::port);
     ASSERT_TRUE(listener);
@@ -139,6 +265,137 @@ TEST_F(UnitTestBasic, DataAvailable)
     ASSERT_GT(receiver.Socket().DataAvailable(), 0u);
     ASSERT_TRUE(receiver.Read(&i));
     ASSERT_EQ(receiver.Socket().DataAvailable(), 0u);
+}
+
+TEST_F(UnitTestBasic, DataAvailableTcpEc)
+{
+    ErrorCode ec;
+    TcpListener listener(TestGlobals::port, &ec);
+    ASSERT_TRUE(listener);
+    ASSERT_FALSE(ec);
+    TcpSerializer sender(TcpSocket(TestGlobals::localhost, TestGlobals::port, &ec));
+    ASSERT_TRUE(sender.Socket().IsConnected());
+    ASSERT_FALSE(ec);
+    TcpSerializer receiver(TcpSocket(listener.Accept(&ec)));
+    ASSERT_TRUE(receiver.Socket().IsConnected());
+    ASSERT_FALSE(ec);
+
+    ASSERT_EQ(receiver.Socket().DataAvailable(&ec), 0u);
+    ASSERT_FALSE(ec);
+
+    int i = 5;
+    sender.Write(i);
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+    ASSERT_GT(receiver.Socket().DataAvailable(&ec), 0u);
+    ASSERT_FALSE(ec);
+    ASSERT_TRUE(receiver.Read(&i));
+    ASSERT_EQ(receiver.Socket().DataAvailable(&ec), 0u);
+    ASSERT_FALSE(ec);
+}
+
+// Test the DataAvailable() function.
+TEST_F(UnitTestBasic, DataAvailableUdp)
+{
+    UdpSocket sender(TestGlobals::port2);
+    ASSERT_TRUE(sender);
+    UdpSocket receiver(TestGlobals::port);
+    ASSERT_TRUE(receiver);
+
+    IpAddressV4 senderIp;
+    uint16_t senderPort = 0;
+
+    {
+        ASSERT_EQ(receiver.DataAvailable(), 0u);
+
+        int const toWrite = 5;
+        sender.Write(&toWrite, sizeof(toWrite), IpAddressV4::Loopback, TestGlobals::port);
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+        int toRead = 0;
+        ASSERT_EQ(sizeof(toWrite), sizeof(toRead));
+        ASSERT_EQ(receiver.DataAvailable(), sizeof(toWrite));
+        ASSERT_EQ(receiver.Read(&toRead, 100, &senderIp, &senderPort), sizeof(toWrite));
+        ASSERT_EQ(toRead, toWrite);
+        ASSERT_EQ(receiver.DataAvailable(), 0u);
+        ASSERT_EQ(senderIp.ToString(), IpAddressV4::Loopback.ToString());
+        ASSERT_EQ(senderPort, TestGlobals::port2);
+    }
+
+    {
+        ASSERT_EQ(sender.DataAvailable(), 0u);
+
+        double const toWrite = 5.1;
+        receiver.Write(&toWrite, sizeof(toWrite), IpAddressV4::Loopback, TestGlobals::port2);
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+        double toRead = 0;
+        ASSERT_EQ(sizeof(toWrite), sizeof(toRead));
+        ASSERT_EQ(sender.DataAvailable(), sizeof(toWrite));
+        ASSERT_EQ(sender.Read(&toRead, 10000, &senderIp, &senderPort), sizeof(toWrite));
+        ASSERT_EQ(toRead, toWrite);
+        ASSERT_EQ(sender.DataAvailable(), 0u);
+        ASSERT_EQ(senderIp.ToInt(), IpAddressV4::Loopback.ToInt());
+        ASSERT_EQ(senderPort, TestGlobals::port);
+    }
+}
+
+TEST_F(UnitTestBasic, DataAvailableUdpEc)
+{
+    ErrorCode ec;
+    UdpSocket sender(TestGlobals::port2, &ec);
+    ASSERT_TRUE(sender);
+    ASSERT_FALSE(ec);
+    UdpSocket receiver(TestGlobals::port, &ec);
+    ASSERT_TRUE(receiver);
+    ASSERT_FALSE(ec);
+
+    IpAddressV4 senderIp;
+    uint16_t senderPort = 0;
+
+    {
+        ASSERT_EQ(receiver.DataAvailable(&ec), 0u);
+        ASSERT_FALSE(ec);
+
+        int const toWrite = 5;
+        sender.Write(&toWrite, sizeof(toWrite), IpAddressV4::Loopback, TestGlobals::port, &ec);
+        ASSERT_FALSE(ec);
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+        int toRead = 0;
+        ASSERT_EQ(sizeof(toWrite), sizeof(toRead));
+        ASSERT_EQ(receiver.DataAvailable(&ec), sizeof(toWrite));
+        ASSERT_FALSE(ec);
+        ASSERT_EQ(receiver.Read(&toRead, 100, &senderIp, &senderPort, &ec), sizeof(toWrite));
+        ASSERT_FALSE(ec);
+        ASSERT_EQ(toRead, toWrite);
+        ASSERT_EQ(receiver.DataAvailable(&ec), 0u);
+        ASSERT_FALSE(ec);
+        ASSERT_EQ(senderIp.ToString(), IpAddressV4::Loopback.ToString());
+        ASSERT_EQ(senderPort, TestGlobals::port2);
+    }
+
+    {
+        ASSERT_EQ(sender.DataAvailable(&ec), 0u);
+        ASSERT_FALSE(ec);
+
+        double const toWrite = 5.1;
+        receiver.Write(&toWrite, sizeof(toWrite), IpAddressV4::Loopback, TestGlobals::port2, &ec);
+        ASSERT_FALSE(ec);
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+        double toRead = 0;
+        ASSERT_EQ(sizeof(toWrite), sizeof(toRead));
+        ASSERT_EQ(sender.DataAvailable(&ec), sizeof(toWrite));
+        ASSERT_FALSE(ec);
+        ASSERT_EQ(sender.Read(&toRead, 10000, &senderIp, &senderPort, &ec), sizeof(toWrite));
+        ASSERT_FALSE(ec);
+        ASSERT_EQ(toRead, toWrite);
+        ASSERT_EQ(sender.DataAvailable(&ec), 0u);
+        ASSERT_FALSE(ec);
+        ASSERT_EQ(senderIp.ToInt(), IpAddressV4::Loopback.ToInt());
+        ASSERT_EQ(senderPort, TestGlobals::port);
+    }
 }
 
 } } }

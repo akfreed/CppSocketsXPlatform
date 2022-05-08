@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2018, 2021 Alexander K. Freed
+// Copyright 2018-2022 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -40,8 +40,7 @@ SocketHandle Connect(std::string const& host, uint16_t port)
 
     {
         addrinfo* hil = nullptr;
-        std::string const portString = std::to_string(port);
-        int const error = getaddrinfo(host.c_str(), portString.c_str(), &hostInfo, &hil);
+        int const error = getaddrinfo(host.c_str(), std::to_string(port).c_str(), &hostInfo, &hil);
         if (error != 0)
             throw SocketError(error);
         if (!hil)
