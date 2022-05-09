@@ -42,7 +42,7 @@ class UnitTestBasic : public ::testing::Test
 TEST_F(UnitTestBasic, Empty)
 { }
 
-TEST_F(UnitTestBasic, TcpSelfConnect)
+TEST_F(UnitTestBasic, SelfConnectTcp)
 {
     TcpListener listener(TestGlobals::port);
     ASSERT_TRUE(listener);
@@ -52,7 +52,7 @@ TEST_F(UnitTestBasic, TcpSelfConnect)
     ASSERT_TRUE(host.IsConnected());
 }
 
-TEST_F(UnitTestBasic, TcpSelfConnectEc)
+TEST_F(UnitTestBasic, SelfConnectTcpEc)
 {
     ErrorCode ec;
     TcpListener listener(TestGlobals::port, &ec);
@@ -66,7 +66,7 @@ TEST_F(UnitTestBasic, TcpSelfConnectEc)
     ASSERT_TRUE(host.IsConnected());
 }
 
-TEST_F(UnitTestBasic, UdpCreate)
+TEST_F(UnitTestBasic, CreateUdp)
 {
     UdpSocket client(0);
     ASSERT_TRUE(client);
@@ -74,7 +74,7 @@ TEST_F(UnitTestBasic, UdpCreate)
     ASSERT_TRUE(host);
 }
 
-TEST_F(UnitTestBasic, UdpCreateEc)
+TEST_F(UnitTestBasic, CreateUdpEc)
 {
     ErrorCode ec;
     UdpSocket client(0, &ec);
@@ -85,7 +85,7 @@ TEST_F(UnitTestBasic, UdpCreateEc)
     ASSERT_FALSE(ec);
 }
 
-TEST_F(UnitTestBasic, TcpSendRecvBuf)
+TEST_F(UnitTestBasic, SendRecvBufTcp)
 {
     TcpListener listener(TestGlobals::port);
     ASSERT_TRUE(listener);
@@ -113,7 +113,7 @@ TEST_F(UnitTestBasic, TcpSendRecvBuf)
     ASSERT_TRUE(std::equal(recvData, recvData + 6, expected.begin()));
 }
 
-TEST_F(UnitTestBasic, TcpSendRecvBufEc)
+TEST_F(UnitTestBasic, SendRecvBufTcpEc)
 {
     ErrorCode ec;
     TcpListener listener(TestGlobals::port, &ec);
@@ -151,7 +151,7 @@ TEST_F(UnitTestBasic, TcpSendRecvBufEc)
     ASSERT_TRUE(std::equal(recvData, recvData + 6, expected.begin()));
 }
 
-TEST_F(UnitTestBasic, UdpSendRecvBuf)
+TEST_F(UnitTestBasic, SendRecvUdpBuf)
 {
     IpAddressV4 const ip(TestGlobals::localhost);
     uint16_t const port = TestGlobals::port;
@@ -193,7 +193,7 @@ TEST_F(UnitTestBasic, UdpSendRecvBuf)
     ASSERT_EQ(senderPort, port);
 }
 
-TEST_F(UnitTestBasic, UdpSendRecvBufEc)
+TEST_F(UnitTestBasic, SendRecvBufUdpEc)
 {
     IpAddressV4 const ip(TestGlobals::localhost);
     uint16_t const port = TestGlobals::port;
@@ -247,7 +247,7 @@ TEST_F(UnitTestBasic, UdpSendRecvBufEc)
 }
 
 // Test the DataAvailable() function.
-TEST_F(UnitTestBasic, TcpDataAvailable)
+TEST_F(UnitTestBasic, DataAvailableTcp)
 {
     TcpListener listener(TestGlobals::port);
     ASSERT_TRUE(listener);
@@ -268,7 +268,7 @@ TEST_F(UnitTestBasic, TcpDataAvailable)
 }
 
 // Test the DataAvailable() function.
-TEST_F(UnitTestBasic, TcpDataAvailableEc)
+TEST_F(UnitTestBasic, DataAvailableTcpEc)
 {
     ErrorCode ec;
     TcpListener listener(TestGlobals::port, &ec);
@@ -296,7 +296,7 @@ TEST_F(UnitTestBasic, TcpDataAvailableEc)
 }
 
 // Test the DataAvailable() function.
-TEST_F(UnitTestBasic, UdpDataAvailable)
+TEST_F(UnitTestBasic, DataAvailableUdp)
 {
     UdpSocket sender(TestGlobals::port2);
     ASSERT_TRUE(sender);
@@ -314,7 +314,7 @@ TEST_F(UnitTestBasic, UdpDataAvailable)
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
         int toRead = 0;
-        ASSERT_EQ(sizeof(toWrite), sizeof(toRead));
+        static_assert(sizeof(toWrite) == sizeof(toRead), "Buffers must be the same size.");
         ASSERT_EQ(receiver.DataAvailable(), sizeof(toWrite));
         ASSERT_EQ(receiver.Read(&toRead, 100, &senderIp, &senderPort), sizeof(toWrite));
         ASSERT_EQ(toRead, toWrite);
@@ -331,7 +331,7 @@ TEST_F(UnitTestBasic, UdpDataAvailable)
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
         double toRead = 0;
-        ASSERT_EQ(sizeof(toWrite), sizeof(toRead));
+        static_assert(sizeof(toWrite) == sizeof(toRead), "Buffers must be the same size.");
         ASSERT_EQ(sender.DataAvailable(), sizeof(toWrite));
         ASSERT_EQ(sender.Read(&toRead, 10000, &senderIp, &senderPort), sizeof(toWrite));
         ASSERT_EQ(toRead, toWrite);
@@ -342,7 +342,7 @@ TEST_F(UnitTestBasic, UdpDataAvailable)
 }
 
 // Test the DataAvailable() function.
-TEST_F(UnitTestBasic, UdpDataAvailableEc)
+TEST_F(UnitTestBasic, DataAvailableUdpEc)
 {
     ErrorCode ec;
     UdpSocket sender(TestGlobals::port2, &ec);
@@ -365,7 +365,7 @@ TEST_F(UnitTestBasic, UdpDataAvailableEc)
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
         int toRead = 0;
-        ASSERT_EQ(sizeof(toWrite), sizeof(toRead));
+        static_assert(sizeof(toWrite) == sizeof(toRead), "Buffers must be the same size.");
         ASSERT_EQ(receiver.DataAvailable(&ec), sizeof(toWrite));
         ASSERT_FALSE(ec);
         ASSERT_EQ(receiver.Read(&toRead, 100, &senderIp, &senderPort, &ec), sizeof(toWrite));
@@ -387,7 +387,7 @@ TEST_F(UnitTestBasic, UdpDataAvailableEc)
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
         double toRead = 0;
-        ASSERT_EQ(sizeof(toWrite), sizeof(toRead));
+        static_assert(sizeof(toWrite) == sizeof(toRead), "Buffers must be the same size.");
         ASSERT_EQ(sender.DataAvailable(&ec), sizeof(toWrite));
         ASSERT_FALSE(ec);
         ASSERT_EQ(sender.Read(&toRead, 10000, &senderIp, &senderPort, &ec), sizeof(toWrite));
