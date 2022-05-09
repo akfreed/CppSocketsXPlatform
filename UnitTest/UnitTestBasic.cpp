@@ -35,15 +35,15 @@
 namespace strapper { namespace net { namespace test {
 
 class UnitTestBasic : public ::testing::Test
-{
-    Timeout m_timeout{std::chrono::seconds(3)};
-};
+{ };
 
 TEST_F(UnitTestBasic, Empty)
 { }
 
 TEST_F(UnitTestBasic, SelfConnectTcp)
 {
+    Timeout timeout(std::chrono::seconds(3));
+
     TcpListener listener(TestGlobals::port);
     ASSERT_TRUE(listener);
     TcpSocket client(TestGlobals::localhost, TestGlobals::port);
@@ -54,6 +54,8 @@ TEST_F(UnitTestBasic, SelfConnectTcp)
 
 TEST_F(UnitTestBasic, SelfConnectTcpEc)
 {
+    Timeout timeout(std::chrono::seconds(3));
+
     ErrorCode ec;
     TcpListener listener(TestGlobals::port, &ec);
     ASSERT_TRUE(listener);
@@ -68,6 +70,8 @@ TEST_F(UnitTestBasic, SelfConnectTcpEc)
 
 TEST_F(UnitTestBasic, CreateUdp)
 {
+    Timeout timeout(std::chrono::seconds(3));
+
     UdpSocket client(0);
     ASSERT_TRUE(client);
     UdpSocket host(TestGlobals::port);
@@ -76,6 +80,8 @@ TEST_F(UnitTestBasic, CreateUdp)
 
 TEST_F(UnitTestBasic, CreateUdpEc)
 {
+    Timeout timeout(std::chrono::seconds(3));
+
     ErrorCode ec;
     UdpSocket client(0, &ec);
     ASSERT_TRUE(client);
@@ -87,6 +93,8 @@ TEST_F(UnitTestBasic, CreateUdpEc)
 
 TEST_F(UnitTestBasic, SendRecvBufTcp)
 {
+    Timeout timeout(std::chrono::seconds(3));
+
     TcpListener listener(TestGlobals::port);
     ASSERT_TRUE(listener);
     TcpSocket sender(TestGlobals::localhost, TestGlobals::port);
@@ -115,6 +123,8 @@ TEST_F(UnitTestBasic, SendRecvBufTcp)
 
 TEST_F(UnitTestBasic, SendRecvBufTcpEc)
 {
+    Timeout timeout(std::chrono::seconds(3));
+
     ErrorCode ec;
     TcpListener listener(TestGlobals::port, &ec);
     ASSERT_TRUE(listener);
@@ -153,6 +163,8 @@ TEST_F(UnitTestBasic, SendRecvBufTcpEc)
 
 TEST_F(UnitTestBasic, SendRecvUdpBuf)
 {
+    Timeout timeout(std::chrono::seconds(3));
+
     IpAddressV4 const ip(TestGlobals::localhost);
     uint16_t const port = TestGlobals::port;
     UdpSocket sender(TestGlobals::port2);
@@ -195,6 +207,8 @@ TEST_F(UnitTestBasic, SendRecvUdpBuf)
 
 TEST_F(UnitTestBasic, SendRecvBufUdpEc)
 {
+    Timeout timeout(std::chrono::seconds(3));
+
     IpAddressV4 const ip(TestGlobals::localhost);
     uint16_t const port = TestGlobals::port;
     ErrorCode ec;
@@ -249,6 +263,8 @@ TEST_F(UnitTestBasic, SendRecvBufUdpEc)
 // Test the DataAvailable() function.
 TEST_F(UnitTestBasic, DataAvailableTcp)
 {
+    Timeout timeout(std::chrono::seconds(3));
+
     TcpListener listener(TestGlobals::port);
     ASSERT_TRUE(listener);
     TcpSerializer sender(TcpSocket(TestGlobals::localhost, TestGlobals::port));
@@ -270,6 +286,8 @@ TEST_F(UnitTestBasic, DataAvailableTcp)
 // Test the DataAvailable() function.
 TEST_F(UnitTestBasic, DataAvailableTcpEc)
 {
+    Timeout timeout(std::chrono::seconds(3));
+
     ErrorCode ec;
     TcpListener listener(TestGlobals::port, &ec);
     ASSERT_TRUE(listener);
@@ -298,6 +316,8 @@ TEST_F(UnitTestBasic, DataAvailableTcpEc)
 // Test the DataAvailable() function.
 TEST_F(UnitTestBasic, DataAvailableUdp)
 {
+    Timeout timeout(std::chrono::seconds(3));
+
     UdpSocket sender(TestGlobals::port2);
     ASSERT_TRUE(sender);
     UdpSocket receiver(TestGlobals::port);
@@ -344,6 +364,8 @@ TEST_F(UnitTestBasic, DataAvailableUdp)
 // Test the DataAvailable() function.
 TEST_F(UnitTestBasic, DataAvailableUdpEc)
 {
+    Timeout timeout(std::chrono::seconds(3));
+
     ErrorCode ec;
     UdpSocket sender(TestGlobals::port2, &ec);
     ASSERT_TRUE(sender);

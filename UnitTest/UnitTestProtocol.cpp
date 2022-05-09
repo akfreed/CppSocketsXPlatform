@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2018-2022 Alexander K. Freed
+// Copyright 2022 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -165,6 +165,8 @@ TEST_F(UnitTestProtocol, ShutdownSendTcpEc)
 
 TEST_F(UnitTestProtocol, ReadAfterShutdownTcp)
 {
+    Timeout timeout(std::chrono::seconds(3));
+
     int64_t const toWrite = 0xA1B2C3D45E6F809D;
     m_sender.Write(&toWrite, sizeof(toWrite));
     ASSERT_TRUE(m_sender);
@@ -217,6 +219,8 @@ TEST_F(UnitTestProtocol, ReadAfterShutdownTcp)
 
 TEST_F(UnitTestProtocol, ReadAfterShutdownTcpEc)
 {
+    Timeout timeout(std::chrono::seconds(3));
+
     ErrorCode ec;
     int64_t const toWrite = 0xA1B2C3D45E6F809D;
     m_sender.Write(&toWrite, sizeof(toWrite), &ec);
