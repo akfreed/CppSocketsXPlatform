@@ -81,7 +81,7 @@ TEST_F(UnitTestProtocol, ShutdownSendTcp)
     ASSERT_TRUE(m_receiver);
     ASSERT_EQ(c, 0xAF);
 
-    std::atomic<bool> ready = false;
+    std::atomic<bool> ready{false};
     auto task = std::async(std::launch::async, [this, &ready]() {
         ready = true;
         std::this_thread::sleep_for(milliseconds(200));
@@ -133,7 +133,7 @@ TEST_F(UnitTestProtocol, ShutdownSendTcpEc)
     ASSERT_FALSE(ec);
     ASSERT_EQ(c, 0xAF);
 
-    std::atomic<bool> ready = false;
+    std::atomic<bool> ready{false};
     auto task = std::async(std::launch::async, [this, &ready]() -> ErrorCode {
         ErrorCode ec;
         ready = true;
