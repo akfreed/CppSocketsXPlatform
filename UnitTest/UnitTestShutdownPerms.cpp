@@ -25,7 +25,7 @@ namespace strapper { namespace net { namespace test {
 
 using std::chrono::milliseconds;
 
-class UnitTestShutdown : public ::testing::Test
+class UnitTestShutdownPerms : public ::testing::Test
 {
 public:
     static void SetUpTestSuite()
@@ -52,7 +52,7 @@ public:
     TcpBasicSocket m_receiver;
 };
 
-TEST_F(UnitTestShutdown, ABXY)
+TEST_F(UnitTestShutdownPerms, ABXY)
 {
     m_sender.ShutdownSend();
     m_receiver.ShutdownReceive();
@@ -60,7 +60,7 @@ TEST_F(UnitTestShutdown, ABXY)
     ASSERT_NO_THROW(m_sender.ShutdownReceive());
 }
 
-TEST_F(UnitTestShutdown, AXBY)
+TEST_F(UnitTestShutdownPerms, AXBY)
 {
     m_sender.ShutdownSend();
     m_receiver.ShutdownSend();
@@ -68,7 +68,7 @@ TEST_F(UnitTestShutdown, AXBY)
     ASSERT_NO_THROW(m_sender.ShutdownReceive());
 }
 
-TEST_F(UnitTestShutdown, AXYB)
+TEST_F(UnitTestShutdownPerms, AXYB)
 {
     m_sender.ShutdownSend();
     m_receiver.ShutdownSend();
@@ -76,7 +76,7 @@ TEST_F(UnitTestShutdown, AXYB)
     ASSERT_NO_THROW(m_receiver.ShutdownReceive());
 }
 
-TEST_F(UnitTestShutdown, AYXB)
+TEST_F(UnitTestShutdownPerms, AYXB)
 {
     m_sender.ShutdownSend();
     m_sender.ShutdownReceive();
@@ -84,7 +84,7 @@ TEST_F(UnitTestShutdown, AYXB)
     ASSERT_NO_THROW(m_receiver.ShutdownReceive());
 }
 
-TEST_F(UnitTestShutdown, YAXB)
+TEST_F(UnitTestShutdownPerms, YAXB)
 {
     m_sender.ShutdownReceive();
     m_sender.ShutdownSend();
@@ -92,7 +92,7 @@ TEST_F(UnitTestShutdown, YAXB)
     ASSERT_NO_THROW(m_receiver.ShutdownReceive());
 }
 
-TEST_F(UnitTestShutdown, YXAB)
+TEST_F(UnitTestShutdownPerms, YXAB)
 {
     m_sender.ShutdownReceive();
     m_receiver.ShutdownSend();
@@ -100,7 +100,7 @@ TEST_F(UnitTestShutdown, YXAB)
     ASSERT_NO_THROW(m_receiver.ShutdownReceive());
 }
 
-TEST_F(UnitTestShutdown, ABYX)
+TEST_F(UnitTestShutdownPerms, ABYX)
 {
     m_sender.ShutdownSend();
     m_receiver.ShutdownReceive();
@@ -108,7 +108,7 @@ TEST_F(UnitTestShutdown, ABYX)
     m_receiver.ShutdownSend();
 }
 
-TEST_F(UnitTestShutdown, AYBX)
+TEST_F(UnitTestShutdownPerms, AYBX)
 {
     m_sender.ShutdownSend();
     m_sender.ShutdownReceive();
@@ -116,7 +116,7 @@ TEST_F(UnitTestShutdown, AYBX)
     m_receiver.ShutdownSend();
 }
 
-TEST_F(UnitTestShutdown, YABX)
+TEST_F(UnitTestShutdownPerms, YABX)
 {
     m_sender.ShutdownReceive();
     m_sender.ShutdownSend();
@@ -124,7 +124,7 @@ TEST_F(UnitTestShutdown, YABX)
     m_receiver.ShutdownSend();
 }
 
-TEST_F(UnitTestShutdown, YBAX)
+TEST_F(UnitTestShutdownPerms, YBAX)
 {
     m_sender.ShutdownReceive();
     m_receiver.ShutdownReceive();
@@ -132,7 +132,7 @@ TEST_F(UnitTestShutdown, YBAX)
     m_receiver.ShutdownSend();
 }
 
-TEST_F(UnitTestShutdown, YBXA)
+TEST_F(UnitTestShutdownPerms, YBXA)
 {
     m_sender.ShutdownReceive();
     m_receiver.ShutdownReceive();
@@ -140,7 +140,7 @@ TEST_F(UnitTestShutdown, YBXA)
     m_sender.ShutdownSend();
 }
 
-TEST_F(UnitTestShutdown, YXBA)
+TEST_F(UnitTestShutdownPerms, YXBA)
 {
     m_sender.ShutdownReceive();
     m_receiver.ShutdownSend();
