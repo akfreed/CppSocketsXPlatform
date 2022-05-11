@@ -34,13 +34,13 @@
 
 namespace strapper { namespace net { namespace test {
 
-class UnitTestBasic : public ::testing::Test
+class UnitTestSocket : public ::testing::Test
 { };
 
-TEST_F(UnitTestBasic, Empty)
+TEST_F(UnitTestSocket, Empty)
 { }
 
-TEST_F(UnitTestBasic, SelfConnectTcp)
+TEST_F(UnitTestSocket, SelfConnectTcp)
 {
     Timeout timeout(std::chrono::seconds(3));
 
@@ -52,7 +52,7 @@ TEST_F(UnitTestBasic, SelfConnectTcp)
     ASSERT_TRUE(host.IsConnected());
 }
 
-TEST_F(UnitTestBasic, SelfConnectTcpEc)
+TEST_F(UnitTestSocket, SelfConnectTcpEc)
 {
     Timeout timeout(std::chrono::seconds(3));
 
@@ -68,7 +68,7 @@ TEST_F(UnitTestBasic, SelfConnectTcpEc)
     ASSERT_TRUE(host.IsConnected());
 }
 
-TEST_F(UnitTestBasic, CreateUdp)
+TEST_F(UnitTestSocket, CreateUdp)
 {
     Timeout timeout(std::chrono::seconds(3));
 
@@ -78,7 +78,7 @@ TEST_F(UnitTestBasic, CreateUdp)
     ASSERT_TRUE(host);
 }
 
-TEST_F(UnitTestBasic, CreateUdpEc)
+TEST_F(UnitTestSocket, CreateUdpEc)
 {
     Timeout timeout(std::chrono::seconds(3));
 
@@ -91,7 +91,7 @@ TEST_F(UnitTestBasic, CreateUdpEc)
     ASSERT_FALSE(ec);
 }
 
-TEST_F(UnitTestBasic, SendRecvBufTcp)
+TEST_F(UnitTestSocket, SendRecvBufTcp)
 {
     Timeout timeout(std::chrono::seconds(3));
 
@@ -121,7 +121,7 @@ TEST_F(UnitTestBasic, SendRecvBufTcp)
     ASSERT_TRUE(std::equal(recvData, recvData + 6, expected.begin()));
 }
 
-TEST_F(UnitTestBasic, SendRecvBufTcpEc)
+TEST_F(UnitTestSocket, SendRecvBufTcpEc)
 {
     Timeout timeout(std::chrono::seconds(3));
 
@@ -161,7 +161,7 @@ TEST_F(UnitTestBasic, SendRecvBufTcpEc)
     ASSERT_TRUE(std::equal(recvData, recvData + 6, expected.begin()));
 }
 
-TEST_F(UnitTestBasic, SendRecvUdpBuf)
+TEST_F(UnitTestSocket, SendRecvUdpBuf)
 {
     Timeout timeout(std::chrono::seconds(3));
 
@@ -205,7 +205,7 @@ TEST_F(UnitTestBasic, SendRecvUdpBuf)
     ASSERT_EQ(senderPort, port);
 }
 
-TEST_F(UnitTestBasic, SendRecvBufUdpEc)
+TEST_F(UnitTestSocket, SendRecvBufUdpEc)
 {
     Timeout timeout(std::chrono::seconds(3));
 
@@ -261,7 +261,7 @@ TEST_F(UnitTestBasic, SendRecvBufUdpEc)
 }
 
 // Test the DataAvailable() function.
-TEST_F(UnitTestBasic, DataAvailableTcp)
+TEST_F(UnitTestSocket, DataAvailableTcp)
 {
     Timeout timeout(std::chrono::seconds(3));
 
@@ -284,7 +284,7 @@ TEST_F(UnitTestBasic, DataAvailableTcp)
 }
 
 // Test the DataAvailable() function.
-TEST_F(UnitTestBasic, DataAvailableTcpEc)
+TEST_F(UnitTestSocket, DataAvailableTcpEc)
 {
     Timeout timeout(std::chrono::seconds(3));
 
@@ -314,7 +314,7 @@ TEST_F(UnitTestBasic, DataAvailableTcpEc)
 }
 
 // Test the DataAvailable() function.
-TEST_F(UnitTestBasic, DataAvailableUdp)
+TEST_F(UnitTestSocket, DataAvailableUdp)
 {
     Timeout timeout(std::chrono::seconds(3));
 
@@ -362,7 +362,7 @@ TEST_F(UnitTestBasic, DataAvailableUdp)
 }
 
 // Test the DataAvailable() function.
-TEST_F(UnitTestBasic, DataAvailableUdpEc)
+TEST_F(UnitTestSocket, DataAvailableUdpEc)
 {
     Timeout timeout(std::chrono::seconds(3));
 

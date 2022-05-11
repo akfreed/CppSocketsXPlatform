@@ -62,6 +62,14 @@ SocketHandle Connect(std::string const& host, uint16_t port)
 
 }
 
+//! Unused for this implementation.
+struct TcpBasicSocketImpl
+{ };
+
+TcpBasicSocket::TcpBasicSocket() = default;
+TcpBasicSocket::TcpBasicSocket(TcpBasicSocket&&) noexcept = default;
+TcpBasicSocket& TcpBasicSocket::operator=(TcpBasicSocket&&) noexcept = default;
+
 //! Constructor connects to host:port.
 TcpBasicSocket::TcpBasicSocket(std::string const& host, uint16_t port)
     : m_socket(Connect(host, port))
