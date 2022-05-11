@@ -70,6 +70,7 @@ SocketHandle Connect(std::string const& host, uint16_t port)
 struct TcpBasicSocketImpl
 {
     bool m_sendEnabled = true;
+    bool m_receiveEnabled = true;
 };
 
 TcpBasicSocket::TcpBasicSocket() = default;
@@ -125,6 +126,7 @@ void TcpBasicSocket::ShutdownSend()
 
 void TcpBasicSocket::ShutdownReceive()
 {
+    m_impl->m_receiveEnabled = false;
     if (shutdown(**m_socket, SHUT_RD) == SocketFd::SOCKET_ERROR)
     {
         // Linux gives ENOTCONN when calling shutdown receive if both sides have called shutdown send. We can ignore this.
@@ -139,6 +141,7 @@ void TcpBasicSocket::ShutdownBoth() noexcept
     if (m_socket)
     {
         m_impl->m_sendEnabled = false;
+        m_impl->m_receiveEnabled = false;
         shutdown(**m_socket, SHUT_RDWR);
     }
 }
@@ -186,6 +189,8 @@ bool TcpBasicSocket::Read(void* dest, size_t len)
             return true;
         if (amountRead == 0) // Graceful close.
         {
+            if (!m_impl->m_receiveEnabled)
+                throw ProgramError("Attempted to read after EOF.");
             ShutdownReceive();
             return false;
         }

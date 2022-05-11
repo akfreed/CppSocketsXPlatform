@@ -60,6 +60,10 @@ public:
     TcpSocket m_receiver;
 };
 
+TEST_F(UnitTestProtocol, Empty)
+{
+}
+
 TEST_F(UnitTestProtocol, ShutdownSendTcp)
 {
     Timeout timeout(std::chrono::seconds(3));
@@ -186,7 +190,7 @@ TEST_F(UnitTestProtocol, ReadAfterShutdownTcp)
 
     // Read should throw this time.
     ASSERT_EQ(m_receiver.DataAvailable(), 0);
-    ASSERT_THROW(m_receiver.Read(&c, sizeof(c)), SocketError);
+    ASSERT_THROW(m_receiver.Read(&c, sizeof(c)), ProgramError);
     ASSERT_FALSE(m_receiver);
     ASSERT_EQ(c, 0xAF);
 
@@ -206,7 +210,7 @@ TEST_F(UnitTestProtocol, ReadAfterShutdownTcp)
 
     // Read should throw this time.
     ASSERT_EQ(m_sender.DataAvailable(), 0);
-    ASSERT_THROW(m_sender.Read(&c, sizeof(c)), SocketError);
+    ASSERT_THROW(m_sender.Read(&c, sizeof(c)), ProgramError);
     ASSERT_FALSE(m_sender);
     ASSERT_EQ(c, 0xAF);
 
@@ -250,7 +254,7 @@ TEST_F(UnitTestProtocol, ReadAfterShutdownTcpEc)
     ASSERT_FALSE(ec);
     ASSERT_FALSE(m_receiver.Read(&c, sizeof(c), &ec));
     ASSERT_TRUE(ec);
-    ASSERT_THROW(ec.Rethrow(), SocketError);
+    ASSERT_THROW(ec.Rethrow(), ProgramError);
     ec = ErrorCode(); // Reset ec.
     ASSERT_FALSE(m_receiver);
     ASSERT_EQ(c, 0xAF);

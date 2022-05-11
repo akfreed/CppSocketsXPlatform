@@ -25,7 +25,7 @@ namespace strapper { namespace net { namespace test {
 
 using std::chrono::milliseconds;
 
-class UnitTestShutdownPerms : public ::testing::Test
+class UnitTestShutdown : public ::testing::Test
 {
 public:
     static void SetUpTestSuite()
@@ -52,7 +52,34 @@ public:
     TcpBasicSocket m_receiver;
 };
 
-TEST_F(UnitTestShutdownPerms, ABXY)
+TEST_F(UnitTestShutdown, Empty)
+{
+}
+
+TEST_F(UnitTestShutdown, ShutdownThenRead)
+{
+    m_sender.ShutdownReceive();
+    uint8_t c = 0;
+    m_sender.Write(&c, sizeof(c));
+    ASSERT_THROW(m_sender.Read(&c, sizeof(c)), ProgramError);
+}
+
+TEST_F(UnitTestShutdown, ShutdownThenWrite)
+{
+    m_sender.ShutdownSend();
+    uint8_t c = 0;
+    ASSERT_THROW(m_sender.Write(&c, sizeof(c)), ProgramError);
+}
+
+TEST_F(UnitTestShutdown, ShutdownThenReadAndWrite)
+{
+    m_sender.ShutdownBoth();
+    uint8_t c = 0;
+    ASSERT_THROW(m_sender.Write(&c, sizeof(c)), ProgramError);
+    ASSERT_THROW(m_sender.Read(&c, sizeof(c)), ProgramError);
+}
+
+TEST_F(UnitTestShutdown, PermABXY)
 {
     m_sender.ShutdownSend();
     m_receiver.ShutdownReceive();
@@ -60,7 +87,7 @@ TEST_F(UnitTestShutdownPerms, ABXY)
     ASSERT_NO_THROW(m_sender.ShutdownReceive());
 }
 
-TEST_F(UnitTestShutdownPerms, AXBY)
+TEST_F(UnitTestShutdown, PermAXBY)
 {
     m_sender.ShutdownSend();
     m_receiver.ShutdownSend();
@@ -68,7 +95,7 @@ TEST_F(UnitTestShutdownPerms, AXBY)
     ASSERT_NO_THROW(m_sender.ShutdownReceive());
 }
 
-TEST_F(UnitTestShutdownPerms, AXYB)
+TEST_F(UnitTestShutdown, PermAXYB)
 {
     m_sender.ShutdownSend();
     m_receiver.ShutdownSend();
@@ -76,7 +103,7 @@ TEST_F(UnitTestShutdownPerms, AXYB)
     ASSERT_NO_THROW(m_receiver.ShutdownReceive());
 }
 
-TEST_F(UnitTestShutdownPerms, AYXB)
+TEST_F(UnitTestShutdown, PermAYXB)
 {
     m_sender.ShutdownSend();
     m_sender.ShutdownReceive();
@@ -84,7 +111,7 @@ TEST_F(UnitTestShutdownPerms, AYXB)
     ASSERT_NO_THROW(m_receiver.ShutdownReceive());
 }
 
-TEST_F(UnitTestShutdownPerms, YAXB)
+TEST_F(UnitTestShutdown, PermYAXB)
 {
     m_sender.ShutdownReceive();
     m_sender.ShutdownSend();
@@ -92,7 +119,7 @@ TEST_F(UnitTestShutdownPerms, YAXB)
     ASSERT_NO_THROW(m_receiver.ShutdownReceive());
 }
 
-TEST_F(UnitTestShutdownPerms, YXAB)
+TEST_F(UnitTestShutdown, PermYXAB)
 {
     m_sender.ShutdownReceive();
     m_receiver.ShutdownSend();
@@ -100,7 +127,7 @@ TEST_F(UnitTestShutdownPerms, YXAB)
     ASSERT_NO_THROW(m_receiver.ShutdownReceive());
 }
 
-TEST_F(UnitTestShutdownPerms, ABYX)
+TEST_F(UnitTestShutdown, PermABYX)
 {
     m_sender.ShutdownSend();
     m_receiver.ShutdownReceive();
@@ -108,7 +135,7 @@ TEST_F(UnitTestShutdownPerms, ABYX)
     m_receiver.ShutdownSend();
 }
 
-TEST_F(UnitTestShutdownPerms, AYBX)
+TEST_F(UnitTestShutdown, PermAYBX)
 {
     m_sender.ShutdownSend();
     m_sender.ShutdownReceive();
@@ -116,7 +143,7 @@ TEST_F(UnitTestShutdownPerms, AYBX)
     m_receiver.ShutdownSend();
 }
 
-TEST_F(UnitTestShutdownPerms, YABX)
+TEST_F(UnitTestShutdown, PermYABX)
 {
     m_sender.ShutdownReceive();
     m_sender.ShutdownSend();
@@ -124,7 +151,7 @@ TEST_F(UnitTestShutdownPerms, YABX)
     m_receiver.ShutdownSend();
 }
 
-TEST_F(UnitTestShutdownPerms, YBAX)
+TEST_F(UnitTestShutdown, PermYBAX)
 {
     m_sender.ShutdownReceive();
     m_receiver.ShutdownReceive();
@@ -132,7 +159,7 @@ TEST_F(UnitTestShutdownPerms, YBAX)
     m_receiver.ShutdownSend();
 }
 
-TEST_F(UnitTestShutdownPerms, YBXA)
+TEST_F(UnitTestShutdown, PermYBXA)
 {
     m_sender.ShutdownReceive();
     m_receiver.ShutdownReceive();
@@ -140,7 +167,7 @@ TEST_F(UnitTestShutdownPerms, YBXA)
     m_sender.ShutdownSend();
 }
 
-TEST_F(UnitTestShutdownPerms, YXBA)
+TEST_F(UnitTestShutdown, PermYXBA)
 {
     m_sender.ShutdownReceive();
     m_receiver.ShutdownSend();
