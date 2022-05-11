@@ -353,7 +353,7 @@ TEST_F(UnitTestSocket, DataAvailableUdp)
         double toRead = 0;
         static_assert(sizeof(toWrite) == sizeof(toRead), "Buffers must be the same size.");
         ASSERT_EQ(sender.DataAvailable(), sizeof(toWrite));
-        ASSERT_EQ(sender.Read(&toRead, 10000, &senderIp, &senderPort), sizeof(toWrite));
+        ASSERT_EQ(sender.Read(&toRead, 1000, &senderIp, &senderPort), sizeof(toWrite));
         ASSERT_EQ(toRead, toWrite);
         ASSERT_EQ(sender.DataAvailable(), 0u);
         ASSERT_EQ(senderIp.ToInt(), IpAddressV4::Loopback.ToInt());
@@ -412,7 +412,7 @@ TEST_F(UnitTestSocket, DataAvailableUdpEc)
         static_assert(sizeof(toWrite) == sizeof(toRead), "Buffers must be the same size.");
         ASSERT_EQ(sender.DataAvailable(&ec), sizeof(toWrite));
         ASSERT_FALSE(ec);
-        ASSERT_EQ(sender.Read(&toRead, 10000, &senderIp, &senderPort, &ec), sizeof(toWrite));
+        ASSERT_EQ(sender.Read(&toRead, 1000, &senderIp, &senderPort, &ec), sizeof(toWrite));
         ASSERT_FALSE(ec);
         ASSERT_EQ(toRead, toWrite);
         ASSERT_EQ(sender.DataAvailable(&ec), 0u);
