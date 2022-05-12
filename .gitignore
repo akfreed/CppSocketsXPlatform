@@ -1,4 +1,8 @@
 build/
+build_*/
 debug/
+debug_*/
 release/
+release_*/
+
 .vscode/

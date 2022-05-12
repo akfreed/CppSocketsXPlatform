@@ -66,14 +66,27 @@ SocketHandle Connect(std::string const& host, uint16_t port)
 
 }
 
+//! Provide additional data members specific to an implementation.
+struct TcpBasicSocketImpl
+{
+    bool m_sendEnabled = true;
+    bool m_receiveEnabled = true;
+};
+
+TcpBasicSocket::TcpBasicSocket() = default;
+TcpBasicSocket::TcpBasicSocket(TcpBasicSocket&&) noexcept = default;
+TcpBasicSocket& TcpBasicSocket::operator=(TcpBasicSocket&&) noexcept = default;
+
 //! Constructor connects to host:port.
 TcpBasicSocket::TcpBasicSocket(std::string const& host, uint16_t port)
     : m_socket(Connect(host, port))
+    , m_impl(new TcpBasicSocketImpl)
 { }
 
 //! Special private constructor used only by TcpListener.Accept().
 TcpBasicSocket::TcpBasicSocket(SocketHandle&& socket)
     : m_socket(std::move(socket))
+    , m_impl(new TcpBasicSocketImpl)
 { }
 
 TcpBasicSocket::~TcpBasicSocket()
@@ -106,20 +119,31 @@ void TcpBasicSocket::SetReadTimeout(unsigned milliseconds)
 
 void TcpBasicSocket::ShutdownSend()
 {
+    m_impl->m_sendEnabled = false;
     if (shutdown(**m_socket, SHUT_WR) == SocketFd::SOCKET_ERROR)
         throw SocketError(errno);
 }
 
 void TcpBasicSocket::ShutdownReceive()
 {
+    m_impl->m_receiveEnabled = false;
     if (shutdown(**m_socket, SHUT_RD) == SocketFd::SOCKET_ERROR)
+    {
+        // Linux gives ENOTCONN when calling shutdown receive if both sides have called shutdown send. We can ignore this.
+        if (errno == ENOTCONN && !m_impl->m_sendEnabled)
+            return;
         throw SocketError(errno);
+    }
 }
 
 void TcpBasicSocket::ShutdownBoth() noexcept
 {
     if (m_socket)
+    {
+        m_impl->m_sendEnabled = false;
+        m_impl->m_receiveEnabled = false;
         shutdown(**m_socket, SHUT_RDWR);
+    }
 }
 
 //! Shutdown and close the socket.
@@ -134,7 +158,7 @@ void TcpBasicSocket::Write(void const* src, size_t len)
     if (len == 0)
         throw ProgramError("Length must be greater than 0.");
 
-    while (send(**m_socket, src, len, 0) == SocketFd::SOCKET_ERROR)
+    while (send(**m_socket, src, len, MSG_NOSIGNAL) == SocketFd::SOCKET_ERROR)
     {
         if (errno != EINTR)
             throw SocketError(errno);
@@ -165,6 +189,8 @@ bool TcpBasicSocket::Read(void* dest, size_t len)
             return true;
         if (amountRead == 0) // Graceful close.
         {
+            if (!m_impl->m_receiveEnabled)
+                throw ProgramError("Attempted to read after EOF.");
             ShutdownReceive();
             return false;
         }

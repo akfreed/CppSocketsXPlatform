@@ -25,13 +25,13 @@ struct SocketFd;
 class SocketHandle
 {
 public:
-    SocketHandle();
+    SocketHandle(); // = default
     SocketHandle(int family, int socktype, int protocol);
     explicit SocketHandle(SocketFd const& fd);
     SocketHandle(SocketHandle const&) = delete;
-    SocketHandle(SocketHandle&& other) noexcept;
+    SocketHandle(SocketHandle&& other) noexcept; // = default
     SocketHandle& operator=(SocketHandle const&) = delete;
-    SocketHandle& operator=(SocketHandle&& other) noexcept;
+    SocketHandle& operator=(SocketHandle&& other) noexcept; // = default
     ~SocketHandle();
 
     void Close() noexcept;

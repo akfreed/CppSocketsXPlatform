@@ -25,15 +25,17 @@
 
 namespace strapper { namespace net {
 
+struct TcpBasicSocketImpl;
+
 class TcpBasicSocket
 {
 public:
-    TcpBasicSocket() = default;
+    TcpBasicSocket(); // = default
     TcpBasicSocket(std::string const& host, uint16_t port);
     TcpBasicSocket(TcpBasicSocket const&) = delete;
-    TcpBasicSocket(TcpBasicSocket&&) = default;
+    TcpBasicSocket(TcpBasicSocket&&) noexcept; // = default
     TcpBasicSocket& operator=(TcpBasicSocket const&) = delete;
-    TcpBasicSocket& operator=(TcpBasicSocket&&) = default;
+    TcpBasicSocket& operator=(TcpBasicSocket&&) noexcept; // = default
     ~TcpBasicSocket();
 
     bool IsConnected() const;
@@ -62,6 +64,7 @@ private:
 
     SystemContext m_context;
     SocketHandle m_socket;
+    std::unique_ptr<TcpBasicSocketImpl> m_impl;
 };
 
 } }

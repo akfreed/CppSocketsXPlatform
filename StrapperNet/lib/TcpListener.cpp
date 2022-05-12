@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2018, 2021 Alexander K. Freed
+// Copyright 2018-2022 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -29,6 +29,20 @@ TcpListener::TcpListener(uint16_t port)
     , m_state(State::OPEN)
 {
     assert(m_listener);
+}
+
+TcpListener::TcpListener(uint16_t port, ErrorCode* ec)
+    : TcpListener()
+{
+    try
+    {
+        *this = TcpListener(port);
+    }
+    catch (ProgramError const&)
+    {
+        if (ec)
+            *ec = ErrorCode(std::current_exception());
+    }
 }
 
 TcpListener::TcpListener(TcpListener&& other) noexcept
@@ -130,6 +144,20 @@ TcpSocket TcpListener::Accept()
         m_state = State::CLOSED;
         m_acceptCancel.notify_all();
         throw;
+    }
+}
+
+TcpSocket TcpListener::Accept(ErrorCode* ec)
+{
+    try
+    {
+        return Accept();
+    }
+    catch (ProgramError const&)
+    {
+        if (ec)
+            *ec = ErrorCode(std::current_exception());
+        return {};
     }
 }
 
