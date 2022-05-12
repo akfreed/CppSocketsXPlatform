@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2018, 2021 Alexander K. Freed
+// Copyright 2018-2022 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -29,6 +29,20 @@ TcpSocket::TcpSocket(std::string const& host, uint16_t port)
     , m_state(State::CONNECTED)
 {
     assert(m_socket);
+}
+
+TcpSocket::TcpSocket(std::string const& host, uint16_t port, ErrorCode* ec)
+    : TcpSocket()
+{
+    try
+    {
+        *this = TcpSocket(host, port);
+    }
+    catch (ProgramError const&)
+    {
+        if (ec)
+            *ec = ErrorCode(std::current_exception());
+    }
 }
 
 // special private constructor used only by TcpListener.Accept(), which has a friend function
@@ -99,6 +113,19 @@ void TcpSocket::SetReadTimeout(unsigned milliseconds)
     m_socket.SetReadTimeout(milliseconds);
 }
 
+void TcpSocket::SetReadTimeout(unsigned milliseconds, ErrorCode* ec)
+{
+    try
+    {
+        SetReadTimeout(milliseconds);
+    }
+    catch (ProgramError const&)
+    {
+        if (ec)
+            *ec = ErrorCode(std::current_exception());
+    }
+}
+
 void TcpSocket::ShutdownSend()
 {
     std::lock_guard<std::mutex> lock(m_socketLock);
@@ -108,6 +135,19 @@ void TcpSocket::ShutdownSend()
         throw ProgramError("Socket was closed from another thread.");
 
     m_socket.ShutdownSend();
+}
+
+void TcpSocket::ShutdownSend(ErrorCode* ec)
+{
+    try
+    {
+        ShutdownSend();
+    }
+    catch (ProgramError const&)
+    {
+        if (ec)
+            *ec = ErrorCode(std::current_exception());
+    }
 }
 
 void TcpSocket::ShutdownBoth()
@@ -159,6 +199,19 @@ void TcpSocket::Write(void const* src, size_t len)
     m_socket.Write(src, len);
 }
 
+void TcpSocket::Write(void const* src, size_t len, ErrorCode* ec)
+{
+    try
+    {
+        Write(src, len);
+    }
+    catch (ProgramError const&)
+    {
+        if (ec)
+            *ec = ErrorCode(std::current_exception());
+    }
+}
+
 bool TcpSocket::Read(void* dest, size_t len)
 {
     {
@@ -190,6 +243,20 @@ bool TcpSocket::Read(void* dest, size_t len)
     }
 }
 
+bool TcpSocket::Read(void* dest, size_t len, ErrorCode* ec)
+{
+    try
+    {
+        return Read(dest, len);
+    }
+    catch (ProgramError const&)
+    {
+        if (ec)
+            *ec = ErrorCode(std::current_exception());
+        return false;
+    }
+}
+
 // returns the amount of bytes available in the stream
 // guaranteed not to be bigger than the actual number
 // you can read this many bytes without blocking
@@ -205,6 +272,20 @@ unsigned TcpSocket::DataAvailable()
         throw ProgramError("Socket was closed from another thread.");
 
     return m_socket.DataAvailable();
+}
+
+unsigned TcpSocket::DataAvailable(ErrorCode* ec)
+{
+    try
+    {
+        return DataAvailable();
+    }
+    catch (ProgramError const&)
+    {
+        if (ec)
+            *ec = ErrorCode(std::current_exception());
+        return 0;
+    }
 }
 
 TcpSocket::operator bool() const

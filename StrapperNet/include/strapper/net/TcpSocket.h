@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2018, 2021 Alexander K. Freed
+// Copyright 2018-2022 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,11 +23,14 @@
 
 namespace strapper { namespace net {
 
+class ErrorCode;
+
 class TcpSocket
 {
 public:
     TcpSocket() = default;
     TcpSocket(std::string const& host, uint16_t port);
+    TcpSocket(std::string const& host, uint16_t port, ErrorCode* ec);
     TcpSocket(TcpSocket const&) = delete;
     TcpSocket(TcpSocket&& other) noexcept;
     TcpSocket& operator=(TcpSocket const&) = delete;
@@ -38,15 +41,20 @@ public:
 
     bool IsConnected() const;
     void SetReadTimeout(unsigned milliseconds);
+    void SetReadTimeout(unsigned milliseconds, ErrorCode* ec);
 
     void ShutdownSend();
+    void ShutdownSend(ErrorCode* ec);
     void ShutdownBoth();
     void Close() noexcept;
 
     void Write(void const* src, size_t len);
+    void Write(void const* src, size_t len, ErrorCode* ec);
     bool Read(void* dest, size_t len);
+    bool Read(void* dest, size_t len, ErrorCode* ec);
 
     unsigned DataAvailable();
+    unsigned DataAvailable(ErrorCode* ec);
 
     explicit operator bool() const;
 
