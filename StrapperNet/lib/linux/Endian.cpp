@@ -33,6 +33,16 @@ int32_t nton(int32_t i32)
     return htonl(i32);
 }
 
+void nton(uint32_t* i32)
+{
+    *i32 = htonl(*i32);
+}
+
+uint32_t nton(uint32_t i32)
+{
+    return htonl(i32);
+}
+
 //! Be careful not to assign anything to this double until it's back to host form.
 void nton(double* d)
 {
