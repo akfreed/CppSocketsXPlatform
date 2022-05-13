@@ -19,9 +19,9 @@
 #include <strapper/net/SocketError.h>
 
 #include <cstring>
-#include <sstream>
-#include <regex>
 #include <limits>
+#include <regex>
+#include <sstream>
 
 namespace strapper { namespace net {
 
