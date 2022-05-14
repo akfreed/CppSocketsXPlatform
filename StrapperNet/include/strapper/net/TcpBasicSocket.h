@@ -16,8 +16,8 @@
 
 #pragma once
 
-#include <strapper/net/SystemContext.h>
 #include <strapper/net/SocketHandle.h>
+#include <strapper/net/SystemContext.h>
 
 #include <cstddef>
 #include <cstdint>
@@ -67,4 +67,4 @@ private:
     std::unique_ptr<TcpBasicSocketImpl> m_impl;
 };
 
-} }
+}} // namespace strapper::net

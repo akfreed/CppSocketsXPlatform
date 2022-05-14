@@ -16,14 +16,14 @@
 
 #include "EchoServers.h"
 
+#include <strapper/net/IpAddress.h>
 #include <strapper/net/TcpListener.h>
 #include <strapper/net/TcpSerializer.h>
 #include <strapper/net/UdpSocket.h>
-#include <strapper/net/IpAddress.h>
 
 #include <cstring>
-#include <string>
 #include <iostream>
+#include <string>
 
 namespace strapper { namespace net {
 
@@ -48,7 +48,6 @@ void TcpEchoServer(uint16_t port)
     std::cout << "> Closing connection to client." << std::endl;
 }
 
-
 void UdpEchoServer(uint16_t port)
 {
     UdpSocket client(port);
@@ -68,4 +67,4 @@ void UdpEchoServer(uint16_t port)
     std::cout << "> Closing socket." << std::endl;
 }
 
-} }
+}} // namespace strapper::net

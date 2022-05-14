@@ -6,6 +6,7 @@ repos:
         args: ["-style=file"]
       #- id: clang-tidy
       #  args: [-p=build_linux, -checks=*, -warnings-as-errors=*]
+      #  args: [-p=build_linux, --format-style=file]
       #- id: oclint
       #- id: uncrustify
       #- id: cppcheck

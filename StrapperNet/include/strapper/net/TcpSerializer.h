@@ -49,4 +49,4 @@ private:
     TcpSocket m_socket;
 };
 
-} }
+}} // namespace strapper::net

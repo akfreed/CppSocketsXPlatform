@@ -18,11 +18,11 @@
 
 #include <strapper/net/SocketError.h>
 
-#include <thread>
-#include <mutex>
-#include <condition_variable>
 #include <chrono>
+#include <condition_variable>
 #include <iostream>
+#include <mutex>
+#include <thread>
 
 namespace strapper { namespace net { namespace test {
 
@@ -86,4 +86,4 @@ private:
     std::thread m_thread;
 };
 
-} } }
+}}} // namespace strapper::net::test

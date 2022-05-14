@@ -39,4 +39,4 @@ private:
     static std::mutex s_mutex;
 };
 
-} }
+}} // namespace strapper::net

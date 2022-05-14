@@ -16,8 +16,8 @@
 
 #include <strapper/net/TcpSerializer.h>
 
-#include <strapper/net/SocketError.h>
 #include <strapper/net/Endian.h>
+#include <strapper/net/SocketError.h>
 
 #include <cassert>
 #include <cstring>
@@ -129,4 +129,4 @@ bool TcpSerializer::Read(std::string* dest)
     return m_socket.Read(&*(dest->begin()), static_cast<size_t>(len));
 }
 
-} }
+}} // namespace strapper::net

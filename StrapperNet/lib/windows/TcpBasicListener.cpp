@@ -66,7 +66,7 @@ SocketHandle Start(uint16_t port)
     return socket;
 }
 
-}
+} // namespace
 
 TcpBasicListener::TcpBasicListener(uint16_t port)
     : m_socket(Start(port))
@@ -95,7 +95,7 @@ TcpBasicSocket TcpBasicListener::Accept()
     {
         while (true)
         {
-            SOCKET clientId = accept(**m_socket, nullptr, nullptr);  // todo: implement args 2 and 3
+            SOCKET clientId = accept(**m_socket, nullptr, nullptr); // todo: implement args 2 and 3
             if (clientId != INVALID_SOCKET)
                 return TcpBasicSocket::Attorney::accept(SocketHandle(SocketFd{ clientId }));
             int const error = WSAGetLastError();
@@ -124,4 +124,4 @@ void TcpBasicListener::shutdown() noexcept
     }
 }
 
-} }
+}} // namespace strapper::net

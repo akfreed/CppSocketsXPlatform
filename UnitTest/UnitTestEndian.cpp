@@ -16,15 +16,15 @@
 
 #include <gtest/gtest.h>
 
-#include <strapper/net/TcpSocket.h>
-#include <strapper/net/TcpSerializer.h>
 #include <strapper/net/TcpListener.h>
+#include <strapper/net/TcpSerializer.h>
+#include <strapper/net/TcpSocket.h>
 #include "TestGlobals.h"
 #include "Timeout.h"
 
+#include <algorithm>
 #include <cstdint>
 #include <cstring>
-#include <algorithm>
 
 namespace strapper { namespace net { namespace test {
 
@@ -110,4 +110,4 @@ TEST_F(UnitTestEndian, CheckDouble)
     ASSERT_TRUE(std::equal(readBuffer, readBuffer + 8, valBuffer));
 }
 
-} } }
+}}} // namespace strapper::net::test

@@ -16,19 +16,19 @@
 
 #include <gtest/gtest.h>
 
+#include <strapper/net/IpAddress.h>
 #include <strapper/net/TcpListener.h>
 #include <strapper/net/TcpSerializer.h>
 #include <strapper/net/TcpSocket.h>
 #include <strapper/net/UdpSocket.h>
-#include <strapper/net/IpAddress.h>
-#include "Timeout.h"
 #include "TestGlobals.h"
+#include "Timeout.h"
 
-#include <cstring>
-#include <string>
-#include <memory>
-#include <chrono>
 #include <algorithm>
+#include <chrono>
+#include <cstring>
+#include <memory>
+#include <string>
 #include <thread>
 #include <vector>
 
@@ -422,4 +422,4 @@ TEST_F(UnitTestSocket, DataAvailableUdpEc)
     }
 }
 
-} } }
+}}} // namespace strapper::net::test

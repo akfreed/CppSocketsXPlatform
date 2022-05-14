@@ -19,9 +19,9 @@
 #include <strapper/net/SocketError.h>
 #include "SocketFd.h"
 
-#include <sys/socket.h>
-#include <sys/ioctl.h>
 #include <arpa/inet.h>
+#include <sys/ioctl.h>
+#include <sys/socket.h>
 
 #include <cassert>
 #include <limits>
@@ -47,7 +47,7 @@ SocketHandle MakeSocket(uint16_t myport)
     return socket;
 }
 
-}
+} // namespace
 
 //! 0 for any. // todo: verify
 UdpBasicSocket::UdpBasicSocket(uint16_t myport)
@@ -119,22 +119,22 @@ void UdpBasicSocket::Write(void const* src, size_t len, IpAddressV4 const& ipAdd
     }
 }
 
-    // if (amountRead == SOCKET_ERROR)
-    // {
-    //     switch (errno)
-    //     {
-    //     case EAGAIN:           // Probably means that a timeout was reached. Socket is still good, but for
-    //         close(lock);       // consistency with the Windows version, we need to close the socket.
-    //         return false;
-    //         break;
+// if (amountRead == SOCKET_ERROR)
+// {
+//     switch (errno)
+//     {
+//     case EAGAIN:           // Probably means that a timeout was reached. Socket is still good, but for
+//         close(lock);       // consistency with the Windows version, we need to close the socket.
+//         return false;
+//         break;
 
-    //     default:
-    //         assert(false);  // todo: development only. Need to see what kind of errors we experience.
-    //         close(lock);
-    //         return false;
-    //         break;
-    //     }
-    // }
+//     default:
+//         assert(false);  // todo: development only. Need to see what kind of errors we experience.
+//         close(lock);
+//         return false;
+//         break;
+//     }
+// }
 
 unsigned UdpBasicSocket::Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddress, uint16_t* out_port)
 {
@@ -184,4 +184,4 @@ UdpBasicSocket::operator bool() const
     return IsOpen();
 }
 
-} }
+}} // namespace strapper::net

@@ -293,4 +293,4 @@ TcpSocket::operator bool() const
     return IsConnected();
 }
 
-} }
+}} // namespace strapper::net

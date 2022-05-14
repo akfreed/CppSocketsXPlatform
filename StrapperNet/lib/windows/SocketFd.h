@@ -28,4 +28,4 @@ struct SocketFd
     SOCKET m_fd = INVALID_SOCKET;
 };
 
-} }
+}} // namespace strapper::net

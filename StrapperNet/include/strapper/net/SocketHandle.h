@@ -44,4 +44,4 @@ private:
     std::unique_ptr<SocketFd> m_socketId;
 };
 
-} }
+}} // namespace strapper::net

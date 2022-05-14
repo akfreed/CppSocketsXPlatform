@@ -16,8 +16,8 @@
 
 #pragma once
 
-#include <strapper/net/SystemContext.h>
 #include <strapper/net/SocketHandle.h>
+#include <strapper/net/SystemContext.h>
 #include <strapper/net/TcpBasicSocket.h>
 
 #include <cstdint>
@@ -50,4 +50,4 @@ private:
     SocketHandle m_socket;
 };
 
-} }
+}} // namespace strapper::net

@@ -16,9 +16,9 @@
 
 #pragma once
 
+#include <array>
 #include <cstdint>
 #include <string>
-#include <array>
 
 namespace strapper { namespace net {
 
@@ -42,4 +42,4 @@ private:
     uint32_t m_val = 0;
 };
 
-} }
+}} // namespace strapper::net

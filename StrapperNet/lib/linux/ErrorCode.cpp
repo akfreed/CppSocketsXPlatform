@@ -18,69 +18,69 @@
 
 #include <strapper/net/SocketError.h>
 
-#include <sys/socket.h>
 #include <netdb.h>
+#include <sys/socket.h>
 
 #include <cassert>
 #include <string>
 
 namespace strapper { namespace net {
 
-#define CODES(FUNC) \
-    FUNC(EACCES) \
-    FUNC(EADDRINUSE) \
-    FUNC(EADDRNOTAVAIL) \
-    FUNC(EAFNOSUPPORT) \
-    FUNC(EAGAIN) \
-    FUNC(EAI_ADDRFAMILY) \
-    FUNC(EAI_AGAIN) \
-    FUNC(EAI_BADFLAGS) \
-    FUNC(EAI_FAIL) \
-    FUNC(EAI_FAMILY) \
-    FUNC(EAI_MEMORY) \
-    FUNC(EAI_NODATA) \
-    FUNC(EAI_NONAME) \
-    FUNC(EAI_SERVICE) \
-    FUNC(EAI_SOCKTYPE) \
-    FUNC(EAI_SYSTEM) \
-    FUNC(EALREADY) \
-    FUNC(EBADF) \
-    FUNC(ECONNABORTED) \
-    FUNC(ECONNREFUSED) \
-    FUNC(ECONNRESET) \
-    FUNC(EDESTADDRREQ) \
-    FUNC(EDOM) \
-    FUNC(EDQUOT) \
-    FUNC(EFAULT) \
-    FUNC(EHOSTUNREACH) \
-    FUNC(EINPROGRESS) \
-    FUNC(EINTR) \
-    FUNC(EINVAL) \
-    FUNC(EIO) \
-    FUNC(EISCONN) \
-    FUNC(ELOOP) \
-    FUNC(EMFILE) \
-    FUNC(EMSGSIZE) \
-    FUNC(ENAMETOOLONG) \
-    FUNC(ENETUNREACH) \
-    FUNC(ENFILE) \
-    FUNC(ENOBUFS) \
-    FUNC(ENOENT) \
-    FUNC(ENOMEM) \
-    FUNC(ENOPROTOOPT) \
-    FUNC(ENOSPC) \
-    FUNC(ENOSR) \
-    FUNC(ENOTCONN) \
-    FUNC(ENOTDIR) \
-    FUNC(ENOTSOCK) \
-    FUNC(EOPNOTSUPP) \
-    FUNC(EPERM) \
-    FUNC(EPIPE) \
+#define CODES(FUNC)       \
+    FUNC(EACCES)          \
+    FUNC(EADDRINUSE)      \
+    FUNC(EADDRNOTAVAIL)   \
+    FUNC(EAFNOSUPPORT)    \
+    FUNC(EAGAIN)          \
+    FUNC(EAI_ADDRFAMILY)  \
+    FUNC(EAI_AGAIN)       \
+    FUNC(EAI_BADFLAGS)    \
+    FUNC(EAI_FAIL)        \
+    FUNC(EAI_FAMILY)      \
+    FUNC(EAI_MEMORY)      \
+    FUNC(EAI_NODATA)      \
+    FUNC(EAI_NONAME)      \
+    FUNC(EAI_SERVICE)     \
+    FUNC(EAI_SOCKTYPE)    \
+    FUNC(EAI_SYSTEM)      \
+    FUNC(EALREADY)        \
+    FUNC(EBADF)           \
+    FUNC(ECONNABORTED)    \
+    FUNC(ECONNREFUSED)    \
+    FUNC(ECONNRESET)      \
+    FUNC(EDESTADDRREQ)    \
+    FUNC(EDOM)            \
+    FUNC(EDQUOT)          \
+    FUNC(EFAULT)          \
+    FUNC(EHOSTUNREACH)    \
+    FUNC(EINPROGRESS)     \
+    FUNC(EINTR)           \
+    FUNC(EINVAL)          \
+    FUNC(EIO)             \
+    FUNC(EISCONN)         \
+    FUNC(ELOOP)           \
+    FUNC(EMFILE)          \
+    FUNC(EMSGSIZE)        \
+    FUNC(ENAMETOOLONG)    \
+    FUNC(ENETUNREACH)     \
+    FUNC(ENFILE)          \
+    FUNC(ENOBUFS)         \
+    FUNC(ENOENT)          \
+    FUNC(ENOMEM)          \
+    FUNC(ENOPROTOOPT)     \
+    FUNC(ENOSPC)          \
+    FUNC(ENOSR)           \
+    FUNC(ENOTCONN)        \
+    FUNC(ENOTDIR)         \
+    FUNC(ENOTSOCK)        \
+    FUNC(EOPNOTSUPP)      \
+    FUNC(EPERM)           \
+    FUNC(EPIPE)           \
     FUNC(EPROTONOSUPPORT) \
-    FUNC(EPROTOTYPE) \
-    FUNC(EROFS) \
+    FUNC(EPROTOTYPE)      \
+    FUNC(EROFS)           \
     FUNC(ESOCKTNOSUPPORT) \
-    FUNC(ETIMEDOUT) \
+    FUNC(ETIMEDOUT)
 
 #define NAME_SWITCH(name) \
     case name: return #name " (" + std::to_string(name) + ")";
@@ -122,4 +122,4 @@ void ErrorCode::Rethrow() const
     std::rethrow_exception(m_exception);
 }
 
-} }
+}} // namespace strapper::net

@@ -32,4 +32,4 @@ private:
     std::shared_ptr<NativeContext> m_context;
 };
 
-} }
+}} // namespace strapper::net

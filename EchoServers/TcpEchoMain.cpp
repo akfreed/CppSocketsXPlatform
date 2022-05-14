@@ -30,7 +30,8 @@ int main()
     }
     catch (std::exception const& e)
     {
-        std::cout << "Exception occured.\n" << e.what() << std::endl;
+        std::cout << "Exception occured.\n"
+                  << e.what() << std::endl;
     }
     catch (...)
     {

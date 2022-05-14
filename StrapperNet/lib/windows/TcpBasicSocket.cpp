@@ -21,8 +21,8 @@
 #include "SocketFd.h"
 
 #include <cassert>
-#include <memory>
 #include <limits>
+#include <memory>
 
 namespace strapper { namespace net {
 
@@ -32,7 +32,7 @@ namespace {
 SocketHandle Connect(std::string const& host, uint16_t port)
 {
     addrinfo hostInfo{};
-    hostInfo.ai_family = AF_UNSPEC; // Can be IPv4 or IPv6
+    hostInfo.ai_family = AF_UNSPEC;     // Can be IPv4 or IPv6
     hostInfo.ai_socktype = SOCK_STREAM; // TCP
 
     auto lFreeList = [](addrinfo* p) { freeaddrinfo(p); };
@@ -60,7 +60,7 @@ SocketHandle Connect(std::string const& host, uint16_t port)
     return socket;
 }
 
-}
+} // namespace
 
 //! Unused for this implementation.
 struct TcpBasicSocketImpl
@@ -196,4 +196,4 @@ TcpBasicSocket::operator bool() const
     return IsConnected();
 }
 
-} }
+}} // namespace strapper::net

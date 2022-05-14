@@ -66,7 +66,7 @@ TcpListener::~TcpListener()
 void swap(TcpListener& left, TcpListener& right)
 {
     using State = TcpListener::State;
-    std::lock(left.m_lock, right.m_lock);  // deadlock-proof
+    std::lock(left.m_lock, right.m_lock); // deadlock-proof
     std::unique_lock<std::mutex> leftLock(left.m_lock, std::adopt_lock);
     std::unique_lock<std::mutex> rightLock(right.m_lock, std::adopt_lock);
 
@@ -166,4 +166,4 @@ TcpListener::operator bool() const
     return IsListening();
 }
 
-} }
+}} // namespace strapper::net

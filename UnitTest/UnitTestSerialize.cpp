@@ -20,14 +20,14 @@
 #include <strapper/net/TcpSerializer.h>
 #include <strapper/net/TcpSocket.h>
 #include <strapper/net/UdpSocket.h>
-#include "Timeout.h"
 #include "TestGlobals.h"
+#include "Timeout.h"
 
-#include <cstring>
-#include <string>
-#include <memory>
-#include <chrono>
 #include <algorithm>
+#include <chrono>
+#include <cstring>
+#include <memory>
+#include <string>
 
 namespace strapper { namespace net { namespace test {
 
@@ -124,4 +124,4 @@ TEST_F(UnitTestSerialize, SendRecvCharString)
     ASSERT_EQ(in, out);
 }
 
-} } }
+}}} // namespace strapper::net::test

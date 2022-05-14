@@ -24,51 +24,51 @@
 
 namespace strapper { namespace net {
 
-#define CODES(FUNC) \
-    FUNC(NO_ERROR) \
-    FUNC(WSA_NOT_ENOUGH_MEMORY) \
-    FUNC(WSAEACCES) \
-    FUNC(WSAEADDRINUSE) \
-    FUNC(WSAEADDRNOTAVAIL) \
-    FUNC(WSAEAFNOSUPPORT) \
-    FUNC(WSAEALREADY) \
-    FUNC(WSAECONNABORTED) \
-    FUNC(WSAECONNREFUSED) \
-    FUNC(WSAECONNRESET) \
-    FUNC(WSAEFAULT) \
-    FUNC(WSAEHOSTUNREACH) \
-    FUNC(WSAEINPROGRESS) \
-    FUNC(WSAEINTR) \
-    FUNC(WSAEINVAL) \
-    FUNC(WSAEINVALIDPROCTABLE) \
-    FUNC(WSAEINVALIDPROVIDER) \
-    FUNC(WSAEISCONN) \
-    FUNC(WSAEMFILE) \
-    FUNC(WSAEMSGSIZE) \
-    FUNC(WSAENETDOWN) \
-    FUNC(WSAENETRESET) \
-    FUNC(WSAEPROTONOSUPPORT) \
-    FUNC(WSAENETUNREACH) \
+#define CODES(FUNC)              \
+    FUNC(NO_ERROR)               \
+    FUNC(WSA_NOT_ENOUGH_MEMORY)  \
+    FUNC(WSAEACCES)              \
+    FUNC(WSAEADDRINUSE)          \
+    FUNC(WSAEADDRNOTAVAIL)       \
+    FUNC(WSAEAFNOSUPPORT)        \
+    FUNC(WSAEALREADY)            \
+    FUNC(WSAECONNABORTED)        \
+    FUNC(WSAECONNREFUSED)        \
+    FUNC(WSAECONNRESET)          \
+    FUNC(WSAEFAULT)              \
+    FUNC(WSAEHOSTUNREACH)        \
+    FUNC(WSAEINPROGRESS)         \
+    FUNC(WSAEINTR)               \
+    FUNC(WSAEINVAL)              \
+    FUNC(WSAEINVALIDPROCTABLE)   \
+    FUNC(WSAEINVALIDPROVIDER)    \
+    FUNC(WSAEISCONN)             \
+    FUNC(WSAEMFILE)              \
+    FUNC(WSAEMSGSIZE)            \
+    FUNC(WSAENETDOWN)            \
+    FUNC(WSAENETRESET)           \
+    FUNC(WSAEPROTONOSUPPORT)     \
+    FUNC(WSAENETUNREACH)         \
     FUNC(WSAEPROVIDERFAILEDINIT) \
-    FUNC(WSAENOBUFS) \
-    FUNC(WSAENOPROTOOPT) \
-    FUNC(WSAENOTCONN) \
-    FUNC(WSAENOTSOCK) \
-    FUNC(WSAEOPNOTSUPP) \
-    FUNC(WSAEPROCLIM) \
-    FUNC(WSAEPROTOTYPE) \
-    FUNC(WSAESHUTDOWN) \
-    FUNC(WSAESOCKTNOSUPPORT) \
-    FUNC(WSAETIMEDOUT) \
-    FUNC(WSAEWOULDBLOCK) \
-    FUNC(WSAHOST_NOT_FOUND) \
-    FUNC(WSANO_DATA) \
-    FUNC(WSANO_RECOVERY) \
-    FUNC(WSANOTINITIALISED) \
-    FUNC(WSASYSNOTREADY) \
-    FUNC(WSATRY_AGAIN) \
-    FUNC(WSATYPE_NOT_FOUND) \
-    FUNC(WSAVERNOTSUPPORTED) \
+    FUNC(WSAENOBUFS)             \
+    FUNC(WSAENOPROTOOPT)         \
+    FUNC(WSAENOTCONN)            \
+    FUNC(WSAENOTSOCK)            \
+    FUNC(WSAEOPNOTSUPP)          \
+    FUNC(WSAEPROCLIM)            \
+    FUNC(WSAEPROTOTYPE)          \
+    FUNC(WSAESHUTDOWN)           \
+    FUNC(WSAESOCKTNOSUPPORT)     \
+    FUNC(WSAETIMEDOUT)           \
+    FUNC(WSAEWOULDBLOCK)         \
+    FUNC(WSAHOST_NOT_FOUND)      \
+    FUNC(WSANO_DATA)             \
+    FUNC(WSANO_RECOVERY)         \
+    FUNC(WSANOTINITIALISED)      \
+    FUNC(WSASYSNOTREADY)         \
+    FUNC(WSATRY_AGAIN)           \
+    FUNC(WSATYPE_NOT_FOUND)      \
+    FUNC(WSAVERNOTSUPPORTED)
 
 #define NAME_SWITCH(name) \
     case name: return #name " (" + std::to_string(name) + ")";
@@ -110,4 +110,4 @@ void ErrorCode::Rethrow() const
     std::rethrow_exception(m_exception);
 }
 
-} }
+}} // namespace strapper::net

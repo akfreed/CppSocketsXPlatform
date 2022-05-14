@@ -16,8 +16,8 @@
 
 #pragma once
 
-#include <string>
 #include <exception>
+#include <string>
 
 namespace strapper { namespace net {
 
@@ -41,4 +41,4 @@ private:
     std::string m_what = GetErrorName(0);
 };
 
-} }
+}} // namespace strapper::net

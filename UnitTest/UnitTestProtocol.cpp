@@ -16,18 +16,18 @@
 
 #include <gtest/gtest.h>
 
-#include <strapper/net/TcpSocket.h>
-#include <strapper/net/TcpListener.h>
-#include <strapper/net/UdpSocket.h>
 #include <strapper/net/SocketError.h>
+#include <strapper/net/TcpListener.h>
+#include <strapper/net/TcpSocket.h>
+#include <strapper/net/UdpSocket.h>
 #include "TestGlobals.h"
 #include "Timeout.h"
 
-#include <thread>
-#include <chrono>
-#include <future>
 #include <atomic>
+#include <chrono>
 #include <exception>
+#include <future>
+#include <thread>
 
 namespace strapper { namespace net { namespace test {
 
@@ -85,7 +85,7 @@ TEST_F(UnitTestProtocol, ShutdownSendTcp)
     ASSERT_TRUE(m_receiver);
     ASSERT_EQ(c, 0xAF);
 
-    std::atomic<bool> ready{false};
+    std::atomic<bool> ready{ false };
     auto task = std::async(std::launch::async, [this, &ready]() {
         ready = true;
         std::this_thread::sleep_for(milliseconds(200));
@@ -137,7 +137,7 @@ TEST_F(UnitTestProtocol, ShutdownSendTcpEc)
     ASSERT_FALSE(ec);
     ASSERT_EQ(c, 0xAF);
 
-    std::atomic<bool> ready{false};
+    std::atomic<bool> ready{ false };
     auto task = std::async(std::launch::async, [this, &ready]() -> ErrorCode {
         ErrorCode ec;
         ready = true;
@@ -321,4 +321,4 @@ TEST_F(UnitTestProtocol, ReadAfterShutdownTcpEc)
     ASSERT_THROW(ec.Rethrow(), ProgramError);
 }
 
-} } }
+}}} // namespace strapper::net::test

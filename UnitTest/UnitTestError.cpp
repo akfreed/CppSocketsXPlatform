@@ -16,18 +16,18 @@
 
 #include <gtest/gtest.h>
 
-#include <strapper/net/TcpSocket.h>
-#include <strapper/net/TcpListener.h>
-#include <strapper/net/UdpSocket.h>
 #include <strapper/net/SocketError.h>
+#include <strapper/net/TcpListener.h>
+#include <strapper/net/TcpSocket.h>
+#include <strapper/net/UdpSocket.h>
 #include "TestGlobals.h"
 #include "Timeout.h"
 
-#include <thread>
-#include <chrono>
-#include <future>
 #include <atomic>
+#include <chrono>
 #include <exception>
+#include <future>
+#include <thread>
 
 namespace strapper { namespace net { namespace test {
 
@@ -152,12 +152,14 @@ TEST_F(UnitTestError, UnblockReadTcp)
         {
             char buf[1];
             m_receiver.Read(buf, 1);
-            std::cout << "Read did not fail as expected.\n" << std::endl;
+            std::cout << "Read did not fail as expected.\n"
+                      << std::endl;
             return false;
         }
         catch (ProgramError const& e)
         {
-            std::cout << "Read failed successfully:\n" << e.what() << std::endl;
+            std::cout << "Read failed successfully:\n"
+                      << e.what() << std::endl;
             return true;
         }
     });
@@ -185,12 +187,14 @@ TEST_F(UnitTestError, UnblockReadTcpEc)
         {
             if (ec)
                 ec.Rethrow();
-            std::cout << "Read did not fail as expected.\n" << std::endl;
+            std::cout << "Read did not fail as expected.\n"
+                      << std::endl;
             return false;
         }
         catch (ProgramError const& e)
         {
-            std::cout << "Read failed successfully:\n" << e.what() << std::endl;
+            std::cout << "Read failed successfully:\n"
+                      << e.what() << std::endl;
             return true;
         }
     });
@@ -216,12 +220,14 @@ TEST_F(UnitTestError, UnblockReadUdp)
         {
             char buf[1];
             receiver.Read(buf, 1, nullptr, nullptr);
-            std::cout << "Read did not fail as expected.\n" << std::endl;
+            std::cout << "Read did not fail as expected.\n"
+                      << std::endl;
             return false;
         }
         catch (ProgramError const& e)
         {
-            std::cout << "Read failed successfully:\n" << e.what() << std::endl;
+            std::cout << "Read failed successfully:\n"
+                      << e.what() << std::endl;
             return true;
         }
     });
@@ -250,12 +256,14 @@ TEST_F(UnitTestError, UnblockReadUdpEc)
         {
             if (ec)
                 ec.Rethrow();
-            std::cout << "Read did not fail as expected.\n" << std::endl;
+            std::cout << "Read did not fail as expected.\n"
+                      << std::endl;
             return false;
         }
         catch (ProgramError const& e)
         {
-            std::cout << "Read failed successfully:\n" << e.what() << std::endl;
+            std::cout << "Read failed successfully:\n"
+                      << e.what() << std::endl;
             return true;
         }
     });
@@ -280,12 +288,14 @@ TEST_F(UnitTestError, UnblockAccept)
         try
         {
             auto client = listener.Accept();
-            std::cout << "Read did not fail as expected.\n" << std::endl;
+            std::cout << "Read did not fail as expected.\n"
+                      << std::endl;
             return false;
         }
         catch (ProgramError const& e)
         {
-            std::cout << "Accept failed successfully:\n" << e.what() << std::endl;
+            std::cout << "Accept failed successfully:\n"
+                      << e.what() << std::endl;
             return true;
         }
     });
@@ -313,15 +323,17 @@ TEST_F(UnitTestError, UnblockAcceptEc)
         {
             if (ec)
                 ec.Rethrow();
-            std::cout << "Read did not fail as expected.\n" << std::endl;
+            std::cout << "Read did not fail as expected.\n"
+                      << std::endl;
             return false;
         }
         catch (ProgramError const& e)
         {
-            std::cout << "Accept failed successfully:\n" << e.what() << std::endl;
+            std::cout << "Accept failed successfully:\n"
+                      << e.what() << std::endl;
             return true;
         }
-        });
+    });
 
     // Make sure the accept is still blocking.
     ASSERT_EQ(task.wait_for(milliseconds(200)), std::future_status::timeout) << (listener ? "Socket returned from read too early." : "Socket closed.");
@@ -331,4 +343,4 @@ TEST_F(UnitTestError, UnblockAcceptEc)
     ASSERT_TRUE(task.get());
 }
 
-} } }
+}}} // namespace strapper::net::test

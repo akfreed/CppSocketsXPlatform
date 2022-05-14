@@ -26,4 +26,4 @@ void nton(uint32_t* i32);
 uint32_t nton(uint32_t i32);
 void nton(double* d);
 
-} }
+}} // namespace strapper::net

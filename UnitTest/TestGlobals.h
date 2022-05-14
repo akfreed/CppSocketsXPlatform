@@ -27,4 +27,4 @@ struct TestGlobals
     static uint16_t constexpr port2 = 11112;
 };
 
-} } }
+}}} // namespace strapper::net::test

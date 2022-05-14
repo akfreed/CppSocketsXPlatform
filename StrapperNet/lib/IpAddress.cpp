@@ -26,7 +26,7 @@
 namespace strapper { namespace net {
 
 IpAddressV4 const IpAddressV4::Any{};
-IpAddressV4 const IpAddressV4::Loopback{"127.0.0.1"};
+IpAddressV4 const IpAddressV4::Loopback{ "127.0.0.1" };
 
 IpAddressV4::IpAddressV4(std::string const& ip)
 {
@@ -90,4 +90,4 @@ uint32_t IpAddressV4::ToInt() const
     return m_val;
 }
 
-} }
+}} // namespace strapper::net

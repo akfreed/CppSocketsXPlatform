@@ -25,11 +25,11 @@
 namespace strapper { namespace net {
 
 SocketHandle::SocketHandle() = default;
-SocketHandle::SocketHandle(SocketHandle && other) noexcept = default;
-SocketHandle& SocketHandle::operator=(SocketHandle && other) noexcept = default;
+SocketHandle::SocketHandle(SocketHandle&& other) noexcept = default;
+SocketHandle& SocketHandle::operator=(SocketHandle&& other) noexcept = default;
 
 SocketHandle::SocketHandle(int family, int socktype, int protocol)
-    : m_socketId(new SocketFd{socket(family, socktype, protocol)})
+    : m_socketId(new SocketFd{ socket(family, socktype, protocol) })
 {
     if (m_socketId->m_fd == SocketFd::INVALID_SOCKET)
         throw SocketError(errno);
@@ -69,4 +69,4 @@ SocketHandle::operator bool() const
     return m_socketId && m_socketId->m_fd != SocketFd::INVALID_SOCKET;
 }
 
-} }
+}} // namespace strapper::net

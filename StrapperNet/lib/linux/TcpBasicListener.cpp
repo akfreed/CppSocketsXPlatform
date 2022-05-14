@@ -19,8 +19,8 @@
 #include <strapper/net/SocketError.h>
 #include "SocketFd.h"
 
-#include <sys/socket.h>
 #include <netdb.h>
+#include <sys/socket.h>
 
 #include <cassert>
 #include <memory>
@@ -67,7 +67,7 @@ SocketHandle Start(uint16_t port)
     return socket;
 }
 
-}
+} // namespace
 
 TcpBasicListener::TcpBasicListener(uint16_t port)
     : m_socket(Start(port))
@@ -96,7 +96,7 @@ TcpBasicSocket TcpBasicListener::Accept()
     {
         while (true)
         {
-            int clientId = accept(**m_socket, nullptr, nullptr);  // todo: implement args 2 and 3
+            int clientId = accept(**m_socket, nullptr, nullptr); // todo: implement args 2 and 3
             if (clientId != SocketFd::INVALID_SOCKET)
                 return TcpBasicSocket::Attorney::accept(SocketHandle(SocketFd{ clientId }));
             if (errno != ECONNABORTED && errno != EINTR)
@@ -121,4 +121,4 @@ void TcpBasicListener::shutdown() noexcept
         ::shutdown(**m_socket, SHUT_RDWR);
 }
 
-} }
+}} // namespace strapper::net

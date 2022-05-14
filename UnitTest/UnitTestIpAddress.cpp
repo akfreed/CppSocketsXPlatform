@@ -16,9 +16,9 @@
 
 #include <gtest/gtest.h>
 
+#include <strapper/net/Endian.h>
 #include <strapper/net/IpAddress.h>
 #include <strapper/net/SocketError.h>
-#include <strapper/net/Endian.h>
 
 #include <string>
 
@@ -88,7 +88,7 @@ TEST_F(UnitTestIpAddress, Any)
 {
     IpAddressV4 any = IpAddressV4::Any;
     ASSERT_EQ(any.ToString(), "0:0:0:0");
-    ASSERT_TRUE((any.ToArray() == std::array<uint8_t, 4>{ 0, 0, 0, 0}));
+    ASSERT_TRUE((any.ToArray() == std::array<uint8_t, 4>{ 0, 0, 0, 0 }));
     ASSERT_EQ(any.ToInt(), 0u);
 }
 
@@ -100,4 +100,4 @@ TEST_F(UnitTestIpAddress, ConstructFromInt)
     ASSERT_EQ(IpAddressV4(nton(0xABCDEF01)).ToString(), "171:205:239:1");
 }
 
-} } }
+}}} // namespace strapper::net::test

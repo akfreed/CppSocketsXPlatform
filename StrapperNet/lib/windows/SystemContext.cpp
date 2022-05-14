@@ -25,4 +25,4 @@ SystemContext::SystemContext()
     : m_context(NativeContext::Get())
 { }
 
-} }
+}} // namespace strapper::net

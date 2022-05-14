@@ -23,4 +23,4 @@ namespace strapper { namespace net {
 void TcpEchoServer(uint16_t port);
 void UdpEchoServer(uint16_t port);
 
-} }
+}} // namespace strapper::net
