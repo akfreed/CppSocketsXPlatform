@@ -44,7 +44,7 @@ IpAddressV4::IpAddressV4(std::string const& ip)
     {
         if (iter == end)
             throw error;
-        unsigned long ul = 0;
+        unsigned long ul = 0;  // NOLINT(runtime/int)
         try
         {
             ul = std::stoul((iter++)->str());

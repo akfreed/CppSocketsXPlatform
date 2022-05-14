@@ -186,7 +186,7 @@ unsigned UdpBasicSocket::Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddr
 // returns -1 on error
 unsigned UdpBasicSocket::DataAvailable() const
 {
-    unsigned long bytesAvailable = 0;
+    u_long bytesAvailable = 0;
     if (ioctlsocket(**m_socket, FIONREAD, &bytesAvailable) == SOCKET_ERROR)
         throw SocketError(WSAGetLastError());
 

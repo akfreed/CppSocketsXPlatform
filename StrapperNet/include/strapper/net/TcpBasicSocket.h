@@ -21,7 +21,9 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <memory>
 #include <string>
+#include <utility>
 
 namespace strapper { namespace net {
 

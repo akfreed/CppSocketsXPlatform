@@ -29,7 +29,7 @@ public:
     static IpAddressV4 const Loopback;
 
     IpAddressV4() = default;
-    IpAddressV4(std::string const& ip);
+    explicit IpAddressV4(std::string const& ip);
     //! @param[in] val An int (in network byte order) representation of an IP address.
     explicit IpAddressV4(uint32_t val);
 

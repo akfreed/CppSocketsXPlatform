@@ -20,6 +20,7 @@
 
 #include <exception>
 #include <string>
+#include <utility>
 
 namespace strapper { namespace net {
 

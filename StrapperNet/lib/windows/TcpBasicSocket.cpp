@@ -181,7 +181,7 @@ bool TcpBasicSocket::Read(void* dest, size_t len)
 //! May be smaller than the actual number of bytes available
 unsigned TcpBasicSocket::DataAvailable()
 {
-    unsigned long bytesAvailable = 0;
+    u_long bytesAvailable = 0;
     if (ioctlsocket(**m_socket, FIONREAD, &bytesAvailable) == SOCKET_ERROR)
         throw SocketError(WSAGetLastError());
 

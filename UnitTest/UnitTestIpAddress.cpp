@@ -28,6 +28,21 @@ class UnitTestIpAddress : public ::testing::Test
 {
 };
 
+TEST_F(UnitTestIpAddress, ConstructionConversion)
+{
+    char const asChar[] = "0:0:0:0";
+    IpAddressV4 ip1(asChar);
+    IpAddressV4 ip2("0:0:0:0");
+
+    std::string const asString = "0:0:0:0";
+    IpAddressV4 ip3(asString);
+    IpAddressV4 ip4(std::string("0:0:0:0"));
+
+    uint32_t const asInt = 0;
+    IpAddressV4 ip5(asInt);
+    IpAddressV4 ip6(0);
+}
+
 TEST_F(UnitTestIpAddress, IpAddressFail)
 {
     ASSERT_THROW(IpAddressV4(""), ProgramError);

@@ -101,7 +101,7 @@ bool TcpSerializer::Read(int32_t* dest)
 
 bool TcpSerializer::Read(double* dest)
 {
-    static_assert(sizeof(unsigned long long) == sizeof(double), "Function not compatible with this compiler.");
+    static_assert(sizeof(uint64_t) == sizeof(double), "This function is designed for 64-bit doubles.");
     if (!dest)
         throw ProgramError("Null pointer.");
 

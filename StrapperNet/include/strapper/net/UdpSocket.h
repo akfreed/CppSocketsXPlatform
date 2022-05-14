@@ -20,6 +20,7 @@
 
 #include <condition_variable>
 #include <mutex>
+#include <utility>
 
 namespace strapper { namespace net {
 
