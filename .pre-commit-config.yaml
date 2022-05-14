@@ -4,12 +4,10 @@ repos:
     hooks:
       - id: clang-format
         args: ["-style=file"]
+      - id: cpplint
+        args: ["--filter=-build/c++11,-build/namespace,-readability/namespace,-whitespace/braces,-whitespace/indent,-whitespace/line_length,-whitespace/newline,-whitespace/semicolon", --verbose=0]
       #- id: clang-tidy
       #  args: [-p=build_linux, -checks=*, -warnings-as-errors=*]
-      #- id: oclint
       #- id: uncrustify
       #- id: cppcheck
       #  args: [--language=c++, --library=googletest]
-      - id: cpplint
-        args: ["--filter=-build/c++11,-build/namespace,-readability/namespace,-whitespace/braces,-whitespace/comments,-whitespace/line_length,-whitespace/indent,-whitespace/newline,-whitespace/semicolon"]
-      #- id: include-what-you-use

@@ -34,7 +34,7 @@ SocketHandle Start(uint16_t port)
     addrinfo hostInfo{};
     hostInfo.ai_family = AF_INET;
     hostInfo.ai_socktype = SOCK_STREAM;
-    hostInfo.ai_protocol = IPPROTO_TCP;  //todo: confirm
+    hostInfo.ai_protocol = IPPROTO_TCP;  // todo: confirm
     hostInfo.ai_flags = AI_PASSIVE;
 
     auto lFreeList = [](addrinfo* p) { freeaddrinfo(p); };

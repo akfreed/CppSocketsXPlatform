@@ -113,47 +113,47 @@ void UdpBasicSocket::Write(void const* src, size_t len, IpAddressV4 const& ipAdd
         throw SocketError(WSAGetLastError());
 }
 
-//if (amountRead == SOCKET_ERROR)
-//{
-//    int error = WSAGetLastError();
-//    switch (error)
-//    {
-//    case WSAEINTR:       // blocking call was interrupted. In a multi-threaded environment, probably means the socket was closed by another thread
-//        assert(false);   // This shouldn't happen since this situation should be protected by the state machine and mutexes.
-//        return false;
-//        break;
+// if (amountRead == SOCKET_ERROR)
+// {
+//     int error = WSAGetLastError();
+//     switch (error)
+//     {
+//     case WSAEINTR:       // blocking call was interrupted. In a multi-threaded environment, probably means the socket was closed by another thread
+//         assert(false);   // This shouldn't happen since this situation should be protected by the state machine and mutexes.
+//         return false;
+//         break;
 
-//    case WSAETIMEDOUT:   // timeout was reached. If this happens, the socket is in an invalid state and must be closed. (Thanks, Windows)
-//        m_state = State::OPEN;
-//        close(lock);
-//        return false;
-//        break;
+//     case WSAETIMEDOUT:   // timeout was reached. If this happens, the socket is in an invalid state and must be closed. (Thanks, Windows)
+//         m_state = State::OPEN;
+//         close(lock);
+//         return false;
+//         break;
 
-//    case WSAEMSGSIZE:    // buffer was not large enough
-//        amountRead = maxlen;
-//        break;  // fall out of error check back to normal return
+//     case WSAEMSGSIZE:    // buffer was not large enough
+//         amountRead = maxlen;
+//         break;  // fall out of error check back to normal return
 
-//    case WSAECONNRESET:  // In TCP, this is a hard reset. In UDP, it means a previous write failed (ICMP Port Unreachable).
-//        if (!m_theirInfoIsValid)  // expected behavior when reusing a socket. However, we don't allow socket reuse in this implementation.
-//        {
-//            assert(false);
-//            return false;
-//        }
-//        else if (checkSenderInfo(info, infoLen, lock))  // same sender. Up to calling code if they want to close
-//        {
-//            return false;
-//        }
-//        // else, different sender. fall out of error check back to normal return, which will try the read again
-//        break;
+//     case WSAECONNRESET:  // In TCP, this is a hard reset. In UDP, it means a previous write failed (ICMP Port Unreachable).
+//         if (!m_theirInfoIsValid)  // expected behavior when reusing a socket. However, we don't allow socket reuse in this implementation.
+//         {
+//             assert(false);
+//             return false;
+//         }
+//         else if (checkSenderInfo(info, infoLen, lock))  // same sender. Up to calling code if they want to close
+//         {
+//             return false;
+//         }
+//         // else, different sender. fall out of error check back to normal return, which will try the read again
+//         break;
 
-//    default:
-//        assert(false);  // todo: development only. Need to see what kind of errors we experience.
-//        m_state = State::OPEN;
-//        close(lock);
-//        return false;
-//        break;
-//    }
-//}
+//     default:
+//         assert(false);  // todo: development only. Need to see what kind of errors we experience.
+//         m_state = State::OPEN;
+//         close(lock);
+//         return false;
+//         break;
+//     }
+// }
 
 unsigned UdpBasicSocket::Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddress, uint16_t* out_port)
 {
