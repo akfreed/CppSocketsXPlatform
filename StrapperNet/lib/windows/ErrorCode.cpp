@@ -110,4 +110,4 @@ void ErrorCode::Rethrow() const
     std::rethrow_exception(m_exception);
 }
 
-}} // namespace strapper::net
+}}  // namespace strapper::net

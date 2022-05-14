@@ -46,7 +46,7 @@ void TerminateHandler()
     std::abort();
 }
 
-}}} // namespace strapper::net::test
+}}}  // namespace strapper::net::test
 
 int main(int argc, char** argv)
 {

@@ -41,4 +41,4 @@ private:
     std::string m_what = GetErrorName(0);
 };
 
-}} // namespace strapper::net
+}}  // namespace strapper::net

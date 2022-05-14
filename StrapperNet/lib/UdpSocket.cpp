@@ -64,7 +64,7 @@ UdpSocket::~UdpSocket()
 void swap(UdpSocket& left, UdpSocket& right)
 {
     using State = UdpSocket::State;
-    std::lock(left.m_socketLock, right.m_socketLock); // deadlock-proof
+    std::lock(left.m_socketLock, right.m_socketLock);  // deadlock-proof
     std::unique_lock<std::mutex> leftLock(left.m_socketLock, std::adopt_lock);
     std::unique_lock<std::mutex> rightLock(right.m_socketLock, std::adopt_lock);
 
@@ -254,4 +254,4 @@ UdpSocket::operator bool() const
     return IsOpen();
 }
 
-}} // namespace strapper::net
+}}  // namespace strapper::net

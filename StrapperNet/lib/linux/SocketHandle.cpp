@@ -49,7 +49,7 @@ void SocketHandle::Close() noexcept
 {
     if (m_socketId)
     {
-        close(m_socketId->m_fd); // todo: Report errors somehow.
+        close(m_socketId->m_fd);  // todo: Report errors somehow.
         m_socketId.reset();
     }
 }
@@ -69,4 +69,4 @@ SocketHandle::operator bool() const
     return m_socketId && m_socketId->m_fd != SocketFd::INVALID_SOCKET;
 }
 
-}} // namespace strapper::net
+}}  // namespace strapper::net

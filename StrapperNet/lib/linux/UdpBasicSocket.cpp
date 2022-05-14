@@ -47,7 +47,7 @@ SocketHandle MakeSocket(uint16_t myport)
     return socket;
 }
 
-} // namespace
+}  // namespace
 
 //! 0 for any. // todo: verify
 UdpBasicSocket::UdpBasicSocket(uint16_t myport)
@@ -184,4 +184,4 @@ UdpBasicSocket::operator bool() const
     return IsOpen();
 }
 
-}} // namespace strapper::net
+}}  // namespace strapper::net

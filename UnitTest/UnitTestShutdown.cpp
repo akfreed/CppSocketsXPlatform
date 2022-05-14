@@ -175,4 +175,4 @@ TEST_F(UnitTestShutdown, PermYXBA)
     m_sender.ShutdownSend();
 }
 
-}}} // namespace strapper::net::test
+}}}  // namespace strapper::net::test

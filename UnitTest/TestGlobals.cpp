@@ -22,4 +22,4 @@ char constexpr TestGlobals::localhost[];
 uint16_t constexpr TestGlobals::port;
 uint16_t constexpr TestGlobals::port2;
 
-}}} // namespace strapper::net::test
+}}}  // namespace strapper::net::test

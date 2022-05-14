@@ -124,4 +124,4 @@ TEST_F(UnitTestSerialize, SendRecvCharString)
     ASSERT_EQ(in, out);
 }
 
-}}} // namespace strapper::net::test
+}}}  // namespace strapper::net::test

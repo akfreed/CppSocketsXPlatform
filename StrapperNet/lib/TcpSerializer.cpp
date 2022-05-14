@@ -122,11 +122,11 @@ bool TcpSerializer::Read(std::string* dest)
     if (!Read(&len))
         return false;
 
-    if (len < 0 || len > MAX_STRING_LEN) // other end is corrupted or is not following the protocol.
+    if (len < 0 || len > MAX_STRING_LEN)  // other end is corrupted or is not following the protocol.
         throw ProgramError("Received bad string size.");
 
     dest->resize(static_cast<size_t>(len));
     return m_socket.Read(&*(dest->begin()), static_cast<size_t>(len));
 }
 
-}} // namespace strapper::net
+}}  // namespace strapper::net

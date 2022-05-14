@@ -25,13 +25,13 @@ struct SocketFd;
 class SocketHandle
 {
 public:
-    SocketHandle(); // = default
+    SocketHandle();  // = default
     SocketHandle(int family, int socktype, int protocol);
     explicit SocketHandle(SocketFd const& fd);
     SocketHandle(SocketHandle const&) = delete;
-    SocketHandle(SocketHandle&& other) noexcept; // = default
+    SocketHandle(SocketHandle&& other) noexcept;  // = default
     SocketHandle& operator=(SocketHandle const&) = delete;
-    SocketHandle& operator=(SocketHandle&& other) noexcept; // = default
+    SocketHandle& operator=(SocketHandle&& other) noexcept;  // = default
     ~SocketHandle();
 
     void Close() noexcept;
@@ -44,4 +44,4 @@ private:
     std::unique_ptr<SocketFd> m_socketId;
 };
 
-}} // namespace strapper::net
+}}  // namespace strapper::net

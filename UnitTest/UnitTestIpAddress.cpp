@@ -100,4 +100,4 @@ TEST_F(UnitTestIpAddress, ConstructFromInt)
     ASSERT_EQ(IpAddressV4(nton(0xABCDEF01)).ToString(), "171:205:239:1");
 }
 
-}}} // namespace strapper::net::test
+}}}  // namespace strapper::net::test

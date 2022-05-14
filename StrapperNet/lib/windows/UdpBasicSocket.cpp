@@ -44,7 +44,7 @@ SocketHandle MakeSocket(uint16_t myport)
     return socket;
 }
 
-} // namespace
+}  // namespace
 
 //! 0 for any.
 UdpBasicSocket::UdpBasicSocket(uint16_t myport)
@@ -78,7 +78,7 @@ void UdpBasicSocket::Shutdown() noexcept
     if (m_socket)
     {
         shutdown(**m_socket, SD_BOTH);
-        CancelIoEx(reinterpret_cast<HANDLE>(**m_socket), nullptr); // In winsock, shutdown doesn't cancel a blocking read.
+        CancelIoEx(reinterpret_cast<HANDLE>(**m_socket), nullptr);  // In winsock, shutdown doesn't cancel a blocking read.
     }
 }
 
@@ -201,4 +201,4 @@ UdpBasicSocket::operator bool() const
     return IsOpen();
 }
 
-}} // namespace strapper::net
+}}  // namespace strapper::net

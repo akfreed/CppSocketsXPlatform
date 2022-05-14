@@ -26,7 +26,7 @@ namespace strapper { namespace net {
 
 class TcpBasicListener
 {
-    friend class TcpListener; // todo: remove
+    friend class TcpListener;  // todo: remove
 public:
     TcpBasicListener() = default;
     explicit TcpBasicListener(uint16_t port);
@@ -50,4 +50,4 @@ private:
     SocketHandle m_socket;
 };
 
-}} // namespace strapper::net
+}}  // namespace strapper::net

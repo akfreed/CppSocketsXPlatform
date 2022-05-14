@@ -53,4 +53,4 @@ NativeContext::~NativeContext()
     WSACleanup();
 }
 
-}} // namespace strapper::net
+}}  // namespace strapper::net

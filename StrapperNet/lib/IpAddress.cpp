@@ -57,7 +57,7 @@ IpAddressV4::IpAddressV4(std::string const& ip)
         if (ul > std::numeric_limits<uint8_t>::max())
             throw error;
 
-        e = static_cast<uint8_t>(ul); // Big endian.
+        e = static_cast<uint8_t>(ul);  // Big endian.
     }
 
     std::memcpy(&m_val, array.data(), 4);
@@ -90,4 +90,4 @@ uint32_t IpAddressV4::ToInt() const
     return m_val;
 }
 
-}} // namespace strapper::net
+}}  // namespace strapper::net

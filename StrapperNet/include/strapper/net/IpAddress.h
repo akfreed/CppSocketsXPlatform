@@ -42,4 +42,4 @@ private:
     uint32_t m_val = 0;
 };
 
-}} // namespace strapper::net
+}}  // namespace strapper::net

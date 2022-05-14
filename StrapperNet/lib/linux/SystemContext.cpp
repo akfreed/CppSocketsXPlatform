@@ -23,4 +23,4 @@ class NativeContext
 
 SystemContext::SystemContext() = default;
 
-}} // namespace strapper::net
+}}  // namespace strapper::net

@@ -33,4 +33,4 @@ struct SocketFd
     int m_fd = INVALID_SOCKET;
 };
 
-}} // namespace strapper::net
+}}  // namespace strapper::net

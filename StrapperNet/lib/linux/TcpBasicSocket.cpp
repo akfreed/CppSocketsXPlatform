@@ -35,8 +35,8 @@ namespace {
 SocketHandle Connect(std::string const& host, uint16_t port)
 {
     addrinfo hostInfo{};
-    hostInfo.ai_family = AF_UNSPEC;     // Can be IPv4 or IPv6
-    hostInfo.ai_socktype = SOCK_STREAM; // TCP
+    hostInfo.ai_family = AF_UNSPEC;      // Can be IPv4 or IPv6
+    hostInfo.ai_socktype = SOCK_STREAM;  // TCP
 
     auto lFreeList = [](addrinfo* p) { freeaddrinfo(p); };
     std::unique_ptr<addrinfo, decltype(lFreeList)> hostInfoList(nullptr, lFreeList);
@@ -64,7 +64,7 @@ SocketHandle Connect(std::string const& host, uint16_t port)
     return socket;
 }
 
-} // namespace
+}  // namespace
 
 //! Provide additional data members specific to an implementation.
 struct TcpBasicSocketImpl
@@ -187,7 +187,7 @@ bool TcpBasicSocket::Read(void* dest, size_t len)
             throw SocketError(errno);
         if (amountRead == lenAsLongInt)
             return true;
-        if (amountRead == 0) // Graceful close.
+        if (amountRead == 0)  // Graceful close.
         {
             if (!m_impl->m_receiveEnabled)
                 throw ProgramError("Attempted to read after EOF.");
@@ -224,4 +224,4 @@ TcpBasicSocket::operator bool() const
     return IsConnected();
 }
 
-}} // namespace strapper::net
+}}  // namespace strapper::net

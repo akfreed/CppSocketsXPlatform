@@ -48,4 +48,4 @@ void nton(double* d)
     std::memcpy(d, &ull, sizeof(ull));
 }
 
-}} // namespace strapper::net
+}}  // namespace strapper::net

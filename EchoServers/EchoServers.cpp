@@ -67,4 +67,4 @@ void UdpEchoServer(uint16_t port)
     std::cout << "> Closing socket." << std::endl;
 }
 
-}} // namespace strapper::net
+}}  // namespace strapper::net

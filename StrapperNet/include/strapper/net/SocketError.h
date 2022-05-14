@@ -60,4 +60,4 @@ protected:
     int m_nativeCode = 0;
 };
 
-}} // namespace strapper::net
+}}  // namespace strapper::net

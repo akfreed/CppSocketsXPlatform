@@ -81,4 +81,4 @@ private:
     State m_state = State::CLOSED;
 };
 
-}} // namespace strapper::net
+}}  // namespace strapper::net

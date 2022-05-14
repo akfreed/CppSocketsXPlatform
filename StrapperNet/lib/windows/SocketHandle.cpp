@@ -67,4 +67,4 @@ SocketHandle::operator bool() const
     return m_socketId && m_socketId->m_fd != INVALID_SOCKET;
 }
 
-}} // namespace strapper::net
+}}  // namespace strapper::net

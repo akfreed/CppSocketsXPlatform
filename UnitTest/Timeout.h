@@ -86,4 +86,4 @@ private:
     std::thread m_thread;
 };
 
-}}} // namespace strapper::net::test
+}}}  // namespace strapper::net::test

@@ -30,12 +30,12 @@ struct TcpBasicSocketImpl;
 class TcpBasicSocket
 {
 public:
-    TcpBasicSocket(); // = default
+    TcpBasicSocket();  // = default
     TcpBasicSocket(std::string const& host, uint16_t port);
     TcpBasicSocket(TcpBasicSocket const&) = delete;
-    TcpBasicSocket(TcpBasicSocket&&) noexcept; // = default
+    TcpBasicSocket(TcpBasicSocket&&) noexcept;  // = default
     TcpBasicSocket& operator=(TcpBasicSocket const&) = delete;
-    TcpBasicSocket& operator=(TcpBasicSocket&&) noexcept; // = default
+    TcpBasicSocket& operator=(TcpBasicSocket&&) noexcept;  // = default
     ~TcpBasicSocket();
 
     bool IsConnected() const;
@@ -67,4 +67,4 @@ private:
     std::unique_ptr<TcpBasicSocketImpl> m_impl;
 };
 
-}} // namespace strapper::net
+}}  // namespace strapper::net

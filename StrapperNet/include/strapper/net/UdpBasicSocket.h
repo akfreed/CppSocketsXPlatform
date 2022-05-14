@@ -54,4 +54,4 @@ private:
     SocketHandle m_socket;
 };
 
-}} // namespace strapper::net
+}}  // namespace strapper::net

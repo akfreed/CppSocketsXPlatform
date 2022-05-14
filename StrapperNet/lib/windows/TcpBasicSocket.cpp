@@ -32,8 +32,8 @@ namespace {
 SocketHandle Connect(std::string const& host, uint16_t port)
 {
     addrinfo hostInfo{};
-    hostInfo.ai_family = AF_UNSPEC;     // Can be IPv4 or IPv6
-    hostInfo.ai_socktype = SOCK_STREAM; // TCP
+    hostInfo.ai_family = AF_UNSPEC;      // Can be IPv4 or IPv6
+    hostInfo.ai_socktype = SOCK_STREAM;  // TCP
 
     auto lFreeList = [](addrinfo* p) { freeaddrinfo(p); };
     std::unique_ptr<addrinfo, decltype(lFreeList)> hostInfoList(nullptr, lFreeList);
@@ -60,7 +60,7 @@ SocketHandle Connect(std::string const& host, uint16_t port)
     return socket;
 }
 
-} // namespace
+}  // namespace
 
 //! Unused for this implementation.
 struct TcpBasicSocketImpl
@@ -159,7 +159,7 @@ bool TcpBasicSocket::Read(void* dest, size_t len)
         int const amountRead = recv(**m_socket, reinterpret_cast<char*>(dest), lenAsInt, MSG_WAITALL);
         if (amountRead == SOCKET_ERROR)
             throw SocketError(WSAGetLastError());
-        if (amountRead == 0 && len > 0) // Graceful close.
+        if (amountRead == 0 && len > 0)  // Graceful close.
         {
             ShutdownReceive();
             return false;
@@ -196,4 +196,4 @@ TcpBasicSocket::operator bool() const
     return IsConnected();
 }
 
-}} // namespace strapper::net
+}}  // namespace strapper::net

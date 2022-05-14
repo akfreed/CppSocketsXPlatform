@@ -422,4 +422,4 @@ TEST_F(UnitTestSocket, DataAvailableUdpEc)
     }
 }
 
-}}} // namespace strapper::net::test
+}}}  // namespace strapper::net::test

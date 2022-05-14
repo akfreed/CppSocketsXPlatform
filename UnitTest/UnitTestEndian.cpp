@@ -110,4 +110,4 @@ TEST_F(UnitTestEndian, CheckDouble)
     ASSERT_TRUE(std::equal(readBuffer, readBuffer + 8, valBuffer));
 }
 
-}}} // namespace strapper::net::test
+}}}  // namespace strapper::net::test

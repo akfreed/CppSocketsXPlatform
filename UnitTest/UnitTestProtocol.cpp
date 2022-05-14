@@ -255,7 +255,7 @@ TEST_F(UnitTestProtocol, ReadAfterShutdownTcpEc)
     ASSERT_FALSE(m_receiver.Read(&c, sizeof(c), &ec));
     ASSERT_TRUE(ec);
     ASSERT_THROW(ec.Rethrow(), ProgramError);
-    ec = ErrorCode(); // Reset ec.
+    ec = ErrorCode();  // Reset ec.
     ASSERT_FALSE(m_receiver);
     ASSERT_EQ(c, 0xAF);
 
@@ -321,4 +321,4 @@ TEST_F(UnitTestProtocol, ReadAfterShutdownTcpEc)
     ASSERT_THROW(ec.Rethrow(), ProgramError);
 }
 
-}}} // namespace strapper::net::test
+}}}  // namespace strapper::net::test
