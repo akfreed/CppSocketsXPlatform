@@ -1,9 +1,12 @@
 # https://clang.llvm.org/docs/ClangFormatStyleOptions.html
-# clang-format 10.0.0
+# clang-format 14.0.3
 Language: Cpp
+Standard: c++11
 AccessModifierOffset: -4
 AlignAfterOpenBracket: Align
+AlignArrayOfStructures: Right
 AlignConsecutiveAssignments: false
+AlignConsecutiveBitFields: Consecutive
 AlignConsecutiveDeclarations: false
 AlignConsecutiveMacros: false
 AlignEscapedNewlines: Left
@@ -13,15 +16,17 @@ AllowAllArgumentsOnNextLine: true
 AllowAllParametersOfDeclarationOnNextLine: true
 AllowShortBlocksOnASingleLine: Never
 AllowShortCaseLabelsOnASingleLine: true
+AllowShortEnumsOnASingleLine: false
 AllowShortFunctionsOnASingleLine: InlineOnly
 AllowShortIfStatementsOnASingleLine: Never
 AllowShortLambdasOnASingleLine: All
 AllowShortLoopsOnASingleLine: false
 AlwaysBreakAfterReturnType: None
 AlwaysBreakBeforeMultilineStrings: false
-AlwaysBreakTemplateDeclarations: No
+AlwaysBreakTemplateDeclarations: MultiLine
 BinPackArguments: true
 BinPackParameters: true
+BitFieldColonSpacing: Both
 BreakBeforeBraces: Custom
 BraceWrapping:
   AfterCaseLabel: true
@@ -30,12 +35,12 @@ BraceWrapping:
   AfterEnum: true
   AfterFunction: true
   AfterNamespace: false
-  AfterObjCDeclaration: true
   AfterStruct: true
   AfterUnion: true
   AfterExternBlock: true
   BeforeCatch: true
   BeforeElse: true
+  BeforeWhile: false
   IndentBraces: false
   SplitEmptyFunction: false
   SplitEmptyRecord: false
@@ -54,6 +59,8 @@ Cpp11BracedListStyle: false
 DeriveLineEnding: false
 DerivePointerAlignment: false
 DisableFormat: false
+EmptyLineAfterAccessModifier: Never
+EmptyLineBeforeAccessModifier: LogicalBlock
 FixNamespaceComments: true
 IncludeBlocks: Preserve
 IncludeCategories:
@@ -65,14 +72,22 @@ IncludeCategories:
     Priority:        2
   - Regex:           '".*\.h"'
     Priority:        3
+IndentAccessModifiers: false
+IndentCaseBlocks: false
 IndentCaseLabels: false
+IndentExternBlock: NoIndent
 IndentGotoLabels: false
 IndentPPDirectives: BeforeHash
+IndentRequires: true
 IndentWidth:     4
 IndentWrappedFunctionNames: false
+InsertTrailingCommas: None
 KeepEmptyLinesAtTheStartOfBlocks: false
+LambdaBodyIndentation: Signature
 MaxEmptyLinesToKeep: 1
 NamespaceIndentation: None
+PPIndentWidth: -1
+PackConstructorInitializers: Never
 PenaltyBreakAssignment: 2
 PenaltyBreakBeforeFirstCallParameter: 1
 PenaltyBreakComment: 300
@@ -82,17 +97,29 @@ PenaltyBreakTemplateDeclaration: 10
 PenaltyExcessCharacter: 1000000
 PenaltyReturnTypeOnItsOwnLine: 200
 PointerAlignment: Left
+QualifierAlignment: Right
+ReferenceAlignment: Left
 ReflowComments: false
+SeparateDefinitionBlocks: Leave
+ShortNamespaceLines: 0
 SortIncludes: true
 SortUsingDeclarations: true
 SpaceAfterCStyleCast: false
 SpaceAfterLogicalNot: false
 SpaceAfterTemplateKeyword: true
+SpaceAroundPointerQualifiers: Default
 SpaceBeforeAssignmentOperators: true
+SpaceBeforeCaseColon: false
 SpaceBeforeCpp11BracedList: false
 SpaceBeforeCtorInitializerColon: true
 SpaceBeforeInheritanceColon: true
-SpaceBeforeParens: ControlStatements
+SpaceBeforeParens: Custom
+SpaceBeforeParensOptions:
+    AfterControlStatements: true
+    AfterFunctionDeclarationName: false
+    AfterFunctionDefinitionName: false
+    AfterOverloadedOperator: false
+    BeforeNonEmptyParentheses: false
 SpaceBeforeRangeBasedForLoopColon: true
 SpaceBeforeSquareBrackets: false
 SpaceInEmptyBlock: true
@@ -102,9 +129,11 @@ SpacesInAngles: false
 SpacesInCStyleCastParentheses: false
 SpacesInConditionalStatement: false
 SpacesInContainerLiterals: false
+SpacesInLineCommentPrefix: 
+    Minimum: 1
+    Maximum: -1
 SpacesInParentheses: false
 SpacesInSquareBrackets: false
-Standard: c++11
 TabWidth: 8
 UseCRLF: false
 UseTab: Never

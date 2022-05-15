@@ -30,7 +30,7 @@ public:
 
     explicit TcpSerializer(TcpSocket&& socket);
 
-    const TcpSocket& Socket() const;
+    TcpSocket const& Socket() const;
     TcpSocket& Socket();
 
     void Write(char c);

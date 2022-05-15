@@ -28,7 +28,7 @@ TcpSerializer::TcpSerializer(TcpSocket&& socket)
     : m_socket(std::move(socket))
 { }
 
-const TcpSocket& TcpSerializer::Socket() const
+TcpSocket const& TcpSerializer::Socket() const
 {
     return m_socket;
 }

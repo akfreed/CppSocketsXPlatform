@@ -108,7 +108,7 @@ void UdpBasicSocket::Write(void const* src, size_t len, IpAddressV4 const& ipAdd
     if (success != 1)
         throw ProgramError("Unknown error.");
 
-    int const amountWritten = sendto(**m_socket, reinterpret_cast<const char*>(src), static_cast<int>(len), 0, reinterpret_cast<sockaddr*>(&info), sizeof(info));
+    int const amountWritten = sendto(**m_socket, reinterpret_cast<char const*>(src), static_cast<int>(len), 0, reinterpret_cast<sockaddr*>(&info), sizeof(info));
     if (amountWritten == SOCKET_ERROR)
         throw SocketError(WSAGetLastError());
 }

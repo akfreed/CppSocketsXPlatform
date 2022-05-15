@@ -71,7 +71,7 @@ std::unique_ptr<TcpSerializer> UnitTestSerialize::s_receiver;
 
 TEST_F(UnitTestSerialize, SendRecvChar)
 {
-    const char sentData = 'f';
+    char const sentData = 'f';
     s_sender->Write(sentData);
     char recvData{};
     ASSERT_TRUE(s_receiver->Read(&recvData));

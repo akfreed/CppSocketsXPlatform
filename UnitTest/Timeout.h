@@ -37,9 +37,9 @@ public:
         m_thread = std::thread(&Timeout::WaitThread<Rep, Period>, this, timeout);
     }
 
-    Timeout(const Timeout&) = delete;
+    Timeout(Timeout const&) = delete;
     Timeout(Timeout&&) = delete;
-    Timeout& operator=(const Timeout&) = delete;
+    Timeout& operator=(Timeout const&) = delete;
     Timeout& operator=(Timeout&&) = delete;
 
     ~Timeout()
