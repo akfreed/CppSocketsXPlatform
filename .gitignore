@@ -1,13 +1,10 @@
-build/
-build_*/
-debug/
-debug_*/
-release/
-release_*/
+build*/
+debug*/
+release*/
 
 .vscode/
 
 .env/
-env/
 .venv/
-venv
+env/
+venv/

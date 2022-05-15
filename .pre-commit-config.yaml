@@ -9,5 +9,5 @@ repos:
       #- id: clang-tidy
       #  args: [-p=build_linux, -checks=*, -warnings-as-errors=*]
       #- id: uncrustify
-      #- id: cppcheck
-      #  args: [--language=c++, --library=googletest]
+      - id: cppcheck
+        args: [--language=c++, --std=c++11, --library=googletest, --inline-suppr, --enable=all]
