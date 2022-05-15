@@ -20,7 +20,7 @@ namespace strapper { namespace net {
 
 struct SocketFd
 {
-    static int constexpr INVALID_SOCKET = -1;  // cppcheck-suppress syntaxError
+    static int constexpr INVALID_SOCKET = -1;  // cppcheck-suppress [syntaxError, unmatchedSuppression]
     static int constexpr SOCKET_ERROR = -1;
 
     explicit SocketFd(int fd)
