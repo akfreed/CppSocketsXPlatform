@@ -3,12 +3,11 @@ repos:
     rev: v1.3.5
     hooks:
       - id: clang-format
-      #  args: [-i]
-      - id: cpplint
-        args: ["--filter=-build/c++11,-build/namespace,-readability/namespace,-whitespace/braces,-whitespace/indent,-whitespace/line_length,-whitespace/newline,-whitespace/semicolon", --verbose=0]
+        #args: [-i]
       - id: cppcheck
         args: [--language=c++, --std=c++11, --library=googletest, --inline-suppr, --enable=all]
+      - id: cpplint
+        args: ["--filter=-build/c++11,-build/namespace,-readability/namespace,-whitespace/braces,-whitespace/indent,-whitespace/line_length,-whitespace/newline,-whitespace/semicolon"]
       - id: clang-tidy
-        exclude: ^StrapperNet/lib/linux/.*
-        #exclude: ^StrapperNet/lib/windows/.*
-      
+        #exclude: ^StrapperNet/lib/linux/.*
+        exclude: ^StrapperNet/lib/windows/.*

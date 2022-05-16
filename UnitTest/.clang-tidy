@@ -1,2 +1,2 @@
 InheritParentConfig: true
-Checks: '-hicpp-no-array-decay,-cppcoreguidelines-pro-bounds-array-to-pointer-decay,-cppcoreguidelines-pro-bounds-pointer-arithmetic,-cppcoreguidelines-avoid-magic-numbers,-readability-magic-numbers,-*avoid-c-arrays'
+Checks: '-cppcoreguidelines-pro-bounds-pointer-arithmetic,-cppcoreguidelines-avoid-magic-numbers,-readability-magic-numbers,-*avoid-c-arrays,-*avoid-goto,-readability-function-cognitive-complexity'

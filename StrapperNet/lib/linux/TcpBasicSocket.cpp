@@ -110,7 +110,7 @@ bool TcpBasicSocket::IsConnected() const
 //! 0 = no timeout (forever) and is the default setting
 void TcpBasicSocket::SetReadTimeout(unsigned milliseconds)
 {
-    timeval t;
+    timeval t{};
     t.tv_sec = milliseconds / 1000;
     t.tv_usec = (milliseconds % 1000) * 1000;
     if (setsockopt(**m_socket, SOL_SOCKET, SO_RCVTIMEO, &t, sizeof(timeval)) == SocketFd::SOCKET_ERROR)
@@ -176,7 +176,7 @@ bool TcpBasicSocket::Read(void* dest, size_t len)
             throw ProgramError("Length must be greater than 0.");
         if (len > static_cast<size_t>(std::numeric_limits<ssize_t>::max()))
             throw ProgramError("Length must be less than ssize_t max.");
-        ssize_t const lenAsLongInt = static_cast<ssize_t>(len);
+        auto const lenAsLongInt = static_cast<ssize_t>(len);
 
         ssize_t amountRead = 0;
         do
@@ -210,7 +210,11 @@ bool TcpBasicSocket::Read(void* dest, size_t len)
 unsigned TcpBasicSocket::DataAvailable()
 {
     int bytesAvailable = 0;
-    if (ioctl(**m_socket, FIONREAD, &bytesAvailable) == SocketFd::SOCKET_ERROR)
+    auto const status = ioctl(
+        **m_socket,
+        FIONREAD,
+        &bytesAvailable);
+    if (status == SocketFd::SOCKET_ERROR)
         throw SocketError(errno);
 
     if (bytesAvailable < 0)

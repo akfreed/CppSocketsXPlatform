@@ -25,12 +25,12 @@ namespace strapper { namespace net {
 
 void nton(int32_t* i32)
 {
-    *i32 = htonl(*i32);
+    *i32 = htonl(*i32);  // NOLINT
 }
 
 int32_t nton(int32_t i32)
 {
-    return htonl(i32);
+    return htonl(i32);  // NOLINT
 }
 
 void nton(uint32_t* i32)
@@ -46,8 +46,8 @@ uint32_t nton(uint32_t i32)
 //! Be careful not to assign anything to this double until it's back to host form.
 void nton(double* d)
 {
-    static_assert(sizeof(*d) == 8, "Function not compatible with this compiler.");
-    uint64_t u64;
+    static_assert(sizeof(*d) == sizeof(uint64_t), "This function is designed for 64-bit doubles.");
+    uint64_t u64 = 0;
     std::memcpy(&u64, d, sizeof(u64));
     u64 = htobe64(u64);
     std::memcpy(d, &u64, sizeof(u64));

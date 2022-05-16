@@ -66,7 +66,7 @@ void TcpSerializer::Write(std::string const& s)
     int const len = (s.length() > MAX_STRING_LEN) ? MAX_STRING_LEN : static_cast<int>(s.length());
     Write(len);
     if (len > 0)
-        m_socket.Write(s.c_str(), len);
+        m_socket.Write(s.c_str(), static_cast<size_t>(len));
 }
 
 //----------------------------------------------------------------------------
@@ -101,7 +101,7 @@ bool TcpSerializer::Read(int32_t* dest)
 
 bool TcpSerializer::Read(double* dest)
 {
-    static_assert(sizeof(uint64_t) == sizeof(double), "This function is designed for 64-bit doubles.");
+    static_assert(sizeof(double) == sizeof(uint64_t), "This function is designed for 64-bit doubles.");
     if (!dest)
         throw ProgramError("Null pointer.");
 
