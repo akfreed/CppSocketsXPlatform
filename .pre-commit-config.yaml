@@ -4,9 +4,11 @@ repos:
     hooks:
       - id: clang-format
       #  args: [-i]
-      #- id: clang-tidy
-      #  args: [-p=build_linux, -checks=*, -warnings-as-errors=*]
       - id: cpplint
         args: ["--filter=-build/c++11,-build/namespace,-readability/namespace,-whitespace/braces,-whitespace/indent,-whitespace/line_length,-whitespace/newline,-whitespace/semicolon", --verbose=0]
       - id: cppcheck
         args: [--language=c++, --std=c++11, --library=googletest, --inline-suppr, --enable=all]
+      - id: clang-tidy
+        exclude: ^StrapperNet/lib/linux/.*
+        #exclude: ^StrapperNet/lib/windows/.*
+      

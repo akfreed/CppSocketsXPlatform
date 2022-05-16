@@ -23,12 +23,14 @@ namespace strapper { namespace net {
 
 void nton(int32_t* i32)
 {
-    *i32 = htonl(*i32);
+    static_assert(sizeof(u_long) == sizeof(int32_t), "Size mismatch.");
+    *i32 = htonl(*i32);  // NOLINT
 }
 
 int32_t nton(int32_t i32)
 {
-    return htonl(i32);
+    static_assert(sizeof(u_long) == sizeof(int32_t), "Size mismatch.");
+    return htonl(i32);  // NOLINT
 }
 
 void nton(uint32_t* i32)

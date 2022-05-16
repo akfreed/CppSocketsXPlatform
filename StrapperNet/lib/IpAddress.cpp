@@ -30,9 +30,9 @@ IpAddressV4 const IpAddressV4::Loopback{ "127.0.0.1" };
 
 IpAddressV4::IpAddressV4(std::string const& ip)
 {
-    ProgramError error("Not a valid IPv4 address: '" + ip + "'");
+    std::string const errorMsg = "Not a valid IPv4 address: '" + ip + "'";
     if (!std::regex_match(ip, std::regex(R"(^(\d{1,3}[:\.]){3}\d{1,3}$)")))
-        throw error;
+        throw ProgramError(errorMsg);
 
     std::regex const r(R"(\d{1,3}(:|.|$))");
     auto iter = std::sregex_iterator(ip.cbegin(), ip.cend(), r);
@@ -43,19 +43,19 @@ IpAddressV4::IpAddressV4(std::string const& ip)
     for (auto& e : array)
     {
         if (iter == end)
-            throw error;
-        unsigned long ul = 0;  // NOLINT(runtime/int)
+            throw ProgramError(errorMsg);
+        unsigned long ul = 0;  // NOLINT
         try
         {
             ul = std::stoul((iter++)->str());
         }
         catch (std::logic_error const&)
         {
-            throw error;
+            throw ProgramError(errorMsg);
         }
 
         if (ul > std::numeric_limits<uint8_t>::max())
-            throw error;
+            throw ProgramError(errorMsg);
 
         e = static_cast<uint8_t>(ul);  // Big endian.
     }

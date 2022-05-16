@@ -61,7 +61,7 @@ SocketHandle Start(uint16_t port)
     if (bind(**socket, hostInfoList->ai_addr, hostInfoList->ai_addrlen) == SocketFd::SOCKET_ERROR)
         throw SocketError(errno);
 
-    if (listen(**socket, 128) == SocketFd::SOCKET_ERROR)
+    if (listen(**socket, TcpBasicListener::c_backlog) == SocketFd::SOCKET_ERROR)
         throw SocketError(errno);
 
     return socket;

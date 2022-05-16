@@ -27,7 +27,10 @@ namespace strapper { namespace net {
 class TcpBasicListener
 {
     friend class TcpListener;  // todo: remove
+
 public:
+    static unsigned constexpr c_backlog = 128;
+
     TcpBasicListener() = default;
     explicit TcpBasicListener(uint16_t port);
     TcpBasicListener(TcpBasicListener const&) = delete;

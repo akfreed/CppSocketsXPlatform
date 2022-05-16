@@ -35,7 +35,7 @@ public:
 
     char const* what() const noexcept override { return m_what.c_str(); }
 
-protected:
+private:
     std::string m_what = "Program Error.";
 };
 
@@ -57,7 +57,7 @@ public:
         return m_nativeCode;
     }
 
-protected:
+private:
     int m_nativeCode = 0;
 };
 

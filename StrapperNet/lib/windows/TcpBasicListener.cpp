@@ -60,7 +60,7 @@ SocketHandle Start(uint16_t port)
     if (bind(**socket, hostInfoList->ai_addr, static_cast<int>(hostInfoList->ai_addrlen)) == SOCKET_ERROR)
         throw SocketError(WSAGetLastError());
 
-    if (listen(**socket, 128) == SOCKET_ERROR)
+    if (listen(**socket, TcpBasicListener::c_backlog) == SOCKET_ERROR)
         throw SocketError(WSAGetLastError());
 
     return socket;
@@ -120,7 +120,10 @@ void TcpBasicListener::shutdown() noexcept
     if (m_socket)
     {
         ::shutdown(**m_socket, SD_BOTH);
-        CancelIoEx(reinterpret_cast<HANDLE>(**m_socket), nullptr);  // In winsock, shutdown doesn't cancel a blocking accept.
+        // In winsock, shutdown doesn't cancel a blocking accept.
+        CancelIoEx(
+            reinterpret_cast<HANDLE>(**m_socket),  // NOLINT
+            nullptr);
     }
 }
 

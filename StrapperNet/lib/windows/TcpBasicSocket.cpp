@@ -99,7 +99,12 @@ bool TcpBasicSocket::IsConnected() const
 void TcpBasicSocket::SetReadTimeout(unsigned milliseconds)
 {
     DWORD const arg = milliseconds;
-    if (setsockopt(**m_socket, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<char const*>(&arg), sizeof(arg)) == SOCKET_ERROR)
+    auto const status = setsockopt(**m_socket,
+                                   SOL_SOCKET,
+                                   SO_RCVTIMEO,
+                                   reinterpret_cast<char const*>(&arg),  // NOLINT
+                                   sizeof(arg));
+    if (status == SOCKET_ERROR)
         throw SocketError(WSAGetLastError());
 }
 
@@ -121,7 +126,9 @@ void TcpBasicSocket::ShutdownBoth() noexcept
     {
         shutdown(**m_socket, SD_BOTH);
         // In winsock, shutdown doesn't cancel a blocking read.
-        CancelIoEx(reinterpret_cast<HANDLE>(**m_socket), nullptr);
+        CancelIoEx(
+            reinterpret_cast<HANDLE>(**m_socket),  // NOLINT
+            nullptr);
     }
 }
 
@@ -139,7 +146,7 @@ void TcpBasicSocket::Write(void const* src, size_t len)
     if (len > std::numeric_limits<int>::max())
         throw ProgramError("Length must be less than int max.");
 
-    if (send(**m_socket, reinterpret_cast<char const*>(src), static_cast<int>(len), 0) == SOCKET_ERROR)
+    if (send(**m_socket, static_cast<char const*>(src), static_cast<int>(len), 0) == SOCKET_ERROR)
         throw SocketError(WSAGetLastError());
 }
 
@@ -156,7 +163,7 @@ bool TcpBasicSocket::Read(void* dest, size_t len)
             throw ProgramError("Length must be less than int max.");
 
         int const lenAsInt = static_cast<int>(len);
-        int const amountRead = recv(**m_socket, reinterpret_cast<char*>(dest), lenAsInt, MSG_WAITALL);
+        int const amountRead = recv(**m_socket, static_cast<char*>(dest), lenAsInt, MSG_WAITALL);
         if (amountRead == SOCKET_ERROR)
             throw SocketError(WSAGetLastError());
         if (amountRead == 0 && len > 0)  // Graceful close.

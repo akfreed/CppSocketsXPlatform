@@ -8,3 +8,5 @@ release*/
 .venv/
 env/
 venv/
+
+compile_commands.json

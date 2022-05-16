@@ -82,10 +82,10 @@ bool TcpSerializer::Read(bool* dest)
 {
     if (!dest)
         throw ProgramError("Null pointer.");
-    uint8_t buf;
+    uint8_t buf = 0;
     bool result = m_socket.Read(&buf, 1);
     if (result)
-        *dest = (buf == 0 ? false : true);
+        *dest = (buf == 0 ? false : true);  // NOLINT
     return result;
 }
 
@@ -118,7 +118,7 @@ bool TcpSerializer::Read(std::string* dest)
     if (!dest)
         throw ProgramError("Null pointer.");
 
-    int len;
+    int len = 0;
     if (!Read(&len))
         return false;
 

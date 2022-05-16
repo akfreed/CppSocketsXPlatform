@@ -83,8 +83,8 @@ std::string ErrorCode::GetErrorName(int nativeErrorCode)
     }
 }
 
-ErrorCode::ErrorCode(std::exception_ptr exception)
-    : m_exception(std::move(exception))
+ErrorCode::ErrorCode(std::exception_ptr exception)  // NOLINT
+    : m_exception(std::move(exception))             // NOLINT
 {
     if (m_exception)
     {

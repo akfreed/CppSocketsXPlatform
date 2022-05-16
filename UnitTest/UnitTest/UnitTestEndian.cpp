@@ -91,7 +91,7 @@ TEST_F(UnitTestEndian, CheckDouble)
 {
     const uint64_t value = 0x0807060504030201;
     char valBuffer[sizeof(value)];
-    double toSend;
+    double toSend = 0;
 
     std::memcpy(valBuffer, &value, sizeof(value));
     std::memcpy(&toSend, &value, sizeof(value));
