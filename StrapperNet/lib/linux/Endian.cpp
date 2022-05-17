@@ -25,12 +25,12 @@ namespace strapper { namespace net {
 
 void nton(int32_t* i32)
 {
-    *i32 = htonl(*i32);  // NOLINT
+    *i32 = htonl(*i32);  // NOLINT(bugprone-narrowing-conversions, clang-diagnostic-sign-conversion, cppcoreguidelines-narrowing-conversions)
 }
 
 int32_t nton(int32_t i32)
 {
-    return htonl(i32);  // NOLINT
+    return htonl(i32);  // NOLINT(bugprone-narrowing-conversions, clang-diagnostic-sign-conversion, cppcoreguidelines-narrowing-conversions)
 }
 
 void nton(uint32_t* i32)

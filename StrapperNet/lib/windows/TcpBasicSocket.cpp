@@ -102,7 +102,7 @@ void TcpBasicSocket::SetReadTimeout(unsigned milliseconds)
     auto const status = setsockopt(**m_socket,
                                    SOL_SOCKET,
                                    SO_RCVTIMEO,
-                                   reinterpret_cast<char const*>(&arg),  // NOLINT
+                                   reinterpret_cast<char const*>(&arg),  // NOLIN
                                    sizeof(arg));
     if (status == SOCKET_ERROR)
         throw SocketError(WSAGetLastError());
@@ -127,7 +127,7 @@ void TcpBasicSocket::ShutdownBoth() noexcept
         shutdown(**m_socket, SD_BOTH);
         // In winsock, shutdown doesn't cancel a blocking read.
         CancelIoEx(
-            reinterpret_cast<HANDLE>(**m_socket),  // NOLINT
+            reinterpret_cast<HANDLE>(**m_socket),  // NOLIN
             nullptr);
     }
 }

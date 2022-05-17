@@ -111,10 +111,8 @@ bool TcpBasicSocket::IsConnected() const
 void TcpBasicSocket::SetReadTimeout(unsigned milliseconds)
 {
     timeval t{};
-    // NOLINT NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
-    t.tv_sec = milliseconds / 1000;
-    // NOLINT NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
-    t.tv_usec = static_cast<suseconds_t>((milliseconds % 1000) * 1000);
+    t.tv_sec = milliseconds / 1000;                                      // NOLINT(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
+    t.tv_usec = static_cast<suseconds_t>((milliseconds % 1000) * 1000);  // NOLINT(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
     if (setsockopt(**m_socket, SOL_SOCKET, SO_RCVTIMEO, &t, sizeof(timeval)) == SocketFd::SOCKET_ERROR)
         throw SocketError(errno);
 }
@@ -213,7 +211,7 @@ unsigned TcpBasicSocket::DataAvailable()
 {
     int bytesAvailable = 0;
     int const fd = **m_socket;
-    auto const status = ioctl(  // NOLINT
+    auto const status = ioctl(  // NOLINT(cppcoreguidelines-pro-type-vararg, hicpp-vararg)
         fd,
         FIONREAD,
         &bytesAvailable);

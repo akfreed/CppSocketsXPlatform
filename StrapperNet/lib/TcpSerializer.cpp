@@ -85,7 +85,7 @@ bool TcpSerializer::Read(bool* dest)
     uint8_t buf = 0;
     bool result = m_socket.Read(&buf, 1);
     if (result)
-        *dest = (buf == 0 ? false : true);  // NOLINT
+        *dest = (buf == 0 ? false : true);  // NOLINT(readability-simplify-boolean-expr): This is more readable.
     return result;
 }
 

@@ -42,7 +42,7 @@ SocketHandle MakeSocket(uint16_t myport)
     myInfo.sin_port = htons(myport);
 
     auto const status = bind(**socket,
-                             reinterpret_cast<sockaddr*>(&myInfo),  // NOLINT
+                             reinterpret_cast<sockaddr*>(&myInfo),  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
                              sizeof(myInfo));
 
     if (status == SocketFd::SOCKET_ERROR)
@@ -80,10 +80,8 @@ bool UdpBasicSocket::IsOpen() const
 void UdpBasicSocket::SetReadTimeout(unsigned milliseconds)
 {
     timeval t{};
-    // NOLINT NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
-    t.tv_sec = milliseconds / 1000;
-    // NOLINT NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
-    t.tv_usec = static_cast<suseconds_t>((milliseconds % 1000) * 1000);
+    t.tv_sec = milliseconds / 1000;                                      // NOLINT(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
+    t.tv_usec = static_cast<suseconds_t>((milliseconds % 1000) * 1000);  // NOLINT(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
     if (setsockopt(**m_socket, SOL_SOCKET, SO_RCVTIMEO, &t, sizeof(timeval)) == SocketFd::SOCKET_ERROR)
         throw SocketError(errno);
 }
@@ -118,7 +116,7 @@ void UdpBasicSocket::Write(void const* src, size_t len, IpAddressV4 const& ipAdd
     if (success != 1)
         throw ProgramError("Unknown error.");
 
-    sockaddr* infoAsSockAddr = reinterpret_cast<sockaddr*>(&info);  // NOLINT
+    auto* infoAsSockAddr = reinterpret_cast<sockaddr*>(&info);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
     while (sendto(**m_socket, src, len, 0, infoAsSockAddr, sizeof(info)) == SocketFd::SOCKET_ERROR)
     {
         if (errno != EINTR)
@@ -154,7 +152,7 @@ unsigned UdpBasicSocket::Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddr
     do
     {
         amountRead = recvfrom(**m_socket, dest, maxlen, 0,
-                              reinterpret_cast<sockaddr*>(&info),  // NOLINT
+                              reinterpret_cast<sockaddr*>(&info),  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
                               &infoLen);
     } while (amountRead == SocketFd::SOCKET_ERROR && errno == EINTR);
     if (amountRead == SocketFd::SOCKET_ERROR)
@@ -180,7 +178,7 @@ unsigned UdpBasicSocket::DataAvailable() const
 {
     int bytesAvailable = 0;
     int const fd = **m_socket;
-    auto const status = ioctl(  // NOLINT
+    auto const status = ioctl(  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
         fd,
         FIONREAD,
         &bytesAvailable);

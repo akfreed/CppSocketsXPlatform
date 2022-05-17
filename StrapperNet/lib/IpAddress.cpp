@@ -44,7 +44,7 @@ IpAddressV4::IpAddressV4(std::string const& ip)
     {
         if (iter == end)
             throw ProgramError(errorMsg);
-        unsigned long ul = 0;  // NOLINT
+        unsigned long ul = 0;  // NOLINT: Matches return from stoul.
         try
         {
             ul = std::stoul((iter++)->str());

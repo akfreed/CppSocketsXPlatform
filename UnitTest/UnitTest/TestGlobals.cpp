@@ -18,10 +18,6 @@
 
 namespace strapper { namespace net { namespace test {
 
-// NOLINTBEGIN(readability-redundant-declaration)
 char constexpr TestGlobals::localhost[];
-uint16_t constexpr TestGlobals::port;
-uint16_t constexpr TestGlobals::port2;
-// NOLINTEND(readability-redundant-declaration)
 
 }}}  // namespace strapper::net::test
