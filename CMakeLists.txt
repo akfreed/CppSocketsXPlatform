@@ -36,7 +36,7 @@ add_subdirectory(UnitTest)
 
 # clang-tidy needs a compile_commands.json file.
 # Put a symlink in the source tree so clang-tidy can find it without needing to know the build directory.
-# If this wasn't done, pre-commit, which calls clang-tidy, would need to pass the build path to clang-tidy as an argument. 
+# If this wasn't done, pre-commit, which calls clang-tidy, would need to pass the build path to clang-tidy as an argument.
 # However pre-commit only supports hard-coded arguments, and there is no way to know the build path in advance.
 #
 # CMAKE_EXPORT_COMPILE_COMMANDS is only supported by Make and Ninja.

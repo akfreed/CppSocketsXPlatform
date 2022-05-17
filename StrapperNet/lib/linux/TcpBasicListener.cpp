@@ -96,6 +96,7 @@ TcpBasicSocket TcpBasicListener::Accept()
     {
         while (true)
         {
+            // NOLINT NOLINTNEXTLINE(android-cloexec-accept)
             int clientId = accept(**m_socket, nullptr, nullptr);  // todo: implement args 2 and 3
             if (clientId != SocketFd::INVALID_SOCKET)
                 return TcpBasicSocket::Attorney::accept(SocketHandle(SocketFd{ clientId }));
