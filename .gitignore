@@ -8,5 +8,6 @@ release*/
 .venv/
 env/
 venv/
+__pycache__/
 
 compile_commands.json

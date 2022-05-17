@@ -9,5 +9,4 @@ repos:
       - id: cpplint
         args: ['--filter=-build/c++11,-build/namespace,-readability/namespace,-readability/nolint,-whitespace/braces,-whitespace/indent,-whitespace/line_length,-whitespace/newline,-whitespace/semicolon']
       - id: clang-tidy
-        #exclude: ^StrapperNet/lib/linux/.*
-        exclude: ^StrapperNet/lib/windows/.*
+        entry: scripts/pocc-shim.py
