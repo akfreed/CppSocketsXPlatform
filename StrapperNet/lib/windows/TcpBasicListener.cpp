@@ -122,7 +122,7 @@ void TcpBasicListener::shutdown() noexcept
         ::shutdown(**m_socket, SD_BOTH);
         // In winsock, shutdown doesn't cancel a blocking accept.
         CancelIoEx(
-            reinterpret_cast<HANDLE>(**m_socket),  // NOLIN
+            reinterpret_cast<HANDLE>(**m_socket),  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast, performance-no-int-to-ptr)
             nullptr);
     }
 }

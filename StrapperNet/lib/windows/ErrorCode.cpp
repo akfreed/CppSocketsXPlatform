@@ -83,8 +83,8 @@ std::string ErrorCode::GetErrorName(int nativeErrorCode)
     }
 }
 
-ErrorCode::ErrorCode(std::exception_ptr exception)  // NOLIN
-    : m_exception(std::move(exception))             // NOLIN
+ErrorCode::ErrorCode(std::exception_ptr exception)  // NOLINT(performance-unnecessary-value-param): Clang-tidy thinks this is a const reference. I don't know what's going on under the hood, but I prefer value semantics with std::exception_ptr for safety purposes.
+    : m_exception(std::move(exception))             // NOLINT(hicpp-move-const-arg, performance-move-const-arg)
 {
     if (m_exception)
     {

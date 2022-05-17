@@ -18,6 +18,6 @@
 
 namespace strapper { namespace net { namespace test {
 
-char constexpr TestGlobals::localhost[];
+char constexpr TestGlobals::localhost[];  // NOLINT(readability-redundant-declaration): Needed for GCC.
 
 }}}  // namespace strapper::net::test

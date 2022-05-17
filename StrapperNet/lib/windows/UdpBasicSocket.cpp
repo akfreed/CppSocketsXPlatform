@@ -39,7 +39,7 @@ SocketHandle MakeSocket(uint16_t myport)
     myInfo.sin_port = htons(myport);
 
     auto const status = bind(**socket,
-                             reinterpret_cast<sockaddr*>(&myInfo),  // NOLIN
+                             reinterpret_cast<sockaddr*>(&myInfo),  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
                              sizeof(myInfo));
     if (status == SOCKET_ERROR)
         throw SocketError(WSAGetLastError());
@@ -75,7 +75,7 @@ void UdpBasicSocket::SetReadTimeout(unsigned milliseconds)
     auto const status = setsockopt(**m_socket,
                                    SOL_SOCKET,
                                    SO_RCVTIMEO,
-                                   reinterpret_cast<char const*>(&arg),  // NOLIN
+                                   reinterpret_cast<char const*>(&arg),  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
                                    sizeof(arg));
     if (status == SOCKET_ERROR)
         throw SocketError(WSAGetLastError());
@@ -88,7 +88,7 @@ void UdpBasicSocket::Shutdown() noexcept
         shutdown(**m_socket, SD_BOTH);
         // In winsock, shutdown doesn't cancel a blocking read.
         CancelIoEx(
-            reinterpret_cast<HANDLE>(**m_socket),  // NOLIN
+            reinterpret_cast<HANDLE>(**m_socket),  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast, performance-no-int-to-ptr)
             nullptr);
     }
 }
@@ -123,7 +123,7 @@ void UdpBasicSocket::Write(void const* src, size_t len, IpAddressV4 const& ipAdd
                                      static_cast<char const*>(src),
                                      static_cast<int>(len),
                                      0,
-                                     reinterpret_cast<sockaddr*>(&info),  // NOLIN
+                                     reinterpret_cast<sockaddr*>(&info),  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
                                      sizeof(info));
     if (amountWritten == SOCKET_ERROR)
         throw SocketError(WSAGetLastError());
@@ -184,7 +184,7 @@ unsigned UdpBasicSocket::Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddr
                                     static_cast<char*>(dest),
                                     static_cast<int>(maxlen),
                                     0,
-                                    reinterpret_cast<sockaddr*>(&info),  // NOLIN
+                                    reinterpret_cast<sockaddr*>(&info),  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
                                     &infoLen);
     if (amountRead == 0)
         throw ProgramError("Socket was shut down.");
