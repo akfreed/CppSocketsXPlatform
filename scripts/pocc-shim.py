@@ -34,6 +34,7 @@ def main() -> int:
         raise NotImplementedError(f"Not implemented for system: {sys.platform}")
 
     filtered_args = shim_utils.filter_args(exclude, sys.argv)
+    sys.argv = filtered_args
     return hooks.clang_tidy.main(filtered_args)
 
 
