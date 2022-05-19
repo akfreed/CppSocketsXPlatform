@@ -9,7 +9,7 @@ repos:
   #    - id: check-shebang-scripts-are-executable
   #    - id: debug-statements
   #    - id: check-yaml
-  #    - id: end-of-file-fixer
+      - id: end-of-file-fixer
       - id: mixed-line-ending
         args: [--fix=lf]
   #    - id: requirements-txt-fixer
