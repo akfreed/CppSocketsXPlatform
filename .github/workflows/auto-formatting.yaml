@@ -1,0 +1,33 @@
+name: Auto-formatting
+
+on:
+  pull_request:
+  push:
+    branches: [main, develop]
+
+jobs:
+  lint_ubuntu:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Install Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: 3.8
+    - name: Install clang-format
+      run: |
+        pip install -U pip
+        pip install clang-format
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        persist-credentials: false
+    - name: Clang-format
+      uses: pre-commit/action@v2.0.3
+      with:
+        extra_args: clang-format --all-files
+        token: ${{ secrets.CI_TOKEN }}
+
+  
+
+    

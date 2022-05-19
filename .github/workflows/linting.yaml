@@ -12,13 +12,10 @@ jobs:
       matrix:
         build_type:
           - Debug
-          #- Release
+          - Release
     steps:
     - name: Checkout
       uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-        submodules: true
     - name: Install CMake
       uses: jwlawson/actions-setup-cmake@v1.12
       with:
@@ -37,11 +34,15 @@ jobs:
       run: |
         mkdir build && cd build
         cmake -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} ..
-    - name: pre-commit
+    - name: Run Cppcheck
       uses: pre-commit/action@v2.0.3
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-
-
-
-      
+        extra_args: cppcheck
+    - name: Run cpplint
+      uses: pre-commit/action@v2.0.3
+      with:
+        extra_args: cpplint
+    - name: Run clang-tidy
+      uses: pre-commit/action@v2.0.3
+      with:
+        extra_args: clang-tidy
