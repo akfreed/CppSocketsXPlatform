@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2018-2021 Alexander K. Freed
+// Copyright 2018-2022 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@
 #include <strapper/net/SocketError.h>
 #include "SocketFd.h"
 
-#include <sys/socket.h>
 #include <netdb.h>
+#include <sys/socket.h>
 
 #include <cassert>
 #include <memory>
@@ -34,7 +34,7 @@ SocketHandle Start(uint16_t port)
     addrinfo hostInfo{};
     hostInfo.ai_family = AF_INET;
     hostInfo.ai_socktype = SOCK_STREAM;
-    hostInfo.ai_protocol = IPPROTO_TCP; //todo: confirm
+    hostInfo.ai_protocol = IPPROTO_TCP;  // todo: confirm
     hostInfo.ai_flags = AI_PASSIVE;
 
     auto lFreeList = [](addrinfo* p) { freeaddrinfo(p); };
@@ -61,13 +61,13 @@ SocketHandle Start(uint16_t port)
     if (bind(**socket, hostInfoList->ai_addr, hostInfoList->ai_addrlen) == SocketFd::SOCKET_ERROR)
         throw SocketError(errno);
 
-    if (listen(**socket, 128) == SocketFd::SOCKET_ERROR)
+    if (listen(**socket, TcpBasicListener::c_backlog) == SocketFd::SOCKET_ERROR)
         throw SocketError(errno);
 
     return socket;
 }
 
-}
+}  // namespace
 
 TcpBasicListener::TcpBasicListener(uint16_t port)
     : m_socket(Start(port))
@@ -96,7 +96,7 @@ TcpBasicSocket TcpBasicListener::Accept()
     {
         while (true)
         {
-            int clientId = accept(**m_socket, nullptr, nullptr);  // todo: implement args 2 and 3
+            int clientId = accept(**m_socket, nullptr, nullptr);  // NOLINT(android-cloexec-accept): Doesn't seem to be an issue at the moment. todo: implement args 2 and 3
             if (clientId != SocketFd::INVALID_SOCKET)
                 return TcpBasicSocket::Attorney::accept(SocketHandle(SocketFd{ clientId }));
             if (errno != ECONNABORTED && errno != EINTR)
@@ -121,4 +121,4 @@ void TcpBasicListener::shutdown() noexcept
         ::shutdown(**m_socket, SHUT_RDWR);
 }
 
-} }
+}}  // namespace strapper::net

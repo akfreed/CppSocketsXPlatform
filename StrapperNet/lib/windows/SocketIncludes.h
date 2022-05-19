@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2017-2021 Alexander K. Freed
+// Copyright 2017-2022 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,17 +19,18 @@
 #pragma once
 
 #ifdef _INC_WINDOWS
-    static_assert(false, "This header must be included before windows.h");
+static_assert(false, "This header must be included before windows.h");
 #endif
 
-//----------------------------------------------------------------------------------------------//
-// inet_pton (used in UdpSocket.cpp) requires that we only compile for Vista and later.         //
-// These defines should be placed before including Windows.h or any other header but w32api.h.  //
-// https://stackoverflow.com/questions/4890753/inetntop-cant-find-which-header-it-is-using      //
-// Otherwise, use Windows XP as the version.                                                    //
-#define NTDDI_VERSION NTDDI_VISTA                                                               //
-#define WINVER _WIN32_WINNT_VISTA                                                               //
-#define _WIN32_WINNT _WIN32_WINNT_VISTA   //----------------------------------------------------//
+// ----------------------------------------------------------------------------------------------
+// inet_pton (used in UdpSocket.cpp) requires that we only compile for Vista and later.
+// These defines should be placed before including Windows.h or any other header but w32api.h.
+// https://stackoverflow.com/questions/4890753/inetntop-cant-find-which-header-it-is-using
+// Otherwise, use Windows XP as the version.
+#define NTDDI_VERSION NTDDI_VISTA
+#define WINVER _WIN32_WINNT_VISTA
+#define _WIN32_WINNT _WIN32_WINNT_VISTA
+// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 // prevent windows.h from including winsock.h
 #ifndef WIN32_LEAN_AND_MEAN
@@ -43,6 +44,6 @@
 #endif
 #include <winsock2.h>
 #include <ws2tcpip.h>
-//#include <iphlpapi.h>
+// #include <iphlpapi.h>  // todo: Add IpV6
 
 #pragma comment(lib, "Ws2_32.lib")

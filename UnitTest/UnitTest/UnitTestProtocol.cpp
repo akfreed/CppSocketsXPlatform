@@ -16,18 +16,18 @@
 
 #include <gtest/gtest.h>
 
-#include <strapper/net/TcpSocket.h>
-#include <strapper/net/TcpListener.h>
-#include <strapper/net/UdpSocket.h>
 #include <strapper/net/SocketError.h>
+#include <strapper/net/TcpListener.h>
+#include <strapper/net/TcpSocket.h>
+#include <strapper/net/UdpSocket.h>
 #include "TestGlobals.h"
 #include "Timeout.h"
 
-#include <thread>
-#include <chrono>
-#include <future>
 #include <atomic>
+#include <chrono>
 #include <exception>
+#include <future>
+#include <thread>
 
 namespace strapper { namespace net { namespace test {
 
@@ -68,12 +68,12 @@ TEST_F(UnitTestProtocol, ShutdownSendTcp)
 {
     Timeout timeout(std::chrono::seconds(3));
 
-    int64_t const toWrite = 0xA1B2C3D45E6F809D;
+    uint64_t const toWrite = 0xA1B2C3D45E6F809D;
     m_sender.Write(&toWrite, sizeof(toWrite));
     ASSERT_TRUE(m_sender);
     m_sender.ShutdownSend();
     ASSERT_TRUE(m_sender);
-    int64_t toRead = 0;
+    uint64_t toRead = 0;
     static_assert(sizeof(toWrite) == sizeof(toRead), "Buffers must be the same size.");
     ASSERT_EQ(m_receiver.DataAvailable(), sizeof(toWrite));
     ASSERT_TRUE(m_receiver.Read(&toRead, sizeof(toRead)));
@@ -85,7 +85,7 @@ TEST_F(UnitTestProtocol, ShutdownSendTcp)
     ASSERT_TRUE(m_receiver);
     ASSERT_EQ(c, 0xAF);
 
-    std::atomic<bool> ready{false};
+    std::atomic<bool> ready{ false };
     auto task = std::async(std::launch::async, [this, &ready]() {
         ready = true;
         std::this_thread::sleep_for(milliseconds(200));
@@ -114,14 +114,14 @@ TEST_F(UnitTestProtocol, ShutdownSendTcpEc)
     Timeout timeout(std::chrono::seconds(3));
 
     ErrorCode ec;
-    int64_t const toWrite = 0xA1B2C3D45E6F809D;
+    uint64_t const toWrite = 0xA1B2C3D45E6F809D;
     m_sender.Write(&toWrite, sizeof(toWrite), &ec);
     ASSERT_TRUE(m_sender);
     ASSERT_FALSE(ec);
     m_sender.ShutdownSend(&ec);
     ASSERT_TRUE(m_sender);
     ASSERT_FALSE(ec);
-    int64_t toRead = 0;
+    uint64_t toRead = 0;
     static_assert(sizeof(toWrite) == sizeof(toRead), "Buffers must be the same size.");
     ASSERT_EQ(m_receiver.DataAvailable(&ec), sizeof(toWrite));
     ASSERT_FALSE(ec);
@@ -137,7 +137,7 @@ TEST_F(UnitTestProtocol, ShutdownSendTcpEc)
     ASSERT_FALSE(ec);
     ASSERT_EQ(c, 0xAF);
 
-    std::atomic<bool> ready{false};
+    std::atomic<bool> ready{ false };
     auto task = std::async(std::launch::async, [this, &ready]() -> ErrorCode {
         ErrorCode ec;
         ready = true;
@@ -171,12 +171,12 @@ TEST_F(UnitTestProtocol, ReadAfterShutdownTcp)
 {
     Timeout timeout(std::chrono::seconds(3));
 
-    int64_t const toWrite = 0xA1B2C3D45E6F809D;
+    uint64_t const toWrite = 0xA1B2C3D45E6F809D;
     m_sender.Write(&toWrite, sizeof(toWrite));
     ASSERT_TRUE(m_sender);
     m_sender.ShutdownSend();
     ASSERT_TRUE(m_sender);
-    int64_t toRead = 0;
+    uint64_t toRead = 0;
     static_assert(sizeof(toWrite) == sizeof(toRead), "Buffers must be the same size.");
     ASSERT_EQ(m_receiver.DataAvailable(), sizeof(toWrite));
     ASSERT_TRUE(m_receiver.Read(&toRead, sizeof(toRead)));
@@ -226,14 +226,14 @@ TEST_F(UnitTestProtocol, ReadAfterShutdownTcpEc)
     Timeout timeout(std::chrono::seconds(3));
 
     ErrorCode ec;
-    int64_t const toWrite = 0xA1B2C3D45E6F809D;
+    uint64_t const toWrite = 0xA1B2C3D45E6F809D;
     m_sender.Write(&toWrite, sizeof(toWrite), &ec);
     ASSERT_TRUE(m_sender);
     ASSERT_FALSE(ec);
     m_sender.ShutdownSend(&ec);
     ASSERT_TRUE(m_sender);
     ASSERT_FALSE(ec);
-    int64_t toRead = 0;
+    uint64_t toRead = 0;
     static_assert(sizeof(toWrite) == sizeof(toRead), "Buffers must be the same size.");
     ASSERT_EQ(m_receiver.DataAvailable(&ec), sizeof(toWrite));
     ASSERT_FALSE(ec);
@@ -255,7 +255,7 @@ TEST_F(UnitTestProtocol, ReadAfterShutdownTcpEc)
     ASSERT_FALSE(m_receiver.Read(&c, sizeof(c), &ec));
     ASSERT_TRUE(ec);
     ASSERT_THROW(ec.Rethrow(), ProgramError);
-    ec = ErrorCode(); // Reset ec.
+    ec = ErrorCode();  // Reset ec.
     ASSERT_FALSE(m_receiver);
     ASSERT_EQ(c, 0xAF);
 
@@ -321,4 +321,4 @@ TEST_F(UnitTestProtocol, ReadAfterShutdownTcpEc)
     ASSERT_THROW(ec.Rethrow(), ProgramError);
 }
 
-} } }
+}}}  // namespace strapper::net::test

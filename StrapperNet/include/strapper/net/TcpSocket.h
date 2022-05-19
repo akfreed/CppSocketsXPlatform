@@ -18,8 +18,10 @@
 
 #include <strapper/net/TcpBasicSocket.h>
 
-#include <mutex>
 #include <condition_variable>
+#include <mutex>
+#include <string>
+#include <utility>
 
 namespace strapper { namespace net {
 
@@ -81,4 +83,4 @@ private:
     State m_state = State::CLOSED;
 };
 
-} }
+}}  // namespace strapper::net

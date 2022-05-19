@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2018-2021 Alexander K. Freed
+// Copyright 2018-2022 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,13 +14,10 @@
 // limitations under the License.
 // ==================================================================
 
-#pragma once
+#include "TestGlobals.h"
 
-#include <cstdint>
+namespace strapper { namespace net { namespace test {
 
-namespace strapper { namespace net {
+char constexpr TestGlobals::localhost[];  // NOLINT(readability-redundant-declaration): Needed for GCC.
 
-void TcpEchoServer(uint16_t port);
-void UdpEchoServer(uint16_t port);
-
-} }
+}}}  // namespace strapper::net::test

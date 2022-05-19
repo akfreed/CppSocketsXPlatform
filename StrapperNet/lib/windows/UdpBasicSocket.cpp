@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2018-2021 Alexander K. Freed
+// Copyright 2018-2022 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -38,13 +38,16 @@ SocketHandle MakeSocket(uint16_t myport)
     myInfo.sin_addr.s_addr = htonl(INADDR_ANY);
     myInfo.sin_port = htons(myport);
 
-    if (bind(**socket, reinterpret_cast<sockaddr*>(&myInfo), sizeof(myInfo)) == SOCKET_ERROR)
+    auto const status = bind(**socket,
+                             reinterpret_cast<sockaddr*>(&myInfo),  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+                             sizeof(myInfo));
+    if (status == SOCKET_ERROR)
         throw SocketError(WSAGetLastError());
 
     return socket;
 }
 
-}
+}  // namespace
 
 //! 0 for any.
 UdpBasicSocket::UdpBasicSocket(uint16_t myport)
@@ -69,7 +72,12 @@ bool UdpBasicSocket::IsOpen() const
 void UdpBasicSocket::SetReadTimeout(unsigned milliseconds)
 {
     DWORD const arg = milliseconds;
-    if (setsockopt(**m_socket, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<char const*>(&arg), sizeof(arg)) == SOCKET_ERROR)
+    auto const status = setsockopt(**m_socket,
+                                   SOL_SOCKET,
+                                   SO_RCVTIMEO,
+                                   reinterpret_cast<char const*>(&arg),  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+                                   sizeof(arg));
+    if (status == SOCKET_ERROR)
         throw SocketError(WSAGetLastError());
 }
 
@@ -78,7 +86,10 @@ void UdpBasicSocket::Shutdown() noexcept
     if (m_socket)
     {
         shutdown(**m_socket, SD_BOTH);
-        CancelIoEx(reinterpret_cast<HANDLE>(**m_socket), nullptr); // In winsock, shutdown doesn't cancel a blocking read.
+        // In winsock, shutdown doesn't cancel a blocking read.
+        CancelIoEx(
+            reinterpret_cast<HANDLE>(**m_socket),  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast, performance-no-int-to-ptr)
+            nullptr);
     }
 }
 
@@ -108,52 +119,57 @@ void UdpBasicSocket::Write(void const* src, size_t len, IpAddressV4 const& ipAdd
     if (success != 1)
         throw ProgramError("Unknown error.");
 
-    int const amountWritten = sendto(**m_socket, reinterpret_cast<const char*>(src), static_cast<int>(len), 0, reinterpret_cast<sockaddr*>(&info), sizeof(info));
+    int const amountWritten = sendto(**m_socket,
+                                     static_cast<char const*>(src),
+                                     static_cast<int>(len),
+                                     0,
+                                     reinterpret_cast<sockaddr*>(&info),  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+                                     sizeof(info));
     if (amountWritten == SOCKET_ERROR)
         throw SocketError(WSAGetLastError());
 }
 
-    //if (amountRead == SOCKET_ERROR)
-    //{
-    //    int error = WSAGetLastError();
-    //    switch (error)
-    //    {
-    //    case WSAEINTR:       // blocking call was interrupted. In a multi-threaded environment, probably means the socket was closed by another thread
-    //        assert(false);   // This shouldn't happen since this situation should be protected by the state machine and mutexes.
-    //        return false;
-    //        break;
+// if (amountRead == SOCKET_ERROR)
+// {
+//     int error = WSAGetLastError();
+//     switch (error)
+//     {
+//     case WSAEINTR:       // blocking call was interrupted. In a multi-threaded environment, probably means the socket was closed by another thread
+//         assert(false);   // This shouldn't happen since this situation should be protected by the state machine and mutexes.
+//         return false;
+//         break;
 
-    //    case WSAETIMEDOUT:   // timeout was reached. If this happens, the socket is in an invalid state and must be closed. (Thanks, Windows)
-    //        m_state = State::OPEN;
-    //        close(lock);
-    //        return false;
-    //        break;
+//     case WSAETIMEDOUT:   // timeout was reached. If this happens, the socket is in an invalid state and must be closed. (Thanks, Windows)
+//         m_state = State::OPEN;
+//         close(lock);
+//         return false;
+//         break;
 
-    //    case WSAEMSGSIZE:    // buffer was not large enough
-    //        amountRead = maxlen;
-    //        break;  // fall out of error check back to normal return
+//     case WSAEMSGSIZE:    // buffer was not large enough
+//         amountRead = maxlen;
+//         break;  // fall out of error check back to normal return
 
-    //    case WSAECONNRESET:  // In TCP, this is a hard reset. In UDP, it means a previous write failed (ICMP Port Unreachable).
-    //        if (!m_theirInfoIsValid)  // expected behavior when reusing a socket. However, we don't allow socket reuse in this implementation.
-    //        {
-    //            assert(false);
-    //            return false;
-    //        }
-    //        else if (checkSenderInfo(info, infoLen, lock))  // same sender. Up to calling code if they want to close
-    //        {
-    //            return false;
-    //        }
-    //        // else, different sender. fall out of error check back to normal return, which will try the read again
-    //        break;
+//     case WSAECONNRESET:  // In TCP, this is a hard reset. In UDP, it means a previous write failed (ICMP Port Unreachable).
+//         if (!m_theirInfoIsValid)  // expected behavior when reusing a socket. However, we don't allow socket reuse in this implementation.
+//         {
+//             assert(false);
+//             return false;
+//         }
+//         else if (checkSenderInfo(info, infoLen, lock))  // same sender. Up to calling code if they want to close
+//         {
+//             return false;
+//         }
+//         // else, different sender. fall out of error check back to normal return, which will try the read again
+//         break;
 
-    //    default:
-    //        assert(false);  // todo: development only. Need to see what kind of errors we experience.
-    //        m_state = State::OPEN;
-    //        close(lock);
-    //        return false;
-    //        break;
-    //    }
-    //}
+//     default:
+//         assert(false);  // todo: development only. Need to see what kind of errors we experience.
+//         m_state = State::OPEN;
+//         close(lock);
+//         return false;
+//         break;
+//     }
+// }
 
 unsigned UdpBasicSocket::Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddress, uint16_t* out_port)
 {
@@ -164,7 +180,12 @@ unsigned UdpBasicSocket::Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddr
     if (maxlen > std::numeric_limits<int>::max())
         throw ProgramError("Max length must be less than int max.");
 
-    int const amountRead = recvfrom(**m_socket, reinterpret_cast<char*>(dest), static_cast<int>(maxlen), 0, reinterpret_cast<sockaddr*>(&info), &infoLen);
+    int const amountRead = recvfrom(**m_socket,
+                                    static_cast<char*>(dest),
+                                    static_cast<int>(maxlen),
+                                    0,
+                                    reinterpret_cast<sockaddr*>(&info),  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+                                    &infoLen);
     if (amountRead == 0)
         throw ProgramError("Socket was shut down.");
     if (amountRead == SOCKET_ERROR)
@@ -186,7 +207,7 @@ unsigned UdpBasicSocket::Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddr
 // returns -1 on error
 unsigned UdpBasicSocket::DataAvailable() const
 {
-    unsigned long bytesAvailable = 0;
+    u_long bytesAvailable = 0;
     if (ioctlsocket(**m_socket, FIONREAD, &bytesAvailable) == SOCKET_ERROR)
         throw SocketError(WSAGetLastError());
 
@@ -201,4 +222,4 @@ UdpBasicSocket::operator bool() const
     return IsOpen();
 }
 
-} }
+}}  // namespace strapper::net

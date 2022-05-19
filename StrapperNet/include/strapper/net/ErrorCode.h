@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2021 Alexander K. Freed
+// Copyright 2021-2022 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@
 
 #pragma once
 
-#include <string>
 #include <exception>
+#include <string>
 
 namespace strapper { namespace net {
 
@@ -41,4 +41,4 @@ private:
     std::string m_what = GetErrorName(0);
 };
 
-} }
+}}  // namespace strapper::net

@@ -14,12 +14,28 @@
 // limitations under the License.
 // ==================================================================
 
-#include "TestGlobals.h"
+#include "EchoServers.h"
 
-namespace strapper { namespace net { namespace test {
+#include <exception>
+#include <iostream>
 
-char constexpr TestGlobals::localhost[];
-uint16_t constexpr TestGlobals::port;
-uint16_t constexpr TestGlobals::port2;
+using namespace strapper::net;
 
-} } }
+int main()
+{
+    try
+    {
+        TcpEchoServer(11111);
+        return EXIT_SUCCESS;
+    }
+    catch (std::exception const& e)
+    {
+        std::cout << "Exception occured.\n"
+                  << e.what() << std::endl;
+    }
+    catch (...)
+    {
+        std::cout << "Unknown exception occured." << std::endl;
+    }
+    return EXIT_FAILURE;
+}

@@ -1,0 +1,9 @@
+# clang-tidy 13.0.1
+Checks: '*,-llvmlibc*,-*braces-around-statements,-altera-id-dependent-backward-branch,-altera-struct-pack-align,-altera-unroll-loops,-cert-err58-cpp,-cppcoreguidelines-avoid-non-const-global-variables,-cppcoreguidelines-macro-usage,-cppcoreguidelines-owning-memory,-cppcoreguidelines-pro-bounds-array-to-pointer-decay,-fuchsia-default-arguments-calls,-fuchsia-default-arguments-declarations,-fuchsia-overloaded-operator,-fuchsia-statically-constructed-objects,-google-build-using-namespace,-google-readability-namespace-comments,-hicpp-no-array-decay,-hicpp-uppercase-literal-suffix,-llvm-header-guard,-llvm-include-order,-llvm-namespace-comment,-modernize-make-unique,-modernize-use-trailing-return-type,-readability-identifier-length,-readability-uppercase-literal-suffix'
+WarningsAsErrors: '*'
+FormatStyle: file
+CheckOptions:
+  - key:             misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
+    value:           '1'
+  - key:             readability-implicit-bool-conversion.AllowPointerConditions
+    value:           '1'

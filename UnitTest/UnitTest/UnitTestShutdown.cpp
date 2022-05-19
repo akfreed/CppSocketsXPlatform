@@ -16,8 +16,8 @@
 
 #include <gtest/gtest.h>
 
-#include <strapper/net/TcpBasicSocket.h>
 #include <strapper/net/TcpBasicListener.h>
+#include <strapper/net/TcpBasicSocket.h>
 #include "TestGlobals.h"
 #include "Timeout.h"
 
@@ -175,4 +175,4 @@ TEST_F(UnitTestShutdown, PermYXBA)
     m_sender.ShutdownSend();
 }
 
-} } }
+}}}  // namespace strapper::net::test

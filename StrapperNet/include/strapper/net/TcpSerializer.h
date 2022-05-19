@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2018-2021 Alexander K. Freed
+// Copyright 2018-2022 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ public:
 
     explicit TcpSerializer(TcpSocket&& socket);
 
-    const TcpSocket& Socket() const;
+    TcpSocket const& Socket() const;
     TcpSocket& Socket();
 
     void Write(char c);
@@ -49,4 +49,4 @@ private:
     TcpSocket m_socket;
 };
 
-} }
+}}  // namespace strapper::net

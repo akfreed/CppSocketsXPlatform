@@ -1,8 +1,13 @@
-build/
-build_*/
-debug/
-debug_*/
-release/
-release_*/
+build*/
+debug*/
+release*/
 
 .vscode/
+
+.env/
+.venv/
+env/
+venv/
+__pycache__/
+
+compile_commands.json

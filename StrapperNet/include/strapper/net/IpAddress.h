@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2021 Alexander K. Freed
+// Copyright 2021-2022 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,9 +16,9 @@
 
 #pragma once
 
+#include <array>
 #include <cstdint>
 #include <string>
-#include <array>
 
 namespace strapper { namespace net {
 
@@ -29,7 +29,7 @@ public:
     static IpAddressV4 const Loopback;
 
     IpAddressV4() = default;
-    IpAddressV4(std::string const& ip);
+    explicit IpAddressV4(std::string const& ip);
     //! @param[in] val An int (in network byte order) representation of an IP address.
     explicit IpAddressV4(uint32_t val);
 
@@ -42,4 +42,4 @@ private:
     uint32_t m_val = 0;
 };
 
-} }
+}}  // namespace strapper::net

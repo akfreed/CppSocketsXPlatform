@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2021 Alexander K. Freed
+// Copyright 2021-2022 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,11 +23,11 @@
 namespace strapper { namespace net {
 
 SocketHandle::SocketHandle() = default;
-SocketHandle::SocketHandle(SocketHandle && other) noexcept = default;
-SocketHandle& SocketHandle::operator=(SocketHandle && other) noexcept = default;
+SocketHandle::SocketHandle(SocketHandle&& other) noexcept = default;
+SocketHandle& SocketHandle::operator=(SocketHandle&& other) noexcept = default;
 
 SocketHandle::SocketHandle(int family, int socktype, int protocol)
-    : m_socketId(new SocketFd{socket(family, socktype, protocol)})
+    : m_socketId(new SocketFd{ socket(family, socktype, protocol) })
 {
     if (m_socketId->m_fd == INVALID_SOCKET)
         throw SocketError(WSAGetLastError());
@@ -67,4 +67,4 @@ SocketHandle::operator bool() const
     return m_socketId && m_socketId->m_fd != INVALID_SOCKET;
 }
 
-} }
+}}  // namespace strapper::net

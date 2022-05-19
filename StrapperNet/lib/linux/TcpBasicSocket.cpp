@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2018-2021 Alexander K. Freed
+// Copyright 2018-2022 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,13 +19,13 @@
 #include <strapper/net/SocketError.h>
 #include "SocketFd.h"
 
-#include <sys/socket.h>
-#include <sys/ioctl.h>
 #include <netdb.h>
+#include <sys/ioctl.h>
+#include <sys/socket.h>
 
 #include <cassert>
-#include <memory>
 #include <limits>
+#include <memory>
 
 namespace strapper { namespace net {
 
@@ -35,8 +35,8 @@ namespace {
 SocketHandle Connect(std::string const& host, uint16_t port)
 {
     addrinfo hostInfo{};
-    hostInfo.ai_family = AF_UNSPEC; // Can be IPv4 or IPv6
-    hostInfo.ai_socktype = SOCK_STREAM; // TCP
+    hostInfo.ai_family = AF_UNSPEC;      // Can be IPv4 or IPv6
+    hostInfo.ai_socktype = SOCK_STREAM;  // TCP
 
     auto lFreeList = [](addrinfo* p) { freeaddrinfo(p); };
     std::unique_ptr<addrinfo, decltype(lFreeList)> hostInfoList(nullptr, lFreeList);
@@ -64,7 +64,7 @@ SocketHandle Connect(std::string const& host, uint16_t port)
     return socket;
 }
 
-}
+}  // namespace
 
 //! Provide additional data members specific to an implementation.
 struct TcpBasicSocketImpl
@@ -110,9 +110,9 @@ bool TcpBasicSocket::IsConnected() const
 //! 0 = no timeout (forever) and is the default setting
 void TcpBasicSocket::SetReadTimeout(unsigned milliseconds)
 {
-    timeval t;
-    t.tv_sec = milliseconds / 1000;
-    t.tv_usec = (milliseconds % 1000) * 1000;
+    timeval t{};
+    t.tv_sec = milliseconds / 1000;                                      // NOLINT(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
+    t.tv_usec = static_cast<suseconds_t>((milliseconds % 1000) * 1000);  // NOLINT(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
     if (setsockopt(**m_socket, SOL_SOCKET, SO_RCVTIMEO, &t, sizeof(timeval)) == SocketFd::SOCKET_ERROR)
         throw SocketError(errno);
 }
@@ -176,7 +176,7 @@ bool TcpBasicSocket::Read(void* dest, size_t len)
             throw ProgramError("Length must be greater than 0.");
         if (len > static_cast<size_t>(std::numeric_limits<ssize_t>::max()))
             throw ProgramError("Length must be less than ssize_t max.");
-        ssize_t const lenAsLongInt = static_cast<ssize_t>(len);
+        auto const lenAsLongInt = static_cast<ssize_t>(len);
 
         ssize_t amountRead = 0;
         do
@@ -187,7 +187,7 @@ bool TcpBasicSocket::Read(void* dest, size_t len)
             throw SocketError(errno);
         if (amountRead == lenAsLongInt)
             return true;
-        if (amountRead == 0) // Graceful close.
+        if (amountRead == 0)  // Graceful close.
         {
             if (!m_impl->m_receiveEnabled)
                 throw ProgramError("Attempted to read after EOF.");
@@ -210,7 +210,12 @@ bool TcpBasicSocket::Read(void* dest, size_t len)
 unsigned TcpBasicSocket::DataAvailable()
 {
     int bytesAvailable = 0;
-    if (ioctl(**m_socket, FIONREAD, &bytesAvailable) == SocketFd::SOCKET_ERROR)
+    int const fd = **m_socket;
+    auto const status = ioctl(  // NOLINT(cppcoreguidelines-pro-type-vararg, hicpp-vararg)
+        fd,
+        FIONREAD,
+        &bytesAvailable);
+    if (status == SocketFd::SOCKET_ERROR)
         throw SocketError(errno);
 
     if (bytesAvailable < 0)
@@ -224,4 +229,4 @@ TcpBasicSocket::operator bool() const
     return IsConnected();
 }
 
-} }
+}}  // namespace strapper::net

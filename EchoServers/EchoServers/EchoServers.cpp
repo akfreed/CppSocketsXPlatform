@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2018-2021 Alexander K. Freed
+// Copyright 2018-2022 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,14 +16,15 @@
 
 #include "EchoServers.h"
 
+#include <strapper/net/IpAddress.h>
 #include <strapper/net/TcpListener.h>
 #include <strapper/net/TcpSerializer.h>
 #include <strapper/net/UdpSocket.h>
-#include <strapper/net/IpAddress.h>
 
+#include <array>
 #include <cstring>
-#include <string>
 #include <iostream>
+#include <string>
 
 namespace strapper { namespace net {
 
@@ -48,24 +49,23 @@ void TcpEchoServer(uint16_t port)
     std::cout << "> Closing connection to client." << std::endl;
 }
 
-
 void UdpEchoServer(uint16_t port)
 {
     UdpSocket client(port);
 
     unsigned constexpr MAX = 1000;
-    char message[MAX + 1]{};
+    std::array<char, MAX + 1> message{};
 
-    while (strncmp(message, "exit", 5) != 0)
+    while (strncmp(message.data(), "exit\0", 5) != 0)
     {
         IpAddressV4 ip;
-        uint16_t theirPort;
-        unsigned const amountRead = client.Read(message, MAX, &ip, &theirPort);
+        uint16_t theirPort = 0;
+        unsigned const amountRead = client.Read(message.data(), MAX, &ip, &theirPort);
         message[amountRead] = '\0';
-        std::cout << "> " << message << std::endl;
-        client.Write(message, amountRead, ip, theirPort);
+        std::cout << "> " << message.data() << std::endl;
+        client.Write(message.data(), amountRead, ip, theirPort);
     }
     std::cout << "> Closing socket." << std::endl;
 }
 
-} }
+}}  // namespace strapper::net

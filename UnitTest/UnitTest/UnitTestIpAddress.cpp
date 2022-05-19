@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2018-2021 Alexander K. Freed
+// Copyright 2018-2022 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,9 +16,9 @@
 
 #include <gtest/gtest.h>
 
+#include <strapper/net/Endian.h>
 #include <strapper/net/IpAddress.h>
 #include <strapper/net/SocketError.h>
-#include <strapper/net/Endian.h>
 
 #include <string>
 
@@ -27,6 +27,21 @@ namespace strapper { namespace net { namespace test {
 class UnitTestIpAddress : public ::testing::Test
 {
 };
+
+TEST_F(UnitTestIpAddress, ConstructionConversion)
+{
+    char const asChar[] = "0:0:0:0";
+    IpAddressV4 ip1(asChar);
+    IpAddressV4 ip2("0:0:0:0");
+
+    std::string const asString = "0:0:0:0";
+    IpAddressV4 ip3(asString);
+    IpAddressV4 ip4(std::string("0:0:0:0"));
+
+    uint32_t const asInt = 0;
+    IpAddressV4 ip5(asInt);
+    IpAddressV4 ip6(0);
+}
 
 TEST_F(UnitTestIpAddress, IpAddressFail)
 {
@@ -88,7 +103,7 @@ TEST_F(UnitTestIpAddress, Any)
 {
     IpAddressV4 any = IpAddressV4::Any;
     ASSERT_EQ(any.ToString(), "0:0:0:0");
-    ASSERT_TRUE((any.ToArray() == std::array<uint8_t, 4>{ 0, 0, 0, 0}));
+    ASSERT_TRUE((any.ToArray() == std::array<uint8_t, 4>{ 0, 0, 0, 0 }));
     ASSERT_EQ(any.ToInt(), 0u);
 }
 
@@ -100,4 +115,4 @@ TEST_F(UnitTestIpAddress, ConstructFromInt)
     ASSERT_EQ(IpAddressV4(nton(0xABCDEF01)).ToString(), "171:205:239:1");
 }
 
-} } }
+}}}  // namespace strapper::net::test
