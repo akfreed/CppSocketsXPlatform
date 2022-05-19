@@ -48,7 +48,7 @@ SocketHandle Connect(std::string const& host, uint16_t port)
         hostInfoList.reset(hil);
     }
 
-    if (hostInfoList->ai_addrlen > std::numeric_limits<int>::max())
+    if (hostInfoList->ai_addrlen > static_cast<size_t>(std::numeric_limits<int>::max()))
         throw ProgramError("getaddrinfo returned invalid length.");
 
     SocketHandle socket(hostInfoList->ai_family, hostInfoList->ai_socktype, hostInfoList->ai_protocol);
@@ -143,7 +143,7 @@ void TcpBasicSocket::Write(void const* src, size_t len)
 {
     if (len == 0)
         throw ProgramError("Length must be greater than 0.");
-    if (len > std::numeric_limits<int>::max())
+    if (len > static_cast<size_t>(std::numeric_limits<int>::max()))
         throw ProgramError("Length must be less than int max.");
 
     if (send(**m_socket, static_cast<char const*>(src), static_cast<int>(len), 0) == SOCKET_ERROR)
@@ -159,7 +159,7 @@ bool TcpBasicSocket::Read(void* dest, size_t len)
     {
         if (len == 0)
             throw ProgramError("Length must be greater than 0.");
-        if (len > std::numeric_limits<int>::max())
+        if (len > static_cast<size_t>(std::numeric_limits<int>::max()))
             throw ProgramError("Length must be less than int max.");
 
         int const lenAsInt = static_cast<int>(len);

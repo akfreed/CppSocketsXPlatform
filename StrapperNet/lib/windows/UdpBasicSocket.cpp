@@ -104,7 +104,7 @@ void UdpBasicSocket::Write(void const* src, size_t len, IpAddressV4 const& ipAdd
 {
     if (len == 0)
         throw ProgramError("Length must be greater than 0.");
-    if (len > std::numeric_limits<int>::max())
+    if (len > static_cast<size_t>(std::numeric_limits<int>::max()))
         throw ProgramError("Length must be less than int max.");
 
     sockaddr_in info{};
@@ -177,7 +177,7 @@ unsigned UdpBasicSocket::Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddr
     int infoLen = sizeof(info);
     if (maxlen == 0)
         throw ProgramError("Max length must be greater than 0.");
-    if (maxlen > std::numeric_limits<int>::max())
+    if (maxlen > static_cast<size_t>(std::numeric_limits<int>::max()))
         throw ProgramError("Max length must be less than int max.");
 
     int const amountRead = recvfrom(**m_socket,
