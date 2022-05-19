@@ -10,6 +10,7 @@ project (CppSocketsXPlat)
 
 # Warning flags
 if(MSVC)
+    add_compile_options(/MP)
     set(WARNING_FLAGS /W4 /WX
         /experimental:external # VS 16.9 and older
         /external:I ${CMAKE_SOURCE_DIR}/thirdparty/
