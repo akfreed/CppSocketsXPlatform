@@ -85,7 +85,7 @@ To run the unit tests, build and execute the `UnitTest` binary/project.
 
 ### Python unit tests
 
-There is also a single python test under scripts for testing `scripts/pocc-shim.py`. It only needs to be run if you change `pocc-shim.py`. 
+There is also a single python test under scripts for testing `scripts/pocc-shim.py`. It only needs to be run if you change `pocc-shim.py`.
 
 You will have to install `pytest` via `pip`. See the instructions under the Linting section for how to setup Python and pip. Then do `pip install pytest`.
 
@@ -105,7 +105,7 @@ This project is configured for pre-commit to do linting. This mean you will need
 
 **clang-format** is a customizable auto-formatter developed by LLVM and written in C++. I like it because the customizations are relatively quick and easy to setup. I was able to set it pretty close to my desired style, although I needed to compromise. **Be careful when running pre-commit manually, as it will unforgivingly auto-edit your unstaged files.**
 
-**clang-tidy** is a static analysis and style-checking tool developed by LLVM and written in C++. It does many different kinds of checks for things like bugs, security, performance, style, etc. It's the Sterling Archer of linters. It's a pain to setup and work with. It takes a long time and uses all your resources. It does a lot and it's really good at its job, but it gets distracted easily and makes so much noise that you'll end up ignoring everything it says. 
+**clang-tidy** is a static analysis and style-checking tool developed by LLVM and written in C++. It does many different kinds of checks for things like bugs, security, performance, style, etc. It's the Sterling Archer of linters. It's a pain to setup and work with. It takes a long time and uses all your resources. It does a lot and it's really good at its job, but it gets distracted easily and makes so much noise that you'll end up ignoring everything it says.
 
 It is critical to have at least the minimum versions of the linting tools. Cross-platform C++ linting tools in general are surprisingly primitive. Lots of brilliant people and huge companies work on them. The language itself is well-studied and has been around longer than half the people who use it. Yet, modern-day C++ linting tools are either very rudimentary or very difficult to setup and give too many false errors. It's important to have the latest versions to get better checks and better control over the flow. This is particularly an issue for Linux distributions such as Ubuntu and CentOS, which run stable versions of packages on long-term-support releases.
 
@@ -115,7 +115,7 @@ Getting the correct version is easier on Windows since you tend to be able to do
 
 ### Package manager
 
-As discussed, you *must* have at least the minimum versions (listed earlier) of the linting tools. 
+As discussed, you *must* have at least the minimum versions (listed earlier) of the linting tools.
 
 For Windows, the package-manager Chocolatey is strongly recommended. It is incredibly easy to install, only requiring you to run a one-liner in an administrative PowerShell prompt. Go to their website to get the one-liner. https://chocolatey.org/install
 
@@ -183,7 +183,7 @@ Installing LLVM brings in clang-tidy and clang-format, however you need the upda
 
 ### Pre-commit
 
-Pre-commit is a python program designed to pull public linting tools hosted online. It uses git hooks. It is not limited to git's pre-commit hook. People and organizations will host their own linting tools for you to use. Isn't that nice? 
+Pre-commit is a python program designed to pull public linting tools hosted online. It uses git hooks. It is not limited to git's pre-commit hook. People and organizations will host their own linting tools for you to use. Isn't that nice?
 
 Pre-commit's primary intended use case is to force you to pass linting before you can commit. Using this workflow, which is optional for this project, you would run `pre-commit install` in your repo. Then when you run `git commit` in the future, it will automatically run the pre-commit checks first. Pro-tip, `pre-commit unistall` will stop that behavior.
 

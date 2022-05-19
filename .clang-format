@@ -129,7 +129,7 @@ SpacesInAngles: false
 SpacesInCStyleCastParentheses: false
 SpacesInConditionalStatement: false
 SpacesInContainerLiterals: false
-SpacesInLineCommentPrefix: 
+SpacesInLineCommentPrefix:
     Minimum: 1
     Maximum: -1
 SpacesInParentheses: false

@@ -27,7 +27,3 @@ jobs:
       with:
         extra_args: clang-format --all-files
         token: ${{ secrets.CI_TOKEN }}
-
-  
-
-    
