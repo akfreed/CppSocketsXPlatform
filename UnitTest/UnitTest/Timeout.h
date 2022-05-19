@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2021 Alexander K. Freed
+// Copyright 2021-2022 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,11 +18,11 @@
 
 #include <strapper/net/SocketError.h>
 
-#include <thread>
-#include <mutex>
-#include <condition_variable>
 #include <chrono>
+#include <condition_variable>
 #include <iostream>
+#include <mutex>
+#include <thread>
 
 namespace strapper { namespace net { namespace test {
 
@@ -37,9 +37,9 @@ public:
         m_thread = std::thread(&Timeout::WaitThread<Rep, Period>, this, timeout);
     }
 
-    Timeout(const Timeout&) = delete;
+    Timeout(Timeout const&) = delete;
     Timeout(Timeout&&) = delete;
-    Timeout& operator=(const Timeout&) = delete;
+    Timeout& operator=(Timeout const&) = delete;
     Timeout& operator=(Timeout&&) = delete;
 
     ~Timeout()
@@ -86,4 +86,4 @@ private:
     std::thread m_thread;
 };
 
-} } }
+}}}  // namespace strapper::net::test

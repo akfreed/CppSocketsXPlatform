@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2021 Alexander K. Freed
+// Copyright 2021-2022 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ namespace strapper { namespace net {
 
 void nton(int32_t* i32);
 int32_t nton(int32_t i32);
+void nton(uint32_t* i32);
+uint32_t nton(uint32_t i32);
 void nton(double* d);
 
-} }
+}}  // namespace strapper::net

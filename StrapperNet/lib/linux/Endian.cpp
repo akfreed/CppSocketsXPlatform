@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2021 Alexander K. Freed
+// Copyright 2021-2022 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,10 +25,20 @@ namespace strapper { namespace net {
 
 void nton(int32_t* i32)
 {
-    *i32 = htonl(*i32);
+    *i32 = htonl(*i32);  // NOLINT(bugprone-narrowing-conversions, clang-diagnostic-sign-conversion, cppcoreguidelines-narrowing-conversions)
 }
 
 int32_t nton(int32_t i32)
+{
+    return htonl(i32);  // NOLINT(bugprone-narrowing-conversions, clang-diagnostic-sign-conversion, cppcoreguidelines-narrowing-conversions)
+}
+
+void nton(uint32_t* i32)
+{
+    *i32 = htonl(*i32);
+}
+
+uint32_t nton(uint32_t i32)
 {
     return htonl(i32);
 }
@@ -36,11 +46,11 @@ int32_t nton(int32_t i32)
 //! Be careful not to assign anything to this double until it's back to host form.
 void nton(double* d)
 {
-    static_assert(sizeof(*d) == 8, "Function not compatible with this compiler.");
-    uint64_t u64;
+    static_assert(sizeof(*d) == sizeof(uint64_t), "This function is designed for 64-bit doubles.");
+    uint64_t u64 = 0;
     std::memcpy(&u64, d, sizeof(u64));
     u64 = htobe64(u64);
     std::memcpy(d, &u64, sizeof(u64));
 }
 
-} }
+}}  // namespace strapper::net

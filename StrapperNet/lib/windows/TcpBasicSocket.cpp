@@ -21,8 +21,8 @@
 #include "SocketFd.h"
 
 #include <cassert>
-#include <memory>
 #include <limits>
+#include <memory>
 
 namespace strapper { namespace net {
 
@@ -32,8 +32,8 @@ namespace {
 SocketHandle Connect(std::string const& host, uint16_t port)
 {
     addrinfo hostInfo{};
-    hostInfo.ai_family = AF_UNSPEC; // Can be IPv4 or IPv6
-    hostInfo.ai_socktype = SOCK_STREAM; // TCP
+    hostInfo.ai_family = AF_UNSPEC;      // Can be IPv4 or IPv6
+    hostInfo.ai_socktype = SOCK_STREAM;  // TCP
 
     auto lFreeList = [](addrinfo* p) { freeaddrinfo(p); };
     std::unique_ptr<addrinfo, decltype(lFreeList)> hostInfoList(nullptr, lFreeList);
@@ -60,7 +60,7 @@ SocketHandle Connect(std::string const& host, uint16_t port)
     return socket;
 }
 
-}
+}  // namespace
 
 //! Unused for this implementation.
 struct TcpBasicSocketImpl
@@ -99,7 +99,12 @@ bool TcpBasicSocket::IsConnected() const
 void TcpBasicSocket::SetReadTimeout(unsigned milliseconds)
 {
     DWORD const arg = milliseconds;
-    if (setsockopt(**m_socket, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<char const*>(&arg), sizeof(arg)) == SOCKET_ERROR)
+    auto const status = setsockopt(**m_socket,
+                                   SOL_SOCKET,
+                                   SO_RCVTIMEO,
+                                   reinterpret_cast<char const*>(&arg),  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+                                   sizeof(arg));
+    if (status == SOCKET_ERROR)
         throw SocketError(WSAGetLastError());
 }
 
@@ -121,7 +126,9 @@ void TcpBasicSocket::ShutdownBoth() noexcept
     {
         shutdown(**m_socket, SD_BOTH);
         // In winsock, shutdown doesn't cancel a blocking read.
-        CancelIoEx(reinterpret_cast<HANDLE>(**m_socket), nullptr);
+        CancelIoEx(
+            reinterpret_cast<HANDLE>(**m_socket),  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast, performance-no-int-to-ptr)
+            nullptr);
     }
 }
 
@@ -139,7 +146,7 @@ void TcpBasicSocket::Write(void const* src, size_t len)
     if (len > std::numeric_limits<int>::max())
         throw ProgramError("Length must be less than int max.");
 
-    if (send(**m_socket, reinterpret_cast<char const*>(src), static_cast<int>(len), 0) == SOCKET_ERROR)
+    if (send(**m_socket, static_cast<char const*>(src), static_cast<int>(len), 0) == SOCKET_ERROR)
         throw SocketError(WSAGetLastError());
 }
 
@@ -156,10 +163,10 @@ bool TcpBasicSocket::Read(void* dest, size_t len)
             throw ProgramError("Length must be less than int max.");
 
         int const lenAsInt = static_cast<int>(len);
-        int const amountRead = recv(**m_socket, reinterpret_cast<char*>(dest), lenAsInt, MSG_WAITALL);
+        int const amountRead = recv(**m_socket, static_cast<char*>(dest), lenAsInt, MSG_WAITALL);
         if (amountRead == SOCKET_ERROR)
             throw SocketError(WSAGetLastError());
-        if (amountRead == 0 && len > 0) // Graceful close.
+        if (amountRead == 0 && len > 0)  // Graceful close.
         {
             ShutdownReceive();
             return false;
@@ -181,7 +188,7 @@ bool TcpBasicSocket::Read(void* dest, size_t len)
 //! May be smaller than the actual number of bytes available
 unsigned TcpBasicSocket::DataAvailable()
 {
-    unsigned long bytesAvailable = 0;
+    u_long bytesAvailable = 0;
     if (ioctlsocket(**m_socket, FIONREAD, &bytesAvailable) == SOCKET_ERROR)
         throw SocketError(WSAGetLastError());
 
@@ -196,4 +203,4 @@ TcpBasicSocket::operator bool() const
     return IsConnected();
 }
 
-} }
+}}  // namespace strapper::net

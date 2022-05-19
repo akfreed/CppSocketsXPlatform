@@ -1,0 +1,2 @@
+InheritParentConfig: true
+Checks: '-*avoid-c-arrays,-*avoid-goto,-cppcoreguidelines-avoid-magic-numbers,-cppcoreguidelines-pro-bounds-pointer-arithmetic,-readability-function-cognitive-complexity,-readability-magic-numbers'

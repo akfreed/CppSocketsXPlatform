@@ -72,7 +72,7 @@ TcpSocket::~TcpSocket()
 void swap(TcpSocket& left, TcpSocket& right)
 {
     using State = TcpSocket::State;
-    std::lock(left.m_socketLock, right.m_socketLock); // Avoids deadlock.
+    std::lock(left.m_socketLock, right.m_socketLock);  // Avoids deadlock.
     std::unique_lock<std::mutex> leftLock(left.m_socketLock, std::adopt_lock);
     std::unique_lock<std::mutex> rightLock(right.m_socketLock, std::adopt_lock);
 
@@ -293,4 +293,4 @@ TcpSocket::operator bool() const
     return IsConnected();
 }
 
-} }
+}}  // namespace strapper::net

@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2021 Alexander K. Freed
+// Copyright 2021-2022 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,10 +23,22 @@ namespace strapper { namespace net {
 
 void nton(int32_t* i32)
 {
-    *i32 = htonl(*i32);
+    static_assert(sizeof(u_long) == sizeof(int32_t), "Size mismatch.");
+    *i32 = htonl(*i32);  // NOLINT(bugprone-narrowing-conversions, cppcoreguidelines-narrowing-conversions)
 }
 
 int32_t nton(int32_t i32)
+{
+    static_assert(sizeof(u_long) == sizeof(int32_t), "Size mismatch.");
+    return htonl(i32);  // NOLINT(bugprone-narrowing-conversions, cppcoreguidelines-narrowing-conversions)
+}
+
+void nton(uint32_t* i32)
+{
+    *i32 = htonl(*i32);
+}
+
+uint32_t nton(uint32_t i32)
 {
     return htonl(i32);
 }
@@ -38,4 +50,4 @@ void nton(double* d)
     std::memcpy(d, &ull, sizeof(ull));
 }
 
-} }
+}}  // namespace strapper::net

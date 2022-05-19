@@ -166,4 +166,4 @@ TcpListener::operator bool() const
     return IsListening();
 }
 
-} }
+}}  // namespace strapper::net

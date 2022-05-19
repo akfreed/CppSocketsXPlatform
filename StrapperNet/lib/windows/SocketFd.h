@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2021 Alexander K. Freed
+// Copyright 2021-2022 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,4 +28,4 @@ struct SocketFd
     SOCKET m_fd = INVALID_SOCKET;
 };
 
-} }
+}}  // namespace strapper::net

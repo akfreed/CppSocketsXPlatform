@@ -16,18 +16,18 @@
 
 #include <gtest/gtest.h>
 
-#include <strapper/net/TcpSocket.h>
-#include <strapper/net/TcpListener.h>
-#include <strapper/net/UdpSocket.h>
 #include <strapper/net/SocketError.h>
+#include <strapper/net/TcpListener.h>
+#include <strapper/net/TcpSocket.h>
+#include <strapper/net/UdpSocket.h>
 #include "TestGlobals.h"
 #include "Timeout.h"
 
-#include <thread>
-#include <chrono>
-#include <future>
 #include <atomic>
+#include <chrono>
 #include <exception>
+#include <future>
+#include <thread>
 
 namespace strapper { namespace net { namespace test {
 
@@ -74,7 +74,7 @@ TEST_F(UnitTestError, ReadTimeoutTcp)
     ASSERT_GT((stop - start), milliseconds(450)) << "Socket returned from read too early.";
     ASSERT_LT((stop - start), milliseconds(600)) << "Socket returend from read too late.";
 
-    ASSERT_FALSE(m_receiver); // timing out should close the socket
+    ASSERT_FALSE(m_receiver);  // timing out should close the socket
 }
 
 // Tests that SetReadTimeout breaks a blocking read and closes the socket.
@@ -96,7 +96,7 @@ TEST_F(UnitTestError, ReadTimeoutTcpEc)
     ASSERT_GT((stop - start), milliseconds(450)) << "Socket returned from read too early.";
     ASSERT_LT((stop - start), milliseconds(600)) << "Socket returend from read too late.";
 
-    ASSERT_FALSE(m_receiver); // timing out should close the socket
+    ASSERT_FALSE(m_receiver);  // timing out should close the socket
 }
 
 // Tests that SetReadTimeout breaks a blocking read and closes the socket.
@@ -114,7 +114,7 @@ TEST_F(UnitTestError, ReadTimeoutUdp)
     ASSERT_GT((stop - start), milliseconds(450)) << "Socket returned from read too early.";
     ASSERT_LT((stop - start), milliseconds(600)) << "Socket returend from read too late.";
 
-    ASSERT_TRUE(receiver); // timing out should not close the socket
+    ASSERT_TRUE(receiver);  // timing out should not close the socket
 }
 
 // Tests that SetReadTimeout breaks a blocking read and closes the socket.
@@ -138,7 +138,7 @@ TEST_F(UnitTestError, ReadTimeoutUdpEc)
     ASSERT_GT((stop - start), milliseconds(450)) << "Socket returned from read too early.";
     ASSERT_LT((stop - start), milliseconds(600)) << "Socket returend from read too late.";
 
-    ASSERT_TRUE(receiver); // timing out should not close the socket
+    ASSERT_TRUE(receiver);  // timing out should not close the socket
 }
 
 // Tests that closing the socket breaks a blocking read on a separate thread.
@@ -152,12 +152,14 @@ TEST_F(UnitTestError, UnblockReadTcp)
         {
             char buf[1];
             m_receiver.Read(buf, 1);
-            std::cout << "Read did not fail as expected.\n" << std::endl;
+            std::cout << "Read did not fail as expected.\n"
+                      << std::endl;
             return false;
         }
         catch (ProgramError const& e)
         {
-            std::cout << "Read failed successfully:\n" << e.what() << std::endl;
+            std::cout << "Read failed successfully:\n"
+                      << e.what() << std::endl;
             return true;
         }
     });
@@ -165,7 +167,7 @@ TEST_F(UnitTestError, UnblockReadTcp)
     // Make sure the read is still blocking.
     ASSERT_EQ(task.wait_for(milliseconds(200)), std::future_status::timeout) << (m_receiver.IsConnected() ? "Socket returned from read too early." : "Socket closed.");
     std::this_thread::sleep_for(milliseconds(200));
-    m_receiver.Close(); // This call should block until the operation is done.
+    m_receiver.Close();  // This call should block until the operation is done.
     ASSERT_FALSE(m_receiver);
     ASSERT_TRUE(task.get());
 }
@@ -185,12 +187,14 @@ TEST_F(UnitTestError, UnblockReadTcpEc)
         {
             if (ec)
                 ec.Rethrow();
-            std::cout << "Read did not fail as expected.\n" << std::endl;
+            std::cout << "Read did not fail as expected.\n"
+                      << std::endl;
             return false;
         }
         catch (ProgramError const& e)
         {
-            std::cout << "Read failed successfully:\n" << e.what() << std::endl;
+            std::cout << "Read failed successfully:\n"
+                      << e.what() << std::endl;
             return true;
         }
     });
@@ -198,7 +202,7 @@ TEST_F(UnitTestError, UnblockReadTcpEc)
     // Make sure the read is still blocking.
     ASSERT_EQ(task.wait_for(milliseconds(200)), std::future_status::timeout) << (m_receiver.IsConnected() ? "Socket returned from read too early." : "Socket closed.");
     std::this_thread::sleep_for(milliseconds(200));
-    m_receiver.Close(); // This call should block until the operation is done.
+    m_receiver.Close();  // This call should block until the operation is done.
     ASSERT_FALSE(m_receiver);
     ASSERT_TRUE(task.get());
 }
@@ -216,12 +220,14 @@ TEST_F(UnitTestError, UnblockReadUdp)
         {
             char buf[1];
             receiver.Read(buf, 1, nullptr, nullptr);
-            std::cout << "Read did not fail as expected.\n" << std::endl;
+            std::cout << "Read did not fail as expected.\n"
+                      << std::endl;
             return false;
         }
         catch (ProgramError const& e)
         {
-            std::cout << "Read failed successfully:\n" << e.what() << std::endl;
+            std::cout << "Read failed successfully:\n"
+                      << e.what() << std::endl;
             return true;
         }
     });
@@ -229,7 +235,7 @@ TEST_F(UnitTestError, UnblockReadUdp)
     // Make sure the read is still blocking.
     ASSERT_EQ(task.wait_for(milliseconds(200)), std::future_status::timeout) << (receiver ? "Socket returned from read too early." : "Socket closed.");
     std::this_thread::sleep_for(milliseconds(200));
-    receiver.Close(); // This call should block until the operation is done.
+    receiver.Close();  // This call should block until the operation is done.
     ASSERT_FALSE(receiver);
     ASSERT_TRUE(task.get());
 }
@@ -250,12 +256,14 @@ TEST_F(UnitTestError, UnblockReadUdpEc)
         {
             if (ec)
                 ec.Rethrow();
-            std::cout << "Read did not fail as expected.\n" << std::endl;
+            std::cout << "Read did not fail as expected.\n"
+                      << std::endl;
             return false;
         }
         catch (ProgramError const& e)
         {
-            std::cout << "Read failed successfully:\n" << e.what() << std::endl;
+            std::cout << "Read failed successfully:\n"
+                      << e.what() << std::endl;
             return true;
         }
     });
@@ -263,7 +271,7 @@ TEST_F(UnitTestError, UnblockReadUdpEc)
     // Make sure the read is still blocking.
     ASSERT_EQ(task.wait_for(milliseconds(200)), std::future_status::timeout) << (receiver ? "Socket returned from read too early." : "Socket closed.");
     std::this_thread::sleep_for(milliseconds(200));
-    receiver.Close(); // This call should block until the operation is done.
+    receiver.Close();  // This call should block until the operation is done.
     ASSERT_FALSE(receiver);
     ASSERT_TRUE(task.get());
 }
@@ -280,12 +288,14 @@ TEST_F(UnitTestError, UnblockAccept)
         try
         {
             auto client = listener.Accept();
-            std::cout << "Read did not fail as expected.\n" << std::endl;
+            std::cout << "Read did not fail as expected.\n"
+                      << std::endl;
             return false;
         }
         catch (ProgramError const& e)
         {
-            std::cout << "Accept failed successfully:\n" << e.what() << std::endl;
+            std::cout << "Accept failed successfully:\n"
+                      << e.what() << std::endl;
             return true;
         }
     });
@@ -293,7 +303,7 @@ TEST_F(UnitTestError, UnblockAccept)
     // Make sure the read is still blocking.
     ASSERT_EQ(task.wait_for(milliseconds(200)), std::future_status::timeout) << (listener ? "Socket returned from read too early." : "Socket closed.");
     std::this_thread::sleep_for(milliseconds(200));
-    listener.Close(); // This call should block until the operation is done.
+    listener.Close();  // This call should block until the operation is done.
     ASSERT_FALSE(listener);
     ASSERT_TRUE(task.get());
 }
@@ -313,22 +323,24 @@ TEST_F(UnitTestError, UnblockAcceptEc)
         {
             if (ec)
                 ec.Rethrow();
-            std::cout << "Read did not fail as expected.\n" << std::endl;
+            std::cout << "Read did not fail as expected.\n"
+                      << std::endl;
             return false;
         }
         catch (ProgramError const& e)
         {
-            std::cout << "Accept failed successfully:\n" << e.what() << std::endl;
+            std::cout << "Accept failed successfully:\n"
+                      << e.what() << std::endl;
             return true;
         }
-        });
+    });
 
     // Make sure the accept is still blocking.
     ASSERT_EQ(task.wait_for(milliseconds(200)), std::future_status::timeout) << (listener ? "Socket returned from read too early." : "Socket closed.");
     std::this_thread::sleep_for(milliseconds(200));
-    listener.Close(); // This call should block until the operation is done.
+    listener.Close();  // This call should block until the operation is done.
     ASSERT_FALSE(listener);
     ASSERT_TRUE(task.get());
 }
 
-} } }
+}}}  // namespace strapper::net::test

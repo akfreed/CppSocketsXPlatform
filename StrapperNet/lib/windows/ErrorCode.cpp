@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2021 Alexander K. Freed
+// Copyright 2021-2022 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,51 +24,51 @@
 
 namespace strapper { namespace net {
 
-#define CODES(FUNC) \
-    FUNC(NO_ERROR) \
-    FUNC(WSA_NOT_ENOUGH_MEMORY) \
-    FUNC(WSAEACCES) \
-    FUNC(WSAEADDRINUSE) \
-    FUNC(WSAEADDRNOTAVAIL) \
-    FUNC(WSAEAFNOSUPPORT) \
-    FUNC(WSAEALREADY) \
-    FUNC(WSAECONNABORTED) \
-    FUNC(WSAECONNREFUSED) \
-    FUNC(WSAECONNRESET) \
-    FUNC(WSAEFAULT) \
-    FUNC(WSAEHOSTUNREACH) \
-    FUNC(WSAEINPROGRESS) \
-    FUNC(WSAEINTR) \
-    FUNC(WSAEINVAL) \
-    FUNC(WSAEINVALIDPROCTABLE) \
-    FUNC(WSAEINVALIDPROVIDER) \
-    FUNC(WSAEISCONN) \
-    FUNC(WSAEMFILE) \
-    FUNC(WSAEMSGSIZE) \
-    FUNC(WSAENETDOWN) \
-    FUNC(WSAENETRESET) \
-    FUNC(WSAEPROTONOSUPPORT) \
-    FUNC(WSAENETUNREACH) \
+#define CODES(FUNC)              \
+    FUNC(NO_ERROR)               \
+    FUNC(WSA_NOT_ENOUGH_MEMORY)  \
+    FUNC(WSAEACCES)              \
+    FUNC(WSAEADDRINUSE)          \
+    FUNC(WSAEADDRNOTAVAIL)       \
+    FUNC(WSAEAFNOSUPPORT)        \
+    FUNC(WSAEALREADY)            \
+    FUNC(WSAECONNABORTED)        \
+    FUNC(WSAECONNREFUSED)        \
+    FUNC(WSAECONNRESET)          \
+    FUNC(WSAEFAULT)              \
+    FUNC(WSAEHOSTUNREACH)        \
+    FUNC(WSAEINPROGRESS)         \
+    FUNC(WSAEINTR)               \
+    FUNC(WSAEINVAL)              \
+    FUNC(WSAEINVALIDPROCTABLE)   \
+    FUNC(WSAEINVALIDPROVIDER)    \
+    FUNC(WSAEISCONN)             \
+    FUNC(WSAEMFILE)              \
+    FUNC(WSAEMSGSIZE)            \
+    FUNC(WSAENETDOWN)            \
+    FUNC(WSAENETRESET)           \
+    FUNC(WSAEPROTONOSUPPORT)     \
+    FUNC(WSAENETUNREACH)         \
     FUNC(WSAEPROVIDERFAILEDINIT) \
-    FUNC(WSAENOBUFS) \
-    FUNC(WSAENOPROTOOPT) \
-    FUNC(WSAENOTCONN) \
-    FUNC(WSAENOTSOCK) \
-    FUNC(WSAEOPNOTSUPP) \
-    FUNC(WSAEPROCLIM) \
-    FUNC(WSAEPROTOTYPE) \
-    FUNC(WSAESHUTDOWN) \
-    FUNC(WSAESOCKTNOSUPPORT) \
-    FUNC(WSAETIMEDOUT) \
-    FUNC(WSAEWOULDBLOCK) \
-    FUNC(WSAHOST_NOT_FOUND) \
-    FUNC(WSANO_DATA) \
-    FUNC(WSANO_RECOVERY) \
-    FUNC(WSANOTINITIALISED) \
-    FUNC(WSASYSNOTREADY) \
-    FUNC(WSATRY_AGAIN) \
-    FUNC(WSATYPE_NOT_FOUND) \
-    FUNC(WSAVERNOTSUPPORTED) \
+    FUNC(WSAENOBUFS)             \
+    FUNC(WSAENOPROTOOPT)         \
+    FUNC(WSAENOTCONN)            \
+    FUNC(WSAENOTSOCK)            \
+    FUNC(WSAEOPNOTSUPP)          \
+    FUNC(WSAEPROCLIM)            \
+    FUNC(WSAEPROTOTYPE)          \
+    FUNC(WSAESHUTDOWN)           \
+    FUNC(WSAESOCKTNOSUPPORT)     \
+    FUNC(WSAETIMEDOUT)           \
+    FUNC(WSAEWOULDBLOCK)         \
+    FUNC(WSAHOST_NOT_FOUND)      \
+    FUNC(WSANO_DATA)             \
+    FUNC(WSANO_RECOVERY)         \
+    FUNC(WSANOTINITIALISED)      \
+    FUNC(WSASYSNOTREADY)         \
+    FUNC(WSATRY_AGAIN)           \
+    FUNC(WSATYPE_NOT_FOUND)      \
+    FUNC(WSAVERNOTSUPPORTED)
 
 #define NAME_SWITCH(name) \
     case name: return #name " (" + std::to_string(name) + ")";
@@ -83,8 +83,8 @@ std::string ErrorCode::GetErrorName(int nativeErrorCode)
     }
 }
 
-ErrorCode::ErrorCode(std::exception_ptr exception)
-    : m_exception(std::move(exception))
+ErrorCode::ErrorCode(std::exception_ptr exception)  // NOLINT(performance-unnecessary-value-param): Clang-tidy thinks this is a const reference. I don't know what's going on under the hood, but I prefer value semantics with std::exception_ptr for safety purposes.
+    : m_exception(std::move(exception))             // NOLINT(hicpp-move-const-arg, performance-move-const-arg)
 {
     if (m_exception)
     {
@@ -110,4 +110,4 @@ void ErrorCode::Rethrow() const
     std::rethrow_exception(m_exception);
 }
 
-} }
+}}  // namespace strapper::net

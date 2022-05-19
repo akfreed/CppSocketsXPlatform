@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2018-2021 Alexander K. Freed
+// Copyright 2018-2022 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@
 
 #include <strapper/net/TcpSerializer.h>
 
-#include <strapper/net/SocketError.h>
 #include <strapper/net/Endian.h>
+#include <strapper/net/SocketError.h>
 
 #include <cassert>
 #include <cstring>
@@ -28,7 +28,7 @@ TcpSerializer::TcpSerializer(TcpSocket&& socket)
     : m_socket(std::move(socket))
 { }
 
-const TcpSocket& TcpSerializer::Socket() const
+TcpSocket const& TcpSerializer::Socket() const
 {
     return m_socket;
 }
@@ -66,7 +66,7 @@ void TcpSerializer::Write(std::string const& s)
     int const len = (s.length() > MAX_STRING_LEN) ? MAX_STRING_LEN : static_cast<int>(s.length());
     Write(len);
     if (len > 0)
-        m_socket.Write(s.c_str(), len);
+        m_socket.Write(s.c_str(), static_cast<size_t>(len));
 }
 
 //----------------------------------------------------------------------------
@@ -82,10 +82,10 @@ bool TcpSerializer::Read(bool* dest)
 {
     if (!dest)
         throw ProgramError("Null pointer.");
-    uint8_t buf;
+    uint8_t buf = 0;
     bool result = m_socket.Read(&buf, 1);
     if (result)
-        *dest = (buf == 0 ? false : true);
+        *dest = (buf == 0 ? false : true);  // NOLINT(readability-simplify-boolean-expr): This is more readable.
     return result;
 }
 
@@ -101,7 +101,7 @@ bool TcpSerializer::Read(int32_t* dest)
 
 bool TcpSerializer::Read(double* dest)
 {
-    static_assert(sizeof(unsigned long long) == sizeof(double), "Function not compatible with this compiler.");
+    static_assert(sizeof(double) == sizeof(uint64_t), "This function is designed for 64-bit doubles.");
     if (!dest)
         throw ProgramError("Null pointer.");
 
@@ -118,15 +118,15 @@ bool TcpSerializer::Read(std::string* dest)
     if (!dest)
         throw ProgramError("Null pointer.");
 
-    int len;
+    int len = 0;
     if (!Read(&len))
         return false;
 
-    if (len < 0 || len > MAX_STRING_LEN) // other end is corrupted or is not following the protocol.
+    if (len < 0 || len > MAX_STRING_LEN)  // other end is corrupted or is not following the protocol.
         throw ProgramError("Received bad string size.");
 
     dest->resize(static_cast<size_t>(len));
     return m_socket.Read(&*(dest->begin()), static_cast<size_t>(len));
 }
 
-} }
+}}  // namespace strapper::net

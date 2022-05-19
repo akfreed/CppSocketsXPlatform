@@ -254,4 +254,4 @@ UdpSocket::operator bool() const
     return IsOpen();
 }
 
-} }
+}}  // namespace strapper::net

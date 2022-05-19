@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2021 Alexander K. Freed
+// Copyright 2021-2022 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@
 
 #include <exception>
 #include <string>
+#include <utility>
 
 namespace strapper { namespace net {
 
@@ -34,7 +35,7 @@ public:
 
     char const* what() const noexcept override { return m_what.c_str(); }
 
-protected:
+private:
     std::string m_what = "Program Error.";
 };
 
@@ -56,8 +57,8 @@ public:
         return m_nativeCode;
     }
 
-protected:
+private:
     int m_nativeCode = 0;
 };
 
-} }
+}}  // namespace strapper::net

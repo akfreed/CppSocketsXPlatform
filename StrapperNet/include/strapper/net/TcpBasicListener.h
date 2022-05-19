@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2018-2021 Alexander K. Freed
+// Copyright 2018-2022 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@
 
 #pragma once
 
-#include <strapper/net/SystemContext.h>
 #include <strapper/net/SocketHandle.h>
+#include <strapper/net/SystemContext.h>
 #include <strapper/net/TcpBasicSocket.h>
 
 #include <cstdint>
@@ -26,8 +26,11 @@ namespace strapper { namespace net {
 
 class TcpBasicListener
 {
-    friend class TcpListener; // todo: remove
+    friend class TcpListener;  // todo: remove
+
 public:
+    static unsigned constexpr c_backlog = 128;
+
     TcpBasicListener() = default;
     explicit TcpBasicListener(uint16_t port);
     TcpBasicListener(TcpBasicListener const&) = delete;
@@ -50,4 +53,4 @@ private:
     SocketHandle m_socket;
 };
 
-} }
+}}  // namespace strapper::net

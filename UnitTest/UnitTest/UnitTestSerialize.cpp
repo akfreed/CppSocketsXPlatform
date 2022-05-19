@@ -1,5 +1,5 @@
 // ==================================================================
-// Copyright 2018-2021 Alexander K. Freed
+// Copyright 2018-2022 Alexander K. Freed
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,19 +16,22 @@
 
 #include <gtest/gtest.h>
 
-#include <strapper/net/TcpSocket.h>
-#include <strapper/net/TcpSerializer.h>
 #include <strapper/net/TcpListener.h>
+#include <strapper/net/TcpSerializer.h>
+#include <strapper/net/TcpSocket.h>
+#include <strapper/net/UdpSocket.h>
 #include "TestGlobals.h"
 #include "Timeout.h"
 
-#include <cstdint>
-#include <cstring>
 #include <algorithm>
+#include <chrono>
+#include <cstring>
+#include <memory>
+#include <string>
 
 namespace strapper { namespace net { namespace test {
 
-class UnitTestEndian : public ::testing::Test
+class UnitTestSerialize : public ::testing::Test
 {
 public:
     static void SetUpTestSuite()
@@ -63,51 +66,62 @@ public:
     Timeout m_timeout{ std::chrono::seconds(3) };
 };
 
-std::unique_ptr<TcpSerializer> UnitTestEndian::s_sender;
-std::unique_ptr<TcpSerializer> UnitTestEndian::s_receiver;
+std::unique_ptr<TcpSerializer> UnitTestSerialize::s_sender;
+std::unique_ptr<TcpSerializer> UnitTestSerialize::s_receiver;
 
-TEST_F(UnitTestEndian, CheckInt)
+TEST_F(UnitTestSerialize, SendRecvChar)
 {
-    const int32_t value = 0x3CABBA6E;
-    char valBuffer[sizeof(value)];
-
-    std::memcpy(valBuffer, &value, sizeof(value));
-
-    s_sender->Write(value);
-    s_sender->Write(value);
-
-    char readBuffer[sizeof(value)];
-    ASSERT_TRUE(s_receiver->Socket().Read(readBuffer, sizeof(value)));
-    char expected[4]{ '\x3C', '\xAB', '\xBA', '\x6E' };
-    ASSERT_TRUE(std::equal(expected, expected + 4, readBuffer));
-
-    int32_t readInt = 0;
-    ASSERT_TRUE(s_receiver->Read(&readInt));
-    std::memcpy(readBuffer, &readInt, sizeof(readInt));
-    ASSERT_TRUE(std::equal(readBuffer, readBuffer + 4, valBuffer));
+    char const sentData = 'f';
+    s_sender->Write(sentData);
+    char recvData{};
+    ASSERT_TRUE(s_receiver->Read(&recvData));
+    ASSERT_EQ(recvData, sentData);
 }
 
-TEST_F(UnitTestEndian, CheckDouble)
+TEST_F(UnitTestSerialize, SendRecvBool)
 {
-    const uint64_t value = 0x0807060504030201;
-    char valBuffer[sizeof(value)];
-    double toSend;
+    s_sender->Write(false);
+    s_sender->Write(true);
+    constexpr bool s = true;
+    s_sender->Write(s);
 
-    std::memcpy(valBuffer, &value, sizeof(value));
-    std::memcpy(&toSend, &value, sizeof(value));
-
-    s_sender->Write(toSend);
-    s_sender->Write(toSend);
-
-    char readBuffer[sizeof(value)];
-    ASSERT_TRUE(s_receiver->Socket().Read(readBuffer, sizeof(value)));
-    char expected[8]{ 8, 7, 6, 5, 4, 3, 2, 1 };
-    ASSERT_TRUE(std::equal(expected, expected + 8, readBuffer));
-
-    double readDouble = 0;
-    ASSERT_TRUE(s_receiver->Read(&readDouble));
-    std::memcpy(readBuffer, &readDouble, sizeof(readDouble));
-    ASSERT_TRUE(std::equal(readBuffer, readBuffer + 8, valBuffer));
+    bool b = true;
+    ASSERT_TRUE(s_receiver->Read(&b));
+    ASSERT_EQ(b, false);
+    ASSERT_TRUE(s_receiver->Read(&b));
+    ASSERT_EQ(b, true);
+    ASSERT_TRUE(s_receiver->Read(&b));
+    ASSERT_EQ(b, true);
 }
 
-} } }
+TEST_F(UnitTestSerialize, SendRecvInt32)
+{
+    int sentData = -20;
+    s_sender->Write(sentData);
+
+    int recvData{};
+    ASSERT_TRUE(s_receiver->Read(&recvData));
+    ASSERT_EQ(recvData, sentData);
+}
+
+TEST_F(UnitTestSerialize, SendRecvDouble)
+{
+    double sentData = 5.1234567890;
+    s_sender->Write(sentData);
+
+    double recvData{};
+    ASSERT_TRUE(s_receiver->Read(&recvData));
+    ASSERT_EQ(recvData, sentData);
+}
+
+TEST_F(UnitTestSerialize, SendRecvCharString)
+{
+    std::string const out = "Hello, World!";
+    s_sender->Write(out);
+
+    std::string in;
+    ASSERT_TRUE(s_receiver->Read(&in));
+    ASSERT_EQ(in, out);
+}
+
+}}}  // namespace strapper::net::test

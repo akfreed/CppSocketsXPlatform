@@ -1,0 +1,12 @@
+repos:
+  - repo: https://github.com/pocc/pre-commit-hooks
+    rev: v1.3.5
+    hooks:
+      - id: clang-format
+        args: [-i]
+      - id: cppcheck
+        args: [--language=c++, --std=c++11, --library=googletest, --inline-suppr, --enable=all]
+      - id: cpplint
+        args: ['--filter=-build/c++11,-build/namespace,-readability/namespace,-readability/nolint,-whitespace/braces,-whitespace/indent,-whitespace/line_length,-whitespace/newline,-whitespace/semicolon']
+      - id: clang-tidy
+        entry: scripts/pocc-shim.py
