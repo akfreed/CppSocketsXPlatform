@@ -34,15 +34,5 @@ jobs:
       run: |
         mkdir build && cd build
         cmake -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} ..
-    - name: Run Cppcheck
+    - name: Run pre-commit
       uses: pre-commit/action@v2.0.3
-      with:
-        extra_args: cppcheck
-    - name: Run cpplint
-      uses: pre-commit/action@v2.0.3
-      with:
-        extra_args: cpplint
-    - name: Run clang-tidy
-      uses: pre-commit/action@v2.0.3
-      with:
-        extra_args: clang-tidy
