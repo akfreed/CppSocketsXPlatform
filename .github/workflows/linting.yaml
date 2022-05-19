@@ -1,0 +1,52 @@
+name: Linting
+
+on:
+  pull_request:
+  push:
+    branches: [main, develop]
+
+jobs:
+  lint_ubuntu:
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        build_type:
+          - Debug
+          - Release
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        submodules: true
+
+    - name: Install CMake
+      uses: jwlawson/actions-setup-cmake@v1.12
+      with:
+        cmake-version: '3.15'
+
+    - name: Install Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: 3.8
+
+    - name: Install dependencies
+      run: |
+        pip install -U pip
+        pip install clang-format cpplint
+        brew update
+        brew install llvm cppcheck
+
+    - name: Run CMake
+      run: |
+        mkdir build && cd build
+        cmake -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} ..
+
+    - name: pre-commit
+      uses: pre-commit/action@v2.0.3
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+
+
+      
