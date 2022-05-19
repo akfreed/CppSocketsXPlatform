@@ -1,2 +1,2 @@
 InheritParentConfig: true
-Checks: '-cppcoreguidelines-avoid-magic-numbers,-readability-magic-numbers,-cppcoreguidelines-pro-bounds-constant-array-index'
+Checks: '-cppcoreguidelines-avoid-magic-numbers,-cppcoreguidelines-pro-bounds-constant-array-index,-readability-magic-numbers'

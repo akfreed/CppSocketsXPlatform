@@ -1,9 +1,9 @@
 # clang-tidy 13.0.1
-Checks: '*,-llvm-header-guard,-llvm-namespace-comment,-llvm-include-order,-llvmlibc*,-google-readability-namespace-comments,-*braces-around-statements,-modernize-use-trailing-return-type,-modernize-make-unique,-altera-id-dependent-backward-branch,-altera-struct-pack-align,-altera-unroll-loops,-fuchsia-default-arguments-declarations,-fuchsia-default-arguments-calls,-fuchsia-overloaded-operator,-fuchsia-statically-constructed-objects,-readability-uppercase-literal-suffix,-readability-identifier-length,-hicpp-uppercase-literal-suffix,-cppcoreguidelines-avoid-non-const-global-variables,-cert-err58-cpp,-cppcoreguidelines-owning-memory,-cppcoreguidelines-macro-usage,-google-build-using-namespace,-cppcoreguidelines-pro-bounds-array-to-pointer-decay,-hicpp-no-array-decay'
+Checks: '*,-llvmlibc*,-*braces-around-statements,-altera-id-dependent-backward-branch,-altera-struct-pack-align,-altera-unroll-loops,-cert-err58-cpp,-cppcoreguidelines-avoid-non-const-global-variables,-cppcoreguidelines-macro-usage,-cppcoreguidelines-owning-memory,-cppcoreguidelines-pro-bounds-array-to-pointer-decay,-fuchsia-default-arguments-calls,-fuchsia-default-arguments-declarations,-fuchsia-overloaded-operator,-fuchsia-statically-constructed-objects,-google-build-using-namespace,-google-readability-namespace-comments,-hicpp-no-array-decay,-hicpp-uppercase-literal-suffix,-llvm-header-guard,-llvm-include-order,-llvm-namespace-comment,-modernize-make-unique,-modernize-use-trailing-return-type,-readability-identifier-length,-readability-uppercase-literal-suffix'
 WarningsAsErrors: '*'
 FormatStyle: file
 CheckOptions:
-  - key:             readability-implicit-bool-conversion.AllowPointerConditions
-    value:           '1'
   - key:             misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
+    value:           '1'
+  - key:             readability-implicit-bool-conversion.AllowPointerConditions
     value:           '1'

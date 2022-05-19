@@ -14,7 +14,7 @@ Linting is done automatically on GitHub PR. If you want to do it manually, insta
   * Install [Chocolatey](https://chocolatey.org/)
   * `choco install llvm cppcheck ninja`
   * `pip install pre-commit cpplint`
-  * Create a build folder for Ninja and run `cmake .. -G Ninja` to generate a `compile_commands.json`
+  * Create a build folder for Ninja and run `cmake .. -G Ninja` in an admin console to generate a `compile_commands.json`
 
 `pre-commit run --all-files`
 
@@ -159,7 +159,9 @@ Clang-tidy needs a `compile_commands.json` file from the build system. On Linux 
 
 For Windows, you will need Ninja.  MSVC does not generate a `compile_commands.json`, but Ninja does. Ninja can be installed with Chocolatey.
 
-Create a `build_ninja` folder and run `cmake .. -G Ninja`. It is not required to build, just configure CMake. Of course, if you don't care about using the Visual Studio IDE, you can use this folder as your main build tree if you want, building with `cmake --build . -j`
+From a console running with administrative privileges, create a `build_ninja` folder and run `cmake .. -G Ninja`. It is not required to build, just configure CMake. Of course, if you don't care about using the Visual Studio IDE, you can use this folder as your main build tree if you want, building with `cmake --build . -j`
+
+An odd thing is that the console needs administrative privileges to create the shortcut to `compile_commands.json` in the source tree. You have four options: 1) run your prompt with admin privileges, 2) [set your repo folder's permissions to share](https://answers.microsoft.com/en-us/windows/forum/all/you-need-permission-to-perform-this-action-help/38dc9b82-522c-4bdd-a834-3fed96b78069), 3) manually copy the file from the build tree to the source tree, or 4) temporarily modify `.pre-commit-config.yaml` to call clang-tidy with the arg `-p=build_ninja`.
 
 If you re-run CMake on your Visual Studio build tree, you will need to re-run CMake on your Ninja build tree before you can run clang-tidy again.
 
@@ -189,3 +191,4 @@ You can also run it any time with `pre-commit run --all-files`. Be careful with 
 
 Pre-commit is configured in the `.pre-commit-config.yaml`  file at the source root.
 
+Besides the C++ linting tools, there are a handful of other pre-commit hooks used by this project for various formatting and linting tasks.
