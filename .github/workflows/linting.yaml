@@ -35,7 +35,7 @@ jobs:
     - name: Run CMake
       run: |
         mkdir build && cd build
-        cmake -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} ..
+        cmake .. -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
     - name: Run pre-commit
       uses: pre-commit/action@v2.0.3
 
@@ -58,14 +58,12 @@ jobs:
     - name: Install additional dependencies
       run: |
         pip install -U pip
-        pip install cpplint
+        pip install clang-format cpplint
         choco install llvm cppcheck
+        choco install visualstudio2019buildtools
+        refreshenv
     - name: Install Ninja
       uses: seanmiddleditch/gha-setup-ninja@master
-    - name: Install Developer Command Prompt for VS
-      uses: ilammy/msvc-dev-cmd@v1
-      with:
-        arch: x64
     - name: Checkout
       uses: actions/checkout@v3
       with:
@@ -74,5 +72,24 @@ jobs:
       run: |
         mkdir build && cd build
         cmake .. -G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-    - name: Run pre-commit
+    #- name: Run CMake
+    #  run: |
+    #    mkdir build && cd build
+    #    cmake .. -G Ninja ^
+    #      -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} ^
+    #      -DCMAKE_TOOLCHAIN_FILE=${{ env.VCPKG_DEST_WIN }}\scripts\buildsystems\vcpkg.cmake ^
+    #      -DVCPKG_TARGET_TRIPLET=x64-windows-static-release ^
+    #      -DVERBOSE_CONFIGURE=ON ^
+    #      -DCMAKE_CXX_COMPILER=cl
+    - name: Run Cppcheck
       uses: pre-commit/action@v2.0.3
+      with:
+        extra_args: cppcheck --all-files
+    - name: Run cpplint
+      uses: pre-commit/action@v2.0.3
+      with:
+        extra_args: cpplint --all-files
+    - name: Run clang-tidy
+      uses: pre-commit/action@v2.0.3
+      with:
+        extra_args: clang-tidy --all-files
