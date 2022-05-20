@@ -6,38 +6,38 @@ on:
     branches: [main, develop]
 
 jobs:
-  Lint_Ubuntu:
-    runs-on: ubuntu-20.04
-    strategy:
-      matrix:
-        build_type:
-          - Debug
-          - Release
-    steps:
-    - name: Install CMake
-      uses: jwlawson/actions-setup-cmake@v1.12
-      with:
-        cmake-version: '3.15'
-    - name: Install Python
-      uses: actions/setup-python@v3
-      with:
-        python-version: 3.8
-    - name: Install additional dependencies
-      run: |
-        pip install -U pip
-        pip install clang-format cpplint
-        brew update
-        brew install llvm cppcheck
-    - name: Checkout
-      uses: actions/checkout@v3
-      with:
-        submodules: recursive
-    - name: Run CMake
-      run: |
-        mkdir build && cd build
-        cmake .. -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-    - name: Run pre-commit
-      uses: pre-commit/action@v2.0.3
+  #Lint_Ubuntu:
+  #  runs-on: ubuntu-20.04
+  #  strategy:
+  #    matrix:
+  #      build_type:
+  #        - Debug
+  #        - Release
+  #  steps:
+  #  - name: Install CMake
+  #    uses: jwlawson/actions-setup-cmake@v1.12
+  #    with:
+  #      cmake-version: '3.15'
+  #  - name: Install Python
+  #    uses: actions/setup-python@v3
+  #    with:
+  #      python-version: 3.8
+  #  - name: Install additional dependencies
+  #    run: |
+  #      pip install -U pip
+  #      pip install clang-format cpplint
+  #      brew update
+  #      brew install llvm cppcheck
+  #  - name: Checkout
+  #    uses: actions/checkout@v3
+  #    with:
+  #      submodules: recursive
+  #  - name: Run CMake
+  #    run: |
+  #      mkdir build && cd build
+  #      cmake .. -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+  #  - name: Run pre-commit
+  #    uses: pre-commit/action@v2.0.3
 
   Lint_Windows:
     runs-on: windows-2019
@@ -45,7 +45,11 @@ jobs:
       matrix:
         build_type:
           - Debug
-          - Release
+          #- Release
+    defaults:
+      run:
+        shell: pwsh
+
     steps:
     - name: Install CMake
       uses: jwlawson/actions-setup-cmake@v1.12
@@ -60,18 +64,20 @@ jobs:
         pip install -U pip
         pip install clang-format cpplint
         choco install llvm cppcheck
-        choco install visualstudio2019buildtools
-        refreshenv
+        echo "$env:ProgramFiles\Cppcheck" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+    #- name: Install additional dependencies
+    #  run: |
+    #    choco install visualstudio2019buildtools
     - name: Install Ninja
       uses: seanmiddleditch/gha-setup-ninja@master
     - name: Checkout
       uses: actions/checkout@v3
       with:
         submodules: recursive
-    - name: Run CMake
-      run: |
-        mkdir build && cd build
-        cmake .. -G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+    #- name: Run CMake
+    #  run: |
+    #    mkdir build && cd build
+    #    cmake .. -G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
     #- name: Run CMake
     #  run: |
     #    mkdir build && cd build
@@ -89,7 +95,7 @@ jobs:
       uses: pre-commit/action@v2.0.3
       with:
         extra_args: cpplint --all-files
-    - name: Run clang-tidy
-      uses: pre-commit/action@v2.0.3
-      with:
-        extra_args: clang-tidy --all-files
+    #- name: Run clang-tidy
+    #  uses: pre-commit/action@v2.0.3
+    #  with:
+    #    extra_args: clang-tidy --all-files
