@@ -17,7 +17,7 @@
 import re
 
 
-def get_exclusion_regex(folder_to_exclude: str):
+def get_exclusion_regex(folder_to_exclude: str):    
     return r"(\A|/|\\){}(/|\\)".format(folder_to_exclude)
 
 

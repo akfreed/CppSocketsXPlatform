@@ -1,4 +1,4 @@
-name: Auto-formatting
+name: Auto-format
 
 on:
   pull_request:
@@ -6,7 +6,7 @@ on:
     branches: [main, develop]
 
 jobs:
-  auto-formatting:
+  Auto-format:
     runs-on: ubuntu-latest
     env:
       # Skip clang-tidy since it takes a while to run.
