@@ -6,7 +6,7 @@ on:
     branches: [main, develop]
 
 jobs:
-  build-and-test_ubuntu:
+  Build-and-Test_Ubuntu:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
