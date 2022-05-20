@@ -38,3 +38,41 @@ jobs:
         cmake -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} ..
     - name: Run pre-commit
       uses: pre-commit/action@v2.0.3
+
+  Lint_Windows:
+    runs-on: windows-2019
+    strategy:
+      matrix:
+        build_type:
+          - Debug
+          - Release
+    steps:
+    - name: Install CMake
+      uses: jwlawson/actions-setup-cmake@v1.12
+      with:
+        cmake-version: '3.15'
+    - name: Install Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: 3.8
+    - name: Install additional dependencies
+      run: |
+        pip install -U pip
+        pip install cpplint
+        choco install llvm cppcheck
+    - name: Install Ninja
+      uses: seanmiddleditch/gha-setup-ninja@master
+    - name: Install Developer Command Prompt for VS
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x64
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        submodules: recursive
+    - name: Run CMake
+      run: |
+        mkdir build && cd build
+        cmake .. -G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+    - name: Run pre-commit
+      uses: pre-commit/action@v2.0.3

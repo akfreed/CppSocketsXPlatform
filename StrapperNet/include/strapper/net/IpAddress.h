@@ -20,7 +20,6 @@
 #include <cstdint>
 #include <string>
 
-
 namespace strapper { namespace net {
 
 class IpAddressV4
