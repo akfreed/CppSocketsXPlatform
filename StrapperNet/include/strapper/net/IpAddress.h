@@ -37,9 +37,9 @@ public:
     std::array<uint8_t, 4> ToArray() const;
     //! @return The address as an int in network byte order.
     uint32_t ToInt() const;
-
 private:
-    uint32_t m_val = 0;
+        uint32_t m_val = 0    ;    
 };
 
 }}  // namespace strapper::net
+
