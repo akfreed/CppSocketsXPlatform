@@ -38,9 +38,23 @@ def split_args(args: list):
     return args[:], []
 
 
-def filter_args(exclude_folder: str, args: list) -> list:
-    """Remove the filepaths containing the exclusion, keeping the script name and flags."""
-    exclude_re = get_exclusion_regex(exclude_folder)
+def filter_files(regex_str: str, args: list) -> list:
+    """Remove the filepaths matching the regex, keeping the script name and flags. Case is ignored."""
     script_and_flags, files = split_args(args)
-    filtered_files = [name for name in files if not re.search(exclude_re, name, flags=re.IGNORECASE)]
+    filtered_files = [name for name in files if not re.search(regex_str, name, flags=re.IGNORECASE)]
     return script_and_flags + filtered_files
+
+
+def filter_files_by_folder(folder_to_exclude: str, args: list) -> list:
+    """Remove the filepaths containing the exclusion folder name in the dirname, keeping the script name and flags. Case is ignored"""
+    regex_str = r"(\A|/|\\){}(/|\\)".format(folder_to_exclude)
+    return filter_files(regex_str, args)
+
+
+def filter_files_by_ext(ext_to_exclude: str, args: list) -> list:
+    """Remove the filepaths containing the exclusion file ext in the basename, keeping the script name and flags. Case is ignored"""
+    if ext_to_exclude[:1] == ".":
+        ext_to_exclude = ext_to_exclude[1:]
+    regex_str = r".*\.{}$".format(ext_to_exclude)
+    return filter_files(regex_str, args)
+

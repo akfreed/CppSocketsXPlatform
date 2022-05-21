@@ -64,37 +64,51 @@ def test_empty_args():
     assert second is not args
 
 
-def test_filter_files():
-    result = filter_args("windows", ["pocc-shim.py", "-f", R"alice\windows\bob", R"alice\linux\bob", R"alice\_windows\bob"])
+def filter_files_by_folder():
+    result = filter_files_by_folder("windows", ["pocc-shim.py", "-f", R"alice\windows\bob", R"alice\linux\bob", R"alice\_windows\bob"])
     assert result ==                ["pocc-shim.py", "-f", R"alice\linux\bob", R"alice\_windows\bob"]
 
-    result = filter_args(  "linux", ["pocc-shim.py", "-f", R"alice\windows\bob", R"alice\linux\bob", R"alice\_windows\bob"])
-    assert result ==                ["pocc-shim.py", "-f", R"alice\windows\bob", R"alice\_windows\bob"]
+    result = filter_files_by_folder(  "linux", ["pocc-shim.py", "-f", R"alice/windows\bob", R"alice/linux\bob", R"alice/_windows\bob"])
+    assert result ==                ["pocc-shim.py", "-f", R"alice/windows\bob", R"alice/_windows\bob"]
 
-    result = filter_args("windows", ["pocc-shim.py", "--two", "--flags", R"alice\_linux\bob", R"alice\windows_\bob", R".windows\alice"])
+    result = filter_files_by_folder("windows", ["pocc-shim.py", "--two", "--flags", R"alice/_linux\bob", R"alice/windows_/bob", R".windows/alice"])
+    assert result ==                ["pocc-shim.py", "--two", "--flags", R"alice/_linux\bob", R"alice/windows_/bob", R".windows/alice"]
+
+    result = filter_files_by_folder(  "linux", ["pocc-shim.py", "--two", "--flags", R"alice\_linux\bob", R"alice\windows_\bob", R".windows\alice"])
     assert result ==                ["pocc-shim.py", "--two", "--flags", R"alice\_linux\bob", R"alice\windows_\bob", R".windows\alice"]
 
-    result = filter_args(  "linux", ["pocc-shim.py", "--two", "--flags", R"alice\_linux\bob", R"alice\windows_\bob", R".windows\alice"])
-    assert result ==                ["pocc-shim.py", "--two", "--flags", R"alice\_linux\bob", R"alice\windows_\bob", R".windows\alice"]
-
-    result = filter_args("windows", ["pocc-shim.py", R"alice\linux_\bob", R"windows\alice", R"linux\alice"])
+    result = filter_files_by_folder("windows", ["pocc-shim.py", R"alice\linux_\bob", R"windows/alice", R"linux\alice"])
     assert result ==                ["pocc-shim.py", R"alice\linux_\bob", R"linux\alice"]
 
-    result = filter_args(  "linux", ["pocc-shim.py", R"alice\linux_\bob", R"windows\alice", R"linux\alice"])
-    assert result ==                ["pocc-shim.py", R"alice\linux_\bob", R"windows\alice"]
+    result = filter_files_by_folder(  "linux", ["pocc-shim.py", R"alice/linux_/bob", R"windows/alice", R"linux/alice"])
+    assert result ==                ["pocc-shim.py", R"alice/linux_/bob", R"windows/alice"]
 
-    result = filter_args("windows", ["pocc-shim.py"])
+    result = filter_files_by_folder("windows", ["pocc-shim.py"])
     assert result ==                ["pocc-shim.py"]
-    result = filter_args(  "linux", ["pocc-shim.py"])
+    result = filter_files_by_folder(  "linux", ["pocc-shim.py"])
     assert result ==                ["pocc-shim.py"]
 
-    result = filter_args("windows", ["pocc-shim.py", "--fix"])
+    result = filter_files_by_folder("windows", ["pocc-shim.py", "--fix"])
     assert result ==                ["pocc-shim.py", "--fix"]
-    result = filter_args(  "linux", ["pocc-shim.py", "--fix"])
+    result = filter_files_by_folder(  "linux", ["pocc-shim.py", "--fix"])
     assert result ==                ["pocc-shim.py", "--fix"]
 
-    result = filter_args("windows", ["pocc-shim.py", "-p=build", "--fix", "--config-file=.clang-tidy", R"bob\windows", R".linux\alice", R"bob\linux"])
-    assert result ==                ["pocc-shim.py", "-p=build", "--fix", "--config-file=.clang-tidy", R"bob\windows", R".linux\alice", R"bob\linux"]
+    result = filter_files_by_folder("windows", ["pocc-shim.py", "-p=build", "--fix", "--config-file=.clang-tidy", R"bob/windows", R".linux\alice", R"bob\linux"])
+    assert result ==                ["pocc-shim.py", "-p=build", "--fix", "--config-file=.clang-tidy", R"bob/windows", R".linux\alice", R"bob\linux"]
 
-    result = filter_args(  "linux", ["pocc-shim.py", "-p=build", "--fix", "--config-file=.clang-tidy", R"bob\windows", R".linux\alice", R"bob\linux"])
-    assert result ==                ["pocc-shim.py", "-p=build", "--fix", "--config-file=.clang-tidy", R"bob\windows", R".linux\alice", R"bob\linux"]
+    result = filter_files_by_folder(  "linux", ["pocc-shim.py", "-p=build", "--fix", "--config-file=.clang-tidy", R"bob\windows", R".linux/alice", R"bob\linux"])
+    assert result ==                ["pocc-shim.py", "-p=build", "--fix", "--config-file=.clang-tidy", R"bob\windows", R".linux/alice", R"bob\linux"]
+
+
+def filter_files_by_folder():
+    result = filter_files_by_ext(".h", [R"alice/bob.h", R"bob.h/blah", R"alice\windows\bob.hpp", R"alice\windows\bob.h"])
+    assert result ==                   [R"bob.h/blah", R"alice\windows\bob.hpp"]
+
+    result = filter_files_by_ext(".cpp", [R"alice/bob.h", R"bob.h/blah", R"alice\windows\bob.hpp", R"alice\windows\bob.h", R"alice/windows\bob.cpp"])
+    assert result ==                     [R"alice/bob.h", R"bob.h/blah", R"alice\windows\bob.hpp", R"alice\windows\bob.h"]
+
+    result = filter_files_by_ext(".", [R"alice/bob.h", R"bob.h/blah", R"alice\windows\bob.hpp", R"alice\windows\bob.h"])
+    assert result ==                  [R"alice/bob.h", R"bob.h/blah", R"alice\windows\bob.hpp", R"alice\windows\bob.h"]
+
+    result = filter_files_by_ext("", [R"alice/bob.h", R"bob.h\blah", R"alice/windows/bob.hpp", R"alice\windows\bob.h"])
+    assert result ==                  [R"alice/bob.h", R"alice/windows/bob.hpp", R"alice\windows\bob.h"]

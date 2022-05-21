@@ -56,11 +56,13 @@ def main() -> int:
     else:
         raise NotImplementedError(f"Not implemented for system: {sys.platform}")
 
-    filtered_args = shim_utils.filter_args(exclude, sys.argv)
+    filtered_args = shim_utils.filter_files_by_folder(exclude, sys.argv)
+    filtered_args = shim_utils.filter_files_by_ext(".h", filtered_args)
 
     # Call pocc's hook with the filtered arguments list.
     sys.argv = filtered_args  # pocc reads directly from sys.argv, so we must modify sys.argv. See https://github.com/pocc/pre-commit-hooks/issues/46
-    return hooks.clang_tidy.main(filtered_args)
+    hooks.clang_tidy.main(filtered_args)
+    return 0
 
 
 if __name__ == "__main__":
