@@ -5,8 +5,6 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-option(VS_COMPAT_16_09 "If using VS 16.9 or older, use this option for warnings to be setup correctly.")
-
 # Solution
 project (CppSocketsXPlat)
 
@@ -16,15 +14,6 @@ if(MSVC)
         add_compile_options(/MP)
     endif()
     set(WARNING_FLAGS /W4 /WX)
-    if(${CMAKE_VERSION} VERSION_LESS 3.21)
-        if(${VS_COMPAT_16_09})
-            # In VS 16.9 and older, the "external" flag was experimental
-            list(APPEND WARNING_FLAGS /experimental:external)
-        endif()
-        # Causes an unfortunate warning due to a missing flag for the new 16.10 external headers flag. Fixed in CMake 3.21
-        list(APPEND WARNING_FLAGS /external:I ${CMAKE_SOURCE_DIR}/thirdparty/)
-        list(APPEND WARNING_FLAGS /external:W0)
-    endif()
 elseif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
     # Update if necessary
     set(WARNING_FLAGS -Wall -Wextra -pedantic -Wconversion -Werror)
