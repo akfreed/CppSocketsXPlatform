@@ -5,6 +5,8 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+option(BUILD_WITH_CLANG_TIDY "Run clang-tidy static analysis as part of compilation.")
+
 # Solution
 project (CppSocketsXPlat)
 
@@ -21,6 +23,10 @@ endif()
 
 # Needed for clang-tidy
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+if(${BUILD_WITH_CLANG_TIDY})
+    # Used for Make builds
+    set(CMAKE_CXX_CLANG_TIDY clang-tidy)
+endif()
 
 
 # Dependencies
