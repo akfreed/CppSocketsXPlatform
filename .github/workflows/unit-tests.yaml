@@ -14,14 +14,14 @@ jobs:
           - Debug
           - Release
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-      with:
-        submodules: true
     - name: Install CMake
       uses: jwlawson/actions-setup-cmake@v1.12
       with:
         cmake-version: '3.15'
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        submodules: recursive
     - name: Build
       run: |
         mkdir build && cd build
@@ -31,7 +31,7 @@ jobs:
       run: |
         build/UnitTest/UnitTest
 
-  build-and-test_windows:
+  build-and-test_Windows:
     runs-on: windows-2019
     strategy:
       matrix:
@@ -39,14 +39,14 @@ jobs:
           - Debug
           - Release
     steps:
-    - name: Install CMake
-      uses: jwlawson/actions-setup-cmake@v1.12
-      with:
-        cmake-version: '3.15'
     - name: Install Developer Command Prompt for VS
       uses: ilammy/msvc-dev-cmd@v1
       with:
         arch: x64
+    - name: Install CMake
+      uses: jwlawson/actions-setup-cmake@v1.12
+      with:
+        cmake-version: '3.15'
     - name: Checkout
       uses: actions/checkout@v3
       with:

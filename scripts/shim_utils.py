@@ -57,4 +57,3 @@ def filter_files_by_ext(ext_to_exclude: str, args: list) -> list:
         ext_to_exclude = ext_to_exclude[1:]
     regex_str = r".*\.{}$".format(ext_to_exclude)
     return filter_files(regex_str, args)
-
