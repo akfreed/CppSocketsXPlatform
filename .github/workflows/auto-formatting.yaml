@@ -1,0 +1,35 @@
+name: Auto-format
+
+on:
+  pull_request:
+  push:
+    branches: [main, develop]
+
+jobs:
+  Auto-format:
+    runs-on: ubuntu-latest
+    env:
+      # Skip clang-tidy since it takes a while to run.
+      POCC_SHIM_SKIP_CLANG_TIDY: True
+    steps:
+    - name: Install Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: 3.8
+    - name: Install cpplint and clang-format
+      run: |
+        pip install -U pip
+        pip install cpplint clang-format
+    - name: Install Cppcheck
+      run: |
+        brew update
+        brew install cppcheck
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        persist-credentials: false
+    - name: Run pre-commit (skip clang-tidy)
+      uses: pre-commit/action@v2.0.3
+      with:
+        token: ${{ secrets.CI_TOKEN }}

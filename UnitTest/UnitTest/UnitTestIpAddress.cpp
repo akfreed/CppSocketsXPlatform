@@ -28,6 +28,9 @@ class UnitTestIpAddress : public ::testing::Test
 {
 };
 
+TEST_F(UnitTestIpAddress, Empty)
+{ }
+
 TEST_F(UnitTestIpAddress, ConstructionConversion)
 {
     char const asChar[] = "0:0:0:0";
@@ -96,7 +99,7 @@ TEST_F(UnitTestIpAddress, ToInt)
 {
     ASSERT_EQ(IpAddressV4("0:0:0:0").ToInt(), 0u);
     ASSERT_EQ(IpAddressV4("255:255:255:255").ToInt(), 0xFFFFFFFFu);
-    ASSERT_EQ(IpAddressV4("1:2:3:4").ToInt(), nton(0x01020304));
+    ASSERT_EQ(IpAddressV4("1:2:3:4").ToInt(), nton(0x01020304u));
 }
 
 TEST_F(UnitTestIpAddress, Any)

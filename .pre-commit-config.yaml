@@ -1,4 +1,21 @@
 repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.2.0
+    hooks:
+        # Python-only
+      - id: check-ast
+      - id: debug-statements
+        # Checkers
+      - id: check-case-conflict
+      - id: check-added-large-files
+      - id: check-executables-have-shebangs
+      - id: check-shebang-scripts-are-executable
+      - id: check-yaml
+        # Auto-formatters
+      - id: mixed-line-ending
+        args: [--fix=lf]
+      - id: trailing-whitespace  # Should go before end-of-file-fixer.
+      - id: end-of-file-fixer
   - repo: https://github.com/pocc/pre-commit-hooks
     rev: v1.3.5
     hooks:

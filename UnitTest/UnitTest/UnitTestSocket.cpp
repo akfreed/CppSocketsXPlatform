@@ -178,7 +178,7 @@ TEST_F(UnitTestSocket, SendRecvUdpBuf)
     sender.Write(sentData, 5, ip, port1);
 
     char recvData[6] = { 0, 0, 0, 0, 0, 0 };
-    ASSERT_EQ(receiver.Read(recvData, 5, nullptr, nullptr), 5);
+    ASSERT_EQ(receiver.Read(recvData, 5, nullptr, nullptr), 5u);
     ASSERT_TRUE(std::equal(recvData, recvData + 5, sentData));
 
     sender.Write(sentData + 3, 3, ip, port1);
@@ -186,21 +186,21 @@ TEST_F(UnitTestSocket, SendRecvUdpBuf)
 
     IpAddressV4 senderIp;
     uint16_t senderPort = 0;
-    ASSERT_EQ(receiver.Read(recvData, 3, &senderIp, &senderPort), 3);
+    ASSERT_EQ(receiver.Read(recvData, 3, &senderIp, &senderPort), 3u);
     std::vector<char> expected = { 4, 5, 6, 4, 5, 0 };
     ASSERT_TRUE(std::equal(recvData, recvData + 6, expected.begin()));
     ASSERT_EQ(senderIp.ToString(), ip.ToString());
     ASSERT_EQ(senderPort, port2);
 
-    ASSERT_EQ(receiver.Read(recvData, 40, &senderIp, &senderPort), 3);
+    ASSERT_EQ(receiver.Read(recvData, 40, &senderIp, &senderPort), 3u);
     expected = { 1, 2, 3, 4, 5, 0 };
     ASSERT_TRUE(std::equal(recvData, recvData + 6, expected.begin()));
     ASSERT_EQ(senderIp.ToString(), ip.ToString());
     ASSERT_EQ(senderPort, port2);
 
-    std::fill(recvData, recvData + 6, 0);
+    std::fill(recvData, recvData + 6, '\0');
     receiver.Write(sentData, 2, ip, port2);
-    ASSERT_EQ(sender.Read(recvData, 40, &senderIp, &senderPort), 2);
+    ASSERT_EQ(sender.Read(recvData, 40, &senderIp, &senderPort), 2u);
     expected = { 1, 2, 0, 0, 0, 0 };
     ASSERT_TRUE(std::equal(recvData, recvData + 6, expected.begin()));
     ASSERT_EQ(senderIp.ToString(), ip.ToString());
@@ -228,7 +228,7 @@ TEST_F(UnitTestSocket, SendRecvBufUdpEc)
     ASSERT_FALSE(ec);
 
     char recvData[6] = { 0, 0, 0, 0, 0, 0 };
-    ASSERT_EQ(receiver.Read(recvData, 5, nullptr, nullptr, &ec), 5);
+    ASSERT_EQ(receiver.Read(recvData, 5, nullptr, nullptr, &ec), 5u);
     ASSERT_FALSE(ec);
     ASSERT_TRUE(std::equal(recvData, recvData + 5, sentData));
 
@@ -239,24 +239,24 @@ TEST_F(UnitTestSocket, SendRecvBufUdpEc)
 
     IpAddressV4 senderIp;
     uint16_t senderPort = 0;
-    ASSERT_EQ(receiver.Read(recvData, 3, &senderIp, &senderPort, &ec), 3);
+    ASSERT_EQ(receiver.Read(recvData, 3, &senderIp, &senderPort, &ec), 3u);
     ASSERT_FALSE(ec);
     std::vector<char> expected = { 4, 5, 6, 4, 5, 0 };
     ASSERT_TRUE(std::equal(recvData, recvData + 6, expected.begin()));
     ASSERT_EQ(senderIp.ToString(), ip.ToString());
     ASSERT_EQ(senderPort, port2);
 
-    ASSERT_EQ(receiver.Read(recvData, 40, &senderIp, &senderPort, &ec), 3);
+    ASSERT_EQ(receiver.Read(recvData, 40, &senderIp, &senderPort, &ec), 3u);
     ASSERT_FALSE(ec);
     expected = { 1, 2, 3, 4, 5, 0 };
     ASSERT_TRUE(std::equal(recvData, recvData + 6, expected.begin()));
     ASSERT_EQ(senderIp.ToString(), ip.ToString());
     ASSERT_EQ(senderPort, port2);
 
-    std::fill(recvData, recvData + 6, 0);
+    std::fill(recvData, recvData + 6, '\0');
     receiver.Write(sentData, 2, ip, port2, &ec);
     ASSERT_FALSE(ec);
-    ASSERT_EQ(sender.Read(recvData, 40, &senderIp, &senderPort, &ec), 2);
+    ASSERT_EQ(sender.Read(recvData, 40, &senderIp, &senderPort, &ec), 2u);
     ASSERT_FALSE(ec);
     expected = { 1, 2, 0, 0, 0, 0 };
     ASSERT_TRUE(std::equal(recvData, recvData + 6, expected.begin()));

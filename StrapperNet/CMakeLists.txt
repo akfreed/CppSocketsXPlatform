@@ -24,3 +24,11 @@ if(WIN32)
 elseif(LINUX OR UNIX)
     add_subdirectory(lib/linux/)
 endif()
+
+if(${BUILD_WITH_CLANG_TIDY})
+    # Optionally enable clang-tidy on build for MSVC builds
+    set_target_properties(StrapperNet PROPERTIES
+        VS_GLOBAL_RunCodeAnalysis true
+        VS_GLOBAL_EnableClangTidyCodeAnalysis true
+    )
+endif()

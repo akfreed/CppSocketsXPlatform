@@ -80,7 +80,7 @@ TEST_F(UnitTestProtocol, ShutdownSendTcp)
     ASSERT_EQ(toWrite, toRead);
 
     uint8_t c = 0xAF;
-    ASSERT_EQ(m_receiver.DataAvailable(), 0);
+    ASSERT_EQ(m_receiver.DataAvailable(), 0u);
     ASSERT_FALSE(m_receiver.Read(&c, sizeof(c)));
     ASSERT_TRUE(m_receiver);
     ASSERT_EQ(c, 0xAF);
@@ -95,9 +95,9 @@ TEST_F(UnitTestProtocol, ShutdownSendTcp)
     while (!ready)
         ;
     auto start = std::chrono::steady_clock::now();
-    ASSERT_EQ(m_sender.DataAvailable(), 0);
+    ASSERT_EQ(m_sender.DataAvailable(), 0u);
     std::this_thread::sleep_for(milliseconds(100));
-    ASSERT_EQ(m_sender.DataAvailable(), 0);
+    ASSERT_EQ(m_sender.DataAvailable(), 0u);
     ASSERT_FALSE(m_sender.Read(&c, sizeof(c)));
     auto stop = std::chrono::steady_clock::now();
     ASSERT_TRUE(m_sender);
@@ -130,7 +130,7 @@ TEST_F(UnitTestProtocol, ShutdownSendTcpEc)
     ASSERT_FALSE(ec);
 
     uint8_t c = 0xAF;
-    ASSERT_EQ(m_receiver.DataAvailable(&ec), 0);
+    ASSERT_EQ(m_receiver.DataAvailable(&ec), 0u);
     ASSERT_FALSE(ec);
     ASSERT_FALSE(m_receiver.Read(&c, sizeof(c), &ec));
     ASSERT_TRUE(m_receiver);
@@ -149,10 +149,10 @@ TEST_F(UnitTestProtocol, ShutdownSendTcpEc)
     while (!ready)
         ;
     auto start = std::chrono::steady_clock::now();
-    ASSERT_EQ(m_sender.DataAvailable(&ec), 0);
+    ASSERT_EQ(m_sender.DataAvailable(&ec), 0u);
     ASSERT_FALSE(ec);
     std::this_thread::sleep_for(milliseconds(100));
-    ASSERT_EQ(m_sender.DataAvailable(&ec), 0);
+    ASSERT_EQ(m_sender.DataAvailable(&ec), 0u);
     ASSERT_FALSE(ec);
     ASSERT_FALSE(m_sender.Read(&c, sizeof(c), &ec));
     auto stop = std::chrono::steady_clock::now();
@@ -183,13 +183,13 @@ TEST_F(UnitTestProtocol, ReadAfterShutdownTcp)
     ASSERT_EQ(toWrite, toRead);
 
     uint8_t c = 0xAF;
-    ASSERT_EQ(m_receiver.DataAvailable(), 0);
+    ASSERT_EQ(m_receiver.DataAvailable(), 0u);
     ASSERT_FALSE(m_receiver.Read(&c, sizeof(c)));
     ASSERT_TRUE(m_receiver);
     ASSERT_EQ(c, 0xAF);
 
     // Read should throw this time.
-    ASSERT_EQ(m_receiver.DataAvailable(), 0);
+    ASSERT_EQ(m_receiver.DataAvailable(), 0u);
     ASSERT_THROW(m_receiver.Read(&c, sizeof(c)), ProgramError);
     ASSERT_FALSE(m_receiver);
     ASSERT_EQ(c, 0xAF);
@@ -203,13 +203,13 @@ TEST_F(UnitTestProtocol, ReadAfterShutdownTcp)
     // Check sender
     ASSERT_TRUE(m_sender);
 
-    ASSERT_EQ(m_sender.DataAvailable(), 0);
+    ASSERT_EQ(m_sender.DataAvailable(), 0u);
     ASSERT_FALSE(m_sender.Read(&c, sizeof(c)));
     ASSERT_TRUE(m_sender);
     ASSERT_EQ(c, 0xAF);
 
     // Read should throw this time.
-    ASSERT_EQ(m_sender.DataAvailable(), 0);
+    ASSERT_EQ(m_sender.DataAvailable(), 0u);
     ASSERT_THROW(m_sender.Read(&c, sizeof(c)), ProgramError);
     ASSERT_FALSE(m_sender);
     ASSERT_EQ(c, 0xAF);
@@ -242,7 +242,7 @@ TEST_F(UnitTestProtocol, ReadAfterShutdownTcpEc)
     ASSERT_EQ(toWrite, toRead);
 
     uint8_t c = 0xAF;
-    ASSERT_EQ(m_receiver.DataAvailable(&ec), 0);
+    ASSERT_EQ(m_receiver.DataAvailable(&ec), 0u);
     ASSERT_FALSE(ec);
     ASSERT_FALSE(m_receiver.Read(&c, sizeof(c), &ec));
     ASSERT_FALSE(ec);
@@ -250,7 +250,7 @@ TEST_F(UnitTestProtocol, ReadAfterShutdownTcpEc)
     ASSERT_EQ(c, 0xAF);
 
     // Read should fail this time.
-    ASSERT_EQ(m_receiver.DataAvailable(&ec), 0);
+    ASSERT_EQ(m_receiver.DataAvailable(&ec), 0u);
     ASSERT_FALSE(ec);
     ASSERT_FALSE(m_receiver.Read(&c, sizeof(c), &ec));
     ASSERT_TRUE(ec);
@@ -260,7 +260,7 @@ TEST_F(UnitTestProtocol, ReadAfterShutdownTcpEc)
     ASSERT_EQ(c, 0xAF);
 
     // And fail again.
-    ASSERT_EQ(m_receiver.DataAvailable(&ec), 0);
+    ASSERT_EQ(m_receiver.DataAvailable(&ec), 0u);
     ASSERT_TRUE(ec);
     ASSERT_THROW(ec.Rethrow(), ProgramError);
     ec = ErrorCode();
@@ -274,7 +274,7 @@ TEST_F(UnitTestProtocol, ReadAfterShutdownTcpEc)
     // Check sender
     ASSERT_TRUE(m_sender);
 
-    ASSERT_EQ(m_sender.DataAvailable(&ec), 0);
+    ASSERT_EQ(m_sender.DataAvailable(&ec), 0u);
     ASSERT_FALSE(ec);
     ASSERT_FALSE(m_sender.Read(&c, sizeof(c), &ec));
     ASSERT_FALSE(ec);
@@ -282,7 +282,7 @@ TEST_F(UnitTestProtocol, ReadAfterShutdownTcpEc)
     ASSERT_EQ(c, 0xAF);
 
     // Read should fail this time.
-    ASSERT_EQ(m_sender.DataAvailable(&ec), 0);
+    ASSERT_EQ(m_sender.DataAvailable(&ec), 0u);
     ASSERT_FALSE(ec);
     // Note slight difference from previous tests. Test here with a null EC.
     ASSERT_FALSE(m_sender.Read(&c, sizeof(c), nullptr));
@@ -290,7 +290,7 @@ TEST_F(UnitTestProtocol, ReadAfterShutdownTcpEc)
     ASSERT_EQ(c, 0xAF);
 
     // And fail again.
-    ASSERT_EQ(m_sender.DataAvailable(&ec), 0);
+    ASSERT_EQ(m_sender.DataAvailable(&ec), 0u);
     ASSERT_TRUE(ec);
     ASSERT_THROW(ec.Rethrow(), ProgramError);
     ec = ErrorCode();
@@ -301,12 +301,12 @@ TEST_F(UnitTestProtocol, ReadAfterShutdownTcpEc)
     ASSERT_FALSE(m_sender);
     ASSERT_EQ(c, 0xAF);
 
-    ASSERT_EQ(m_sender.DataAvailable(nullptr), 0);
-    ASSERT_EQ(m_sender.DataAvailable(nullptr), 0);
-    ASSERT_EQ(m_sender.DataAvailable(nullptr), 0);
-    ASSERT_EQ(m_sender.DataAvailable(nullptr), 0);
-    ASSERT_EQ(m_sender.DataAvailable(nullptr), 0);
-    ASSERT_EQ(m_sender.DataAvailable(&ec), 0);
+    ASSERT_EQ(m_sender.DataAvailable(nullptr), 0u);
+    ASSERT_EQ(m_sender.DataAvailable(nullptr), 0u);
+    ASSERT_EQ(m_sender.DataAvailable(nullptr), 0u);
+    ASSERT_EQ(m_sender.DataAvailable(nullptr), 0u);
+    ASSERT_EQ(m_sender.DataAvailable(nullptr), 0u);
+    ASSERT_EQ(m_sender.DataAvailable(&ec), 0u);
     ASSERT_TRUE(ec);
     ASSERT_THROW(ec.Rethrow(), ProgramError);
     ec = ErrorCode();

@@ -1,0 +1,89 @@
+name: Lint
+
+on:
+  pull_request:
+  push:
+    branches: [main, develop]
+
+jobs:
+  Ubuntu:
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        build_type:
+          - Debug
+          - Release
+    steps:
+    - name: Install CMake
+      uses: jwlawson/actions-setup-cmake@v1.12
+      with:
+        cmake-version: '3.15'
+    - name: Install Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: 3.8
+    - name: Install additional dependencies
+      run: |
+        pip install -U pip
+        pip install clang-format cpplint
+        brew update
+        brew install llvm cppcheck
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        submodules: recursive
+    - name: Run CMake
+      run: |
+        mkdir build && cd build
+        cmake .. -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+    - name: Run pre-commit
+      uses: pre-commit/action@v2.0.3
+
+  Windows:
+    runs-on: windows-2019
+    strategy:
+      matrix:
+        build_type:
+          - Debug
+          - Release
+    steps:
+    - name: Install Developer Command Prompt for VS
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x64
+    - name: Install CMake
+      uses: jwlawson/actions-setup-cmake@v1.12
+      with:
+        cmake-version: '3.15'
+    - name: Install Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: 3.8
+    - name: Install additional dependencies
+      shell: pwsh
+      run: |
+        pip install -U pip
+        pip install cpplint
+        choco install llvm --version=14.0.3
+        choco install cppcheck
+        echo "$env:ProgramFiles\Cppcheck" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        submodules: recursive
+    - name: Run CMake
+      run: |
+        mkdir build && cd build
+        cmake .. -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+    - name: Run Cppcheck
+      uses: pre-commit/action@v2.0.3
+      with:
+        extra_args: cppcheck --all-files
+    - name: Run cpplint
+      uses: pre-commit/action@v2.0.3
+      with:
+        extra_args: cpplint --all-files
+    - name: Run clang-tidy
+      uses: pre-commit/action@v2.0.3
+      with:
+        extra_args: clang-tidy --all-files
