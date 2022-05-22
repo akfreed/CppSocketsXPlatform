@@ -35,10 +35,10 @@ jobs:
         mkdir build && cd build
         cmake .. -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
         make -j
-    - name: Run unit tests
-      run: |
-        build/UnitTest/UnitTest
-        pytest scripts/
+    - name: Run C++ unit tests
+      run: build/UnitTest/UnitTest
+    - name: Run Python unit tests
+      run: pytest scripts/
 
   build-and-test_Windows:
     runs-on: windows-2019
@@ -73,7 +73,7 @@ jobs:
         mkdir build && cd build
         cmake .. -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
         nmake
-    - name: Run unit tests
-      run: |
-        build/UnitTest/UnitTest
-        pytest scripts/
+    - name: Run C++ unit tests
+      run: build/UnitTest/UnitTest
+    - name: Run Python unit tests
+      run: pytest scripts/

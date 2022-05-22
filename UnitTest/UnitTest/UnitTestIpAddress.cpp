@@ -29,9 +29,7 @@ class UnitTestIpAddress : public ::testing::Test
 };
 
 TEST_F(UnitTestIpAddress, Empty)
-{
-    throw SocketError(1);
-}
+{ }
 
 TEST_F(UnitTestIpAddress, ConstructionConversion)
 {
