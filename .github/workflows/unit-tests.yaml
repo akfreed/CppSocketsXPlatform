@@ -18,6 +18,14 @@ jobs:
       uses: jwlawson/actions-setup-cmake@v1.12
       with:
         cmake-version: '3.15'
+   - name: Install Python
+     uses: actions/setup-python@v3
+     with:
+       python-version: 3.8
+   - name: Install additional dependencies
+     run: |
+       pip install -U pip
+       pip install pytest
     - name: Checkout
       uses: actions/checkout@v3
       with:
@@ -30,6 +38,7 @@ jobs:
     - name: Run unit tests
       run: |
         build/UnitTest/UnitTest
+        pytest scripts/
 
   build-and-test_Windows:
     runs-on: windows-2019
@@ -47,6 +56,14 @@ jobs:
       uses: jwlawson/actions-setup-cmake@v1.12
       with:
         cmake-version: '3.15'
+   - name: Install Python
+     uses: actions/setup-python@v3
+     with:
+       python-version: 3.8
+   - name: Install additional dependencies
+     run: |
+       pip install -U pip
+       pip install pytest
     - name: Checkout
       uses: actions/checkout@v3
       with:
@@ -59,3 +76,4 @@ jobs:
     - name: Run unit tests
       run: |
         build/UnitTest/UnitTest
+        pytest scripts/
