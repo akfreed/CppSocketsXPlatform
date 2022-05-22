@@ -7,37 +7,37 @@ on:
 
 jobs:
   Lint_Ubuntu:
-   runs-on: ubuntu-20.04
-   strategy:
-     matrix:
-       build_type:
-         - Debug
-         - Release
-   steps:
-   - name: Install CMake
-     uses: jwlawson/actions-setup-cmake@v1.12
-     with:
-       cmake-version: '3.15'
-   - name: Install Python
-     uses: actions/setup-python@v3
-     with:
-       python-version: 3.8
-   - name: Install additional dependencies
-     run: |
-       pip install -U pip
-       pip install clang-format cpplint
-       brew update
-       brew install llvm cppcheck
-   - name: Checkout
-     uses: actions/checkout@v3
-     with:
-       submodules: recursive
-   - name: Run CMake
-     run: |
-       mkdir build && cd build
-       cmake .. -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-   - name: Run pre-commit
-     uses: pre-commit/action@v2.0.3
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        build_type:
+          - Debug
+          - Release
+    steps:
+    - name: Install CMake
+      uses: jwlawson/actions-setup-cmake@v1.12
+      with:
+        cmake-version: '3.15'
+    - name: Install Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: 3.8
+    - name: Install additional dependencies
+      run: |
+        pip install -U pip
+        pip install clang-format cpplint
+        brew update
+        brew install llvm cppcheck
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        submodules: recursive
+    - name: Run CMake
+      run: |
+        mkdir build && cd build
+        cmake .. -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+    - name: Run pre-commit
+      uses: pre-commit/action@v2.0.3
 
   Lint_Windows:
     runs-on: windows-2019

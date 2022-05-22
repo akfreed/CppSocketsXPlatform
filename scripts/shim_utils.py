@@ -55,5 +55,5 @@ def filter_files_by_ext(ext_to_exclude: str, args: list) -> list:
     """Remove the filepaths containing the exclusion file ext in the basename, keeping the script name and flags. Case is ignored"""
     if ext_to_exclude[:1] == ".":
         ext_to_exclude = ext_to_exclude[1:]
-    regex_str = r".*\.{}$".format(ext_to_exclude)
+    regex_str = r".*\.{}\Z".format(ext_to_exclude)
     return filter_files(regex_str, args)
