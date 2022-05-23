@@ -20,7 +20,6 @@
 #include <strapper/net/SocketError.h>
 #include "SocketFd.h"
 
-#include <cassert>
 #include <limits>
 
 namespace strapper { namespace net {
@@ -31,7 +30,6 @@ namespace {
 SocketHandle MakeSocket(uint16_t myport)
 {
     SocketHandle socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    assert(socket);
 
     sockaddr_in myInfo{};
     myInfo.sin_family = AF_INET;
