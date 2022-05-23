@@ -25,7 +25,6 @@
 
 #include <cassert>
 #include <limits>
-#include <memory>
 
 namespace strapper { namespace net {
 

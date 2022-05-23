@@ -20,9 +20,7 @@
 #include <strapper/net/SocketError.h>
 #include "SocketFd.h"
 
-#include <cassert>
 #include <limits>
-#include <memory>
 
 namespace strapper { namespace net {
 
@@ -52,7 +50,6 @@ SocketHandle Connect(std::string const& host, uint16_t port)
         throw ProgramError("getaddrinfo returned invalid length.");
 
     SocketHandle socket(hostInfoList->ai_family, hostInfoList->ai_socktype, hostInfoList->ai_protocol);
-    assert(socket);
 
     if (connect(**socket, hostInfoList->ai_addr, static_cast<int>(hostInfoList->ai_addrlen)) == SOCKET_ERROR)
         throw SocketError(WSAGetLastError());
