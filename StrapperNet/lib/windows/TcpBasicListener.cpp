@@ -20,7 +20,6 @@
 #include <strapper/net/SocketError.h>
 #include "SocketFd.h"
 
-#include <cassert>
 #include <memory>
 
 namespace strapper { namespace net {
@@ -49,7 +48,6 @@ SocketHandle Start(uint16_t port)
     }
 
     SocketHandle socket = SocketHandle(hostInfoList->ai_family, hostInfoList->ai_socktype, hostInfoList->ai_protocol);
-    assert(socket);
 
     /*
     BOOL const yes = true;
