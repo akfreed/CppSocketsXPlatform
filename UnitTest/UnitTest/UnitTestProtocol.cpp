@@ -285,7 +285,7 @@ TEST_F(UnitTestProtocol, ReadAfterShutdownTcpEc)
     ASSERT_EQ(m_sender.DataAvailable(&ec), 0u);
     ASSERT_FALSE(ec);
     // Note slight difference from previous tests. Test here with a null EC.
-    ASSERT_THROW(m_sender.Read(&c, sizeof(c), nullptr), SocketError);
+    ASSERT_THROW(m_sender.Read(&c, sizeof(c), nullptr), ProgramError);
     ASSERT_FALSE(m_sender);
     ASSERT_EQ(c, 0xAF);
 

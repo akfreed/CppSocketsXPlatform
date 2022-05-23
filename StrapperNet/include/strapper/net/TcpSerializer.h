@@ -26,24 +26,24 @@ namespace strapper { namespace net {
 class TcpSerializer
 {
 public:
-    static constexpr int MAX_STRING_LEN = 1024 * 1024;
+    static constexpr int c_maxStringLen = 1024 * 1024;
 
     explicit TcpSerializer(TcpSocket&& socket);
 
     TcpSocket const& Socket() const;
     TcpSocket& Socket();
 
-    void Write(char c);
-    void Write(bool b);
-    void Write(int32_t int32);
-    void Write(double d);
-    void Write(std::string const& s);
+    void Write(char c, ErrorCode* ec = nullptr);
+    void Write(bool b, ErrorCode* ec = nullptr);
+    void Write(int32_t int32, ErrorCode* ec = nullptr);
+    void Write(double d, ErrorCode* ec = nullptr);
+    void Write(std::string const& s, ErrorCode* ec = nullptr);
 
-    bool Read(char* dest);
-    bool Read(bool* dest);
-    bool Read(int32_t* dest);
-    bool Read(double* dest);
-    bool Read(std::string* dest);
+    bool Read(char* dest, ErrorCode* ec = nullptr);
+    bool Read(bool* dest, ErrorCode* ec = nullptr);
+    bool Read(int32_t* dest, ErrorCode* ec = nullptr);
+    bool Read(double* dest, ErrorCode* ec = nullptr);
+    bool Read(std::string* dest, ErrorCode* ec = nullptr);
 
 private:
     TcpSocket m_socket;

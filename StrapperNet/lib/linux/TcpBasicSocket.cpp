@@ -154,6 +154,8 @@ void TcpBasicSocket::Close() noexcept
 
 void TcpBasicSocket::Write(void const* src, size_t len)
 {
+    if (!src)
+        throw ProgramError("Null pointer.");
     if (len == 0)
         throw ProgramError("Length must be greater than 0.");
 
@@ -171,6 +173,8 @@ bool TcpBasicSocket::Read(void* dest, size_t len)
 {
     try
     {
+        if (!dest)
+            throw ProgramError("Null pointer.");
         if (len == 0)
             throw ProgramError("Length must be greater than 0.");
         if (len > static_cast<size_t>(std::numeric_limits<ssize_t>::max()))
