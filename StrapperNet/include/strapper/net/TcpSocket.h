@@ -31,8 +31,7 @@ class TcpSocket
 {
 public:
     TcpSocket() = default;
-    TcpSocket(std::string const& host, uint16_t port);
-    TcpSocket(std::string const& host, uint16_t port, ErrorCode* ec);
+    TcpSocket(std::string const& host, uint16_t port, ErrorCode* ec = nullptr);
     TcpSocket(TcpSocket const&) = delete;
     TcpSocket(TcpSocket&& other) noexcept;
     TcpSocket& operator=(TcpSocket const&) = delete;
@@ -42,21 +41,16 @@ public:
     friend void swap(TcpSocket& left, TcpSocket& right);
 
     bool IsConnected() const;
-    void SetReadTimeout(unsigned milliseconds);
-    void SetReadTimeout(unsigned milliseconds, ErrorCode* ec);
+    void SetReadTimeout(unsigned milliseconds, ErrorCode* ec = nullptr);
 
-    void ShutdownSend();
-    void ShutdownSend(ErrorCode* ec);
+    void ShutdownSend(ErrorCode* ec = nullptr);
     void ShutdownBoth();
     void Close() noexcept;
 
-    void Write(void const* src, size_t len);
-    void Write(void const* src, size_t len, ErrorCode* ec);
-    bool Read(void* dest, size_t len);
-    bool Read(void* dest, size_t len, ErrorCode* ec);
+    void Write(void const* src, size_t len, ErrorCode* ec = nullptr);
+    bool Read(void* dest, size_t len, ErrorCode* ec = nullptr);
 
-    unsigned DataAvailable();
-    unsigned DataAvailable(ErrorCode* ec);
+    unsigned DataAvailable(ErrorCode* ec = nullptr);
 
     explicit operator bool() const;
 
@@ -76,6 +70,8 @@ private:
     };
 
     explicit TcpSocket(TcpBasicSocket&& socket);
+
+    bool read(void* dest, size_t len);
 
     mutable std::mutex m_socketLock;
     std::condition_variable m_readCancel;

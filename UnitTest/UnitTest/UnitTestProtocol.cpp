@@ -285,7 +285,7 @@ TEST_F(UnitTestProtocol, ReadAfterShutdownTcpEc)
     ASSERT_EQ(m_sender.DataAvailable(&ec), 0u);
     ASSERT_FALSE(ec);
     // Note slight difference from previous tests. Test here with a null EC.
-    ASSERT_FALSE(m_sender.Read(&c, sizeof(c), nullptr));
+    ASSERT_THROW(m_sender.Read(&c, sizeof(c), nullptr), SocketError);
     ASSERT_FALSE(m_sender);
     ASSERT_EQ(c, 0xAF);
 
@@ -301,24 +301,41 @@ TEST_F(UnitTestProtocol, ReadAfterShutdownTcpEc)
     ASSERT_FALSE(m_sender);
     ASSERT_EQ(c, 0xAF);
 
-    ASSERT_EQ(m_sender.DataAvailable(nullptr), 0u);
-    ASSERT_EQ(m_sender.DataAvailable(nullptr), 0u);
-    ASSERT_EQ(m_sender.DataAvailable(nullptr), 0u);
-    ASSERT_EQ(m_sender.DataAvailable(nullptr), 0u);
-    ASSERT_EQ(m_sender.DataAvailable(nullptr), 0u);
+    ASSERT_EQ(m_sender.DataAvailable(&ec), 0u);
+    ASSERT_TRUE(ec);
+    ec = ErrorCode();
+    ASSERT_EQ(m_sender.DataAvailable(&ec), 0u);
+    ASSERT_TRUE(ec);
+    ec = ErrorCode();
+    ASSERT_THROW(m_sender.DataAvailable(nullptr), ProgramError);
+    ASSERT_EQ(m_sender.DataAvailable(&ec), 0u);
+    ASSERT_TRUE(ec);
+    ec = ErrorCode();
+    ASSERT_EQ(m_sender.DataAvailable(&ec), 0u);
+    ASSERT_TRUE(ec);
+    ec = ErrorCode();
     ASSERT_EQ(m_sender.DataAvailable(&ec), 0u);
     ASSERT_TRUE(ec);
     ASSERT_THROW(ec.Rethrow(), ProgramError);
     ec = ErrorCode();
 
-    ASSERT_FALSE(m_sender.Read(&c, sizeof(c), nullptr));
-    ASSERT_FALSE(m_sender.Read(&c, sizeof(c), nullptr));
-    ASSERT_FALSE(m_sender.Read(&c, sizeof(c), nullptr));
-    ASSERT_FALSE(m_sender.Read(&c, sizeof(c), nullptr));
-    ASSERT_FALSE(m_sender.Read(&c, sizeof(c), nullptr));
+    ASSERT_FALSE(m_sender.Read(&c, sizeof(c), &ec));
+    ASSERT_TRUE(ec);
+    ec = ErrorCode();
+    ASSERT_FALSE(m_sender.Read(&c, sizeof(c), &ec));
+    ASSERT_TRUE(ec);
+    ec = ErrorCode();
+    ASSERT_THROW(m_sender.Read(&c, sizeof(c), nullptr), ProgramError);
+    ASSERT_FALSE(m_sender.Read(&c, sizeof(c), &ec));
+    ASSERT_TRUE(ec);
+    ec = ErrorCode();
+    ASSERT_FALSE(m_sender.Read(&c, sizeof(c), &ec));
+    ASSERT_TRUE(ec);
+    ec = ErrorCode();
     ASSERT_FALSE(m_sender.Read(&c, sizeof(c), &ec));
     ASSERT_TRUE(ec);
     ASSERT_THROW(ec.Rethrow(), ProgramError);
+    ec = ErrorCode();
 }
 
 }}}  // namespace strapper::net::test
