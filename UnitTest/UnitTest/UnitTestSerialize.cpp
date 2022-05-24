@@ -40,9 +40,9 @@ public:
         TcpListener listener(TestGlobals::port);
         ASSERT_TRUE(listener) << "Unable to start listener.";
         s_sender.reset(new TcpSerializer(TcpSocket(TestGlobals::localhost, TestGlobals::port)));
-        ASSERT_TRUE(s_sender->Socket().IsConnected()) << "Unable to connect client to listener.";
+        ASSERT_TRUE(s_sender->Socket().IsOpen()) << "Unable to connect client to listener.";
         s_receiver.reset(new TcpSerializer(TcpSocket(listener.Accept())));
-        ASSERT_TRUE(s_receiver->Socket().IsConnected()) << "Error on accept.";
+        ASSERT_TRUE(s_receiver->Socket().IsOpen()) << "Error on accept.";
     }
 
     static void TearDownTestSuite()
@@ -54,8 +54,8 @@ public:
     void SetUp() override
     {
         ASSERT_TRUE(s_sender);
-        ASSERT_TRUE(s_sender->Socket().IsConnected());
-        ASSERT_TRUE(s_receiver->Socket().IsConnected());
+        ASSERT_TRUE(s_sender->Socket().IsOpen());
+        ASSERT_TRUE(s_receiver->Socket().IsOpen());
         // Since the sockets are re-used, a previous test failure can leave some data in the buffer.
         ASSERT_EQ(s_receiver->Socket().DataAvailable(), 0u) << "Receiver had data in buffer before data was sent.";
     }

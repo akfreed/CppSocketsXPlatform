@@ -47,9 +47,9 @@ TEST_F(UnitTestSocket, SelfConnectTcp)
     TcpListener listener(TestGlobals::port);
     ASSERT_TRUE(listener);
     TcpSocket client(TestGlobals::localhost, TestGlobals::port);
-    ASSERT_TRUE(client.IsConnected());
+    ASSERT_TRUE(client.IsOpen());
     TcpSocket host = listener.Accept();
-    ASSERT_TRUE(host.IsConnected());
+    ASSERT_TRUE(host.IsOpen());
 }
 
 TEST_F(UnitTestSocket, SelfConnectTcpEc)
@@ -61,11 +61,11 @@ TEST_F(UnitTestSocket, SelfConnectTcpEc)
     ASSERT_TRUE(listener);
     ASSERT_FALSE(ec);
     TcpSocket client(TestGlobals::localhost, TestGlobals::port, &ec);
-    ASSERT_TRUE(client.IsConnected());
+    ASSERT_TRUE(client.IsOpen());
     ASSERT_FALSE(ec);
     TcpSocket host = listener.Accept(&ec);
     ASSERT_FALSE(ec);
-    ASSERT_TRUE(host.IsConnected());
+    ASSERT_TRUE(host.IsOpen());
 }
 
 TEST_F(UnitTestSocket, CreateUdp)
@@ -98,9 +98,9 @@ TEST_F(UnitTestSocket, SendRecvBufTcp)
     TcpListener listener(TestGlobals::port);
     ASSERT_TRUE(listener);
     TcpSocket sender(TestGlobals::localhost, TestGlobals::port);
-    ASSERT_TRUE(sender.IsConnected());
+    ASSERT_TRUE(sender.IsOpen());
     TcpSocket receiver = listener.Accept();
-    ASSERT_TRUE(receiver.IsConnected());
+    ASSERT_TRUE(receiver.IsOpen());
 
     char sentData[6] = { 1, 2, 3, 4, 5, 6 };
     sender.Write(sentData, 5);
@@ -130,10 +130,10 @@ TEST_F(UnitTestSocket, SendRecvBufTcpEc)
     ASSERT_TRUE(listener);
     ASSERT_FALSE(ec);
     TcpSocket sender(TestGlobals::localhost, TestGlobals::port, &ec);
-    ASSERT_TRUE(sender.IsConnected());
+    ASSERT_TRUE(sender.IsOpen());
     ASSERT_FALSE(ec);
     TcpSocket receiver = listener.Accept(&ec);
-    ASSERT_TRUE(receiver.IsConnected());
+    ASSERT_TRUE(receiver.IsOpen());
     ASSERT_FALSE(ec);
 
     char sentData[6] = { 1, 2, 3, 4, 5, 6 };
@@ -272,9 +272,9 @@ TEST_F(UnitTestSocket, DataAvailableTcp)
     TcpListener listener(TestGlobals::port);
     ASSERT_TRUE(listener);
     TcpSerializer sender(TcpSocket(TestGlobals::localhost, TestGlobals::port));
-    ASSERT_TRUE(sender.Socket().IsConnected());
+    ASSERT_TRUE(sender.Socket().IsOpen());
     TcpSerializer receiver(TcpSocket(listener.Accept()));
-    ASSERT_TRUE(receiver.Socket().IsConnected());
+    ASSERT_TRUE(receiver.Socket().IsOpen());
 
     ASSERT_EQ(receiver.Socket().DataAvailable(), 0u);
 
@@ -297,10 +297,10 @@ TEST_F(UnitTestSocket, DataAvailableTcpEc)
     ASSERT_TRUE(listener);
     ASSERT_FALSE(ec);
     TcpSerializer sender(TcpSocket(TestGlobals::localhost, TestGlobals::port, &ec));
-    ASSERT_TRUE(sender.Socket().IsConnected());
+    ASSERT_TRUE(sender.Socket().IsOpen());
     ASSERT_FALSE(ec);
     TcpSerializer receiver(TcpSocket(listener.Accept(&ec)));
-    ASSERT_TRUE(receiver.Socket().IsConnected());
+    ASSERT_TRUE(receiver.Socket().IsOpen());
     ASSERT_FALSE(ec);
 
     ASSERT_EQ(receiver.Socket().DataAvailable(&ec), 0u);

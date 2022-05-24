@@ -40,7 +40,7 @@ public:
     TcpBasicSocket& operator=(TcpBasicSocket&&) noexcept;  // = default
     ~TcpBasicSocket();
 
-    bool IsConnected() const;
+    bool IsOpen() const;
     void SetReadTimeout(unsigned milliseconds);
 
     void ShutdownSend();

@@ -52,7 +52,7 @@ public:
         m_sender = TcpSocket(TestGlobals::localhost, TestGlobals::port);
         ASSERT_TRUE(m_sender);
         m_receiver = listener.Accept();
-        ASSERT_TRUE(m_receiver.IsConnected());
+        ASSERT_TRUE(m_receiver.IsOpen());
         ASSERT_EQ(m_receiver.DataAvailable(), 0u);
     }
 
@@ -165,7 +165,7 @@ TEST_F(UnitTestError, UnblockReadTcp)
     });
 
     // Make sure the read is still blocking.
-    ASSERT_EQ(task.wait_for(milliseconds(200)), std::future_status::timeout) << (m_receiver.IsConnected() ? "Socket returned from read too early." : "Socket closed.");
+    ASSERT_EQ(task.wait_for(milliseconds(200)), std::future_status::timeout) << (m_receiver.IsOpen() ? "Socket returned from read too early." : "Socket closed.");
     std::this_thread::sleep_for(milliseconds(200));
     m_receiver.Close();  // This call should block until the operation is done.
     ASSERT_FALSE(m_receiver);
@@ -200,7 +200,7 @@ TEST_F(UnitTestError, UnblockReadTcpEc)
     });
 
     // Make sure the read is still blocking.
-    ASSERT_EQ(task.wait_for(milliseconds(200)), std::future_status::timeout) << (m_receiver.IsConnected() ? "Socket returned from read too early." : "Socket closed.");
+    ASSERT_EQ(task.wait_for(milliseconds(200)), std::future_status::timeout) << (m_receiver.IsOpen() ? "Socket returned from read too early." : "Socket closed.");
     std::this_thread::sleep_for(milliseconds(200));
     m_receiver.Close();  // This call should block until the operation is done.
     ASSERT_FALSE(m_receiver);

@@ -94,7 +94,7 @@ TcpBasicSocket::~TcpBasicSocket()
         Close();
 }
 
-bool TcpBasicSocket::IsConnected() const
+bool TcpBasicSocket::IsOpen() const
 {
     return !!m_socket;
 }
@@ -231,7 +231,7 @@ unsigned TcpBasicSocket::DataAvailable()
 
 TcpBasicSocket::operator bool() const
 {
-    return IsConnected();
+    return IsOpen();
 }
 
 }}  // namespace strapper::net
