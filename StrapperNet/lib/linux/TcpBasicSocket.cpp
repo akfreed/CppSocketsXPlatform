@@ -118,14 +118,16 @@ void TcpBasicSocket::SetReadTimeout(unsigned milliseconds)
 
 void TcpBasicSocket::ShutdownSend()
 {
-    m_impl->m_sendEnabled = false;
+    if (m_impl)
+        m_impl->m_sendEnabled = false;
     if (shutdown(**m_socket, SHUT_WR) == SocketFd::SOCKET_ERROR)
         throw SocketError(errno);
 }
 
 void TcpBasicSocket::ShutdownReceive()
 {
-    m_impl->m_receiveEnabled = false;
+    if (m_impl)
+        m_impl->m_receiveEnabled = false;
     if (shutdown(**m_socket, SHUT_RD) == SocketFd::SOCKET_ERROR)
     {
         // Linux gives ENOTCONN when calling shutdown receive if both sides have called shutdown send. We can ignore this.
