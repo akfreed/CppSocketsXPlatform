@@ -31,8 +31,7 @@ class TcpListener
 {
 public:
     TcpListener() = default;
-    explicit TcpListener(uint16_t port);
-    TcpListener(uint16_t port, ErrorCode* ec);
+    explicit TcpListener(uint16_t port, ErrorCode* ec = nullptr);
     TcpListener(TcpListener const&) = delete;
     TcpListener(TcpListener&& other) noexcept;
     TcpListener& operator=(TcpListener const&) = delete;
@@ -44,8 +43,7 @@ public:
     bool IsListening() const;
 
     void Close() noexcept;
-    TcpSocket Accept();
-    TcpSocket Accept(ErrorCode* ec);
+    TcpSocket Accept(ErrorCode* ec = nullptr);
 
     explicit operator bool() const;
 
@@ -57,6 +55,8 @@ private:
         SHUTTING_DOWN,
         CLOSED
     };
+
+    TcpSocket accept();
 
     mutable std::mutex m_lock;
     std::condition_variable m_acceptCancel;

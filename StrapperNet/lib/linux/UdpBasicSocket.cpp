@@ -101,6 +101,8 @@ void UdpBasicSocket::Close() noexcept
 
 void UdpBasicSocket::Write(void const* src, size_t len, IpAddressV4 const& ipAddress, uint16_t port)
 {
+    if (!src)
+        throw ProgramError("Null pointer.");
     if (len == 0)
         throw ProgramError("Length must be greater than 0.");
 
@@ -143,11 +145,13 @@ void UdpBasicSocket::Write(void const* src, size_t len, IpAddressV4 const& ipAdd
 
 unsigned UdpBasicSocket::Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddress, uint16_t* out_port)
 {
-    sockaddr_in info{};
-    socklen_t infoLen = sizeof(info);
+    if (!dest)
+        throw ProgramError("Null pointer.");
     if (maxlen == 0)
         throw ProgramError("Max length must be greater than 0.");
 
+    sockaddr_in info{};
+    socklen_t infoLen = sizeof(info);
     ssize_t amountRead = 0;
     do
     {

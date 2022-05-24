@@ -20,7 +20,6 @@
 #include <strapper/net/SocketError.h>
 #include "SocketFd.h"
 
-#include <cassert>
 #include <limits>
 
 namespace strapper { namespace net {
@@ -31,7 +30,6 @@ namespace {
 SocketHandle MakeSocket(uint16_t myport)
 {
     SocketHandle socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    assert(socket);
 
     sockaddr_in myInfo{};
     myInfo.sin_family = AF_INET;
@@ -102,6 +100,8 @@ void UdpBasicSocket::Close() noexcept
 
 void UdpBasicSocket::Write(void const* src, size_t len, IpAddressV4 const& ipAddress, uint16_t port)
 {
+    if (!src)
+        throw ProgramError("Null pointer.");
     if (len == 0)
         throw ProgramError("Length must be greater than 0.");
     if (len > static_cast<size_t>(std::numeric_limits<int>::max()))
@@ -173,13 +173,15 @@ void UdpBasicSocket::Write(void const* src, size_t len, IpAddressV4 const& ipAdd
 
 unsigned UdpBasicSocket::Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddress, uint16_t* out_port)
 {
-    sockaddr_in info{};
-    int infoLen = sizeof(info);
+    if (!dest)
+        throw ProgramError("Null pointer.");
     if (maxlen == 0)
         throw ProgramError("Max length must be greater than 0.");
     if (maxlen > static_cast<size_t>(std::numeric_limits<int>::max()))
         throw ProgramError("Max length must be less than int max.");
 
+    sockaddr_in info{};
+    int infoLen = sizeof(info);
     int const amountRead = recvfrom(**m_socket,
                                     static_cast<char*>(dest),
                                     static_cast<int>(maxlen),

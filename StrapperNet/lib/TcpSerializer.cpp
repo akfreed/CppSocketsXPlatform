@@ -19,7 +19,7 @@
 #include <strapper/net/Endian.h>
 #include <strapper/net/SocketError.h>
 
-#include <cassert>
+#include <algorithm>
 #include <cstring>
 
 namespace strapper { namespace net {
@@ -38,95 +38,123 @@ TcpSocket& TcpSerializer::Socket()
     return m_socket;
 }
 
-void TcpSerializer::Write(char c)
+void TcpSerializer::Write(char c, ErrorCode* ec /* = nullptr */)
 {
-    m_socket.Write(&c, 1);
+    m_socket.Write(&c, 1, ec);
 }
 
-void TcpSerializer::Write(bool b)
+void TcpSerializer::Write(bool b, ErrorCode* ec /* = nullptr */)
 {
     uint8_t const buf = b ? 1 : 0;
-    m_socket.Write(&buf, 1);
+    m_socket.Write(&buf, 1, ec);
 }
 
-void TcpSerializer::Write(int32_t int32)
+void TcpSerializer::Write(int32_t int32, ErrorCode* ec /* = nullptr */)
 {
     nton(&int32);
-    m_socket.Write(&int32, sizeof(int32));
+    m_socket.Write(&int32, sizeof(int32), ec);
 }
 
-void TcpSerializer::Write(double d)
+void TcpSerializer::Write(double d, ErrorCode* ec /* = nullptr */)
 {
     nton(&d);
-    m_socket.Write(&d, sizeof(double));
+    m_socket.Write(&d, sizeof(double), ec);
 }
 
-void TcpSerializer::Write(std::string const& s)
+void TcpSerializer::Write(std::string const& s, ErrorCode* ec /* = nullptr */)
 {
-    int const len = (s.length() > MAX_STRING_LEN) ? MAX_STRING_LEN : static_cast<int>(s.length());
-    Write(len);
-    if (len > 0)
-        m_socket.Write(s.c_str(), static_cast<size_t>(len));
+    try
+    {
+        static_assert(c_maxStringLen >= 0, "Max string length cannot be less than 0.");
+        if (static_cast<size_t>(c_maxStringLen) > s.max_size())
+            throw ProgramError("Max string length exceeds std::string max size.");
+        if (s.length() > static_cast<size_t>(c_maxStringLen))
+            throw ProgramError("String length exceeds max allowed.");
+
+        int const len = static_cast<int>(s.length());
+
+        Write(len);
+        if (len > 0)
+            m_socket.Write(s.c_str(), static_cast<size_t>(len));
+    }
+    catch (ProgramError const&)
+    {
+        if (!ec)
+            throw;
+        *ec = ErrorCode(std::current_exception());
+    }
 }
 
 //----------------------------------------------------------------------------
 
-bool TcpSerializer::Read(char* dest)
+bool TcpSerializer::Read(char* dest, ErrorCode* ec /* = nullptr */)
 {
-    if (!dest)
-        throw ProgramError("Null pointer.");
-    return m_socket.Read(dest, 1);
+    return m_socket.Read(dest, 1, ec);
 }
 
-bool TcpSerializer::Read(bool* dest)
+bool TcpSerializer::Read(bool* dest, ErrorCode* ec /* = nullptr */)
 {
-    if (!dest)
-        throw ProgramError("Null pointer.");
     uint8_t buf = 0;
-    bool result = m_socket.Read(&buf, 1);
-    if (result)
-        *dest = (buf == 0 ? false : true);  // NOLINT(readability-simplify-boolean-expr): This is more readable.
-    return result;
+    if (!m_socket.Read(&buf, 1, ec))
+        return false;
+
+    *dest = (buf == 0 ? false : true);  // NOLINT(readability-simplify-boolean-expr): This is more readable.
+    return true;
 }
 
-bool TcpSerializer::Read(int32_t* dest)
+bool TcpSerializer::Read(int32_t* dest, ErrorCode* ec /* = nullptr */)
 {
-    if (!dest)
-        throw ProgramError("Null pointer.");
-    bool result = m_socket.Read(dest, sizeof(*dest));
-    if (result)
-        nton(dest);
-    return result;
+    if (!m_socket.Read(dest, sizeof(*dest), ec))
+        return false;
+
+    nton(dest);
+    return true;
 }
 
-bool TcpSerializer::Read(double* dest)
+bool TcpSerializer::Read(double* dest, ErrorCode* ec /* = nullptr */)
 {
     static_assert(sizeof(double) == sizeof(uint64_t), "This function is designed for 64-bit doubles.");
-    if (!dest)
-        throw ProgramError("Null pointer.");
 
-    bool result = m_socket.Read(dest, sizeof(*dest));
-    if (result)
-        nton(dest);
-    return result;
+    if (!m_socket.Read(dest, sizeof(*dest), ec))
+        return false;
+
+    nton(dest);
+    return true;
 }
 
 // maxlen is the size of the buffer
 // if successful, the string will always be null-terminated
-bool TcpSerializer::Read(std::string* dest)
+bool TcpSerializer::Read(std::string* dest, ErrorCode* ec /* = nullptr */)
 {
-    if (!dest)
-        throw ProgramError("Null pointer.");
+    try
+    {
+        static_assert(c_maxStringLen >= 0, "Max string length cannot be less than 0.");
+        if (static_cast<size_t>(c_maxStringLen) > dest->max_size())
+            throw ProgramError("Max string length exceeds std::string max size.");
 
-    int len = 0;
-    if (!Read(&len))
+        int len = 0;
+        if (!Read(&len))
+            return false;
+
+        if (len < 0 || len > c_maxStringLen)  // Other end is corrupted or is not following the protocol.
+            throw ProgramError("Received bad string size.");
+
+        if (len == 0)
+        {
+            *dest = "";
+            return true;
+        }
+
+        dest->resize(static_cast<size_t>(len));
+        return m_socket.Read(&*(dest->begin()), static_cast<size_t>(len));
+    }
+    catch (ProgramError const&)
+    {
+        if (!ec)
+            throw;
+        *ec = ErrorCode(std::current_exception());
         return false;
-
-    if (len < 0 || len > MAX_STRING_LEN)  // other end is corrupted or is not following the protocol.
-        throw ProgramError("Received bad string size.");
-
-    dest->resize(static_cast<size_t>(len));
-    return m_socket.Read(&*(dest->begin()), static_cast<size_t>(len));
+    }
 }
 
 }}  // namespace strapper::net

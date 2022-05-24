@@ -22,7 +22,6 @@
 #include <sys/socket.h>
 
 #include <cassert>
-#include <string>
 
 namespace strapper { namespace net {
 

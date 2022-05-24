@@ -22,24 +22,18 @@
 
 namespace strapper { namespace net {
 
-UdpSocket::UdpSocket(uint16_t myport)
-    : m_socket(myport)
-    , m_state(State::OPEN)
-{
-    assert(m_socket);
-}
-
-UdpSocket::UdpSocket(uint16_t myport, ErrorCode* ec)
-    : UdpSocket()
+UdpSocket::UdpSocket(uint16_t myport, ErrorCode* ec /* = nullptr */)
 {
     try
     {
-        *this = UdpSocket(myport);
+        m_socket = UdpBasicSocket(myport);
+        m_state = State::OPEN;
     }
     catch (ProgramError const&)
     {
-        if (ec)
-            *ec = ErrorCode(std::current_exception());
+        if (!ec)
+            throw;
+        *ec = ErrorCode(std::current_exception());
     }
 }
 
@@ -92,29 +86,25 @@ bool UdpSocket::IsOpen() const
 // Only use this feature as a robustness mechanism.
 // (e.g. so you don't block forever if the connection is somehow silently lost.)
 // Don't use this as a form of non-blocking read.
-void UdpSocket::SetReadTimeout(unsigned milliseconds)
-{
-    std::lock_guard<std::mutex> lock(m_socketLock);
-    if (m_state == State::CLOSED)
-        throw ProgramError("Socket is not open.");
-    if (m_state == State::READING)
-        throw ProgramError("Socket is already reading.");
-    if (m_state == State::SHUTTING_DOWN)
-        throw ProgramError("Socket was closed from another thread.");
-
-    m_socket.SetReadTimeout(milliseconds);
-}
-
-void UdpSocket::SetReadTimeout(unsigned milliseconds, ErrorCode* ec)
+void UdpSocket::SetReadTimeout(unsigned milliseconds, ErrorCode* ec /* = nullptr */)
 {
     try
     {
-        SetReadTimeout(milliseconds);
+        std::lock_guard<std::mutex> lock(m_socketLock);
+        if (m_state == State::CLOSED)
+            throw ProgramError("Socket is not open.");
+        if (m_state == State::READING)
+            throw ProgramError("Socket is already reading.");
+        if (m_state == State::SHUTTING_DOWN)
+            throw ProgramError("Socket was closed from another thread.");
+
+        m_socket.SetReadTimeout(milliseconds);
     }
     catch (ProgramError const&)
     {
-        if (ec)
-            *ec = ErrorCode(std::current_exception());
+        if (!ec)
+            throw;
+        *ec = ErrorCode(std::current_exception());
     }
 }
 
@@ -145,31 +135,72 @@ void UdpSocket::Close() noexcept
     }
 }
 
-void UdpSocket::Write(void const* src, size_t len, IpAddressV4 const& ipAddress, uint16_t port)
-{
-    std::unique_lock<std::mutex> lock(m_socketLock);
-    if (m_state == State::CLOSED)
-        throw ProgramError("Socket is not open.");
-    if (m_state == State::SHUTTING_DOWN)
-        throw ProgramError("Socket was closed from another thread.");
-
-    return m_socket.Write(src, len, ipAddress, port);
-}
-
-void UdpSocket::Write(void const* src, size_t len, IpAddressV4 const& ipAddress, uint16_t port, ErrorCode* ec)
+void UdpSocket::Write(void const* src, size_t len, IpAddressV4 const& ipAddress, uint16_t port, ErrorCode* ec /* = nullptr */)
 {
     try
     {
-        Write(src, len, ipAddress, port);
+        std::unique_lock<std::mutex> lock(m_socketLock);
+        if (m_state == State::CLOSED)
+            throw ProgramError("Socket is not open.");
+        if (m_state == State::SHUTTING_DOWN)
+            throw ProgramError("Socket was closed from another thread.");
+
+        return m_socket.Write(src, len, ipAddress, port);
     }
     catch (ProgramError const&)
     {
-        if (ec)
-            *ec = ErrorCode(std::current_exception());
+        if (!ec)
+            throw;
+        *ec = ErrorCode(std::current_exception());
     }
 }
 
-unsigned UdpSocket::Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddress, uint16_t* out_port)
+unsigned UdpSocket::Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddress, uint16_t* out_port, ErrorCode* ec /* = nullptr */)
+{
+    try
+    {
+        return read(dest, maxlen, out_ipAddress, out_port);
+    }
+    catch (ProgramError const&)
+    {
+        if (!ec)
+            throw;
+        *ec = ErrorCode(std::current_exception());
+        return 0;
+    }
+}
+
+// returns the total amount of data in the buffer.
+// A call to Read will not necessarily return this much data, since the buffer may contain many datagrams
+unsigned UdpSocket::DataAvailable(ErrorCode* ec /* = nullptr */) const
+{
+    try
+    {
+        std::lock_guard<std::mutex> lock(m_socketLock);
+        if (m_state == State::CLOSED)
+            throw ProgramError("Socket is not open.");
+        if (m_state == State::READING)
+            throw ProgramError("Socket is already reading.");
+        if (m_state == State::SHUTTING_DOWN)
+            throw ProgramError("Socket was closed from another thread.");
+
+        return m_socket.DataAvailable();
+    }
+    catch (ProgramError const&)
+    {
+        if (!ec)
+            throw;
+        *ec = ErrorCode(std::current_exception());
+        return 0;
+    }
+}
+
+UdpSocket::operator bool() const
+{
+    return IsOpen();
+}
+
+unsigned UdpSocket::read(void* dest, size_t maxlen, IpAddressV4* out_ipAddress, uint16_t* out_port)
 {
     {
         std::lock_guard<std::mutex> lock(m_socketLock);
@@ -204,54 +235,6 @@ unsigned UdpSocket::Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddress, 
             m_state = State::OPEN;
         throw;
     }
-}
-
-unsigned UdpSocket::Read(void* dest, size_t maxlen, IpAddressV4* out_ipAddress, uint16_t* out_port, ErrorCode* ec)
-{
-    try
-    {
-        return Read(dest, maxlen, out_ipAddress, out_port);
-    }
-    catch (ProgramError const&)
-    {
-        if (ec)
-            *ec = ErrorCode(std::current_exception());
-        return 0;
-    }
-}
-
-// returns the total amount of data in the buffer.
-// A call to Read will not necessarily return this much data, since the buffer may contain many datagrams
-unsigned UdpSocket::DataAvailable() const
-{
-    std::lock_guard<std::mutex> lock(m_socketLock);
-    if (m_state == State::CLOSED)
-        throw ProgramError("Socket is not open.");
-    if (m_state == State::READING)
-        throw ProgramError("Socket is already reading.");
-    if (m_state == State::SHUTTING_DOWN)
-        throw ProgramError("Socket was closed from another thread.");
-
-    return m_socket.DataAvailable();
-}
-
-unsigned UdpSocket::DataAvailable(ErrorCode* ec) const
-{
-    try
-    {
-        return DataAvailable();
-    }
-    catch (ProgramError const&)
-    {
-        if (ec)
-            *ec = ErrorCode(std::current_exception());
-        return 0;
-    }
-}
-
-UdpSocket::operator bool() const
-{
-    return IsOpen();
 }
 
 }}  // namespace strapper::net

@@ -20,7 +20,6 @@
 #include <strapper/net/SocketError.h>
 
 #include <cassert>
-#include <string>
 
 namespace strapper { namespace net {
 

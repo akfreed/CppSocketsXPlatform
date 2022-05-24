@@ -24,24 +24,18 @@
 namespace strapper { namespace net {
 
 // constructor connects to host:port
-TcpSocket::TcpSocket(std::string const& host, uint16_t port)
-    : m_socket(host, port)
-    , m_state(State::CONNECTED)
-{
-    assert(m_socket);
-}
-
-TcpSocket::TcpSocket(std::string const& host, uint16_t port, ErrorCode* ec)
-    : TcpSocket()
+TcpSocket::TcpSocket(std::string const& host, uint16_t port, ErrorCode* ec /*= nullptr */)
 {
     try
     {
-        *this = TcpSocket(host, port);
+        m_socket = TcpBasicSocket(host, port);
+        m_state = State::CONNECTED;
     }
     catch (ProgramError const&)
     {
-        if (ec)
-            *ec = ErrorCode(std::current_exception());
+        if (!ec)
+            throw;
+        *ec = ErrorCode(std::current_exception());
     }
 }
 
@@ -100,53 +94,45 @@ bool TcpSocket::IsConnected() const
 //! Only use this feature as a robustness mechanism.
 //! (e.g. so you don't block forever if the connection is somehow silently lost.)
 //! Don't use this as a form of non-blocking read.
-void TcpSocket::SetReadTimeout(unsigned milliseconds)
-{
-    std::lock_guard<std::mutex> lock(m_socketLock);
-    if (m_state == State::CLOSED)
-        throw ProgramError("Socket is not connected.");
-    if (m_state == State::READING)
-        throw ProgramError("Socket is already reading.");
-    if (m_state == State::SHUTTING_DOWN)
-        throw ProgramError("Socket was closed from another thread.");
-
-    m_socket.SetReadTimeout(milliseconds);
-}
-
-void TcpSocket::SetReadTimeout(unsigned milliseconds, ErrorCode* ec)
+void TcpSocket::SetReadTimeout(unsigned milliseconds, ErrorCode* ec /* = nullptr */)
 {
     try
     {
-        SetReadTimeout(milliseconds);
+        std::lock_guard<std::mutex> lock(m_socketLock);
+        if (m_state == State::CLOSED)
+            throw ProgramError("Socket is not connected.");
+        if (m_state == State::READING)
+            throw ProgramError("Socket is already reading.");
+        if (m_state == State::SHUTTING_DOWN)
+            throw ProgramError("Socket was closed from another thread.");
+
+        m_socket.SetReadTimeout(milliseconds);
     }
     catch (ProgramError const&)
     {
-        if (ec)
-            *ec = ErrorCode(std::current_exception());
+        if (!ec)
+            throw;
+        *ec = ErrorCode(std::current_exception());
     }
 }
 
-void TcpSocket::ShutdownSend()
-{
-    std::lock_guard<std::mutex> lock(m_socketLock);
-    if (m_state == State::CLOSED)
-        throw ProgramError("Socket is not connected.");
-    if (m_state == State::SHUTTING_DOWN)
-        throw ProgramError("Socket was closed from another thread.");
-
-    m_socket.ShutdownSend();
-}
-
-void TcpSocket::ShutdownSend(ErrorCode* ec)
+void TcpSocket::ShutdownSend(ErrorCode* ec /* = nullptr */)
 {
     try
     {
-        ShutdownSend();
+        std::lock_guard<std::mutex> lock(m_socketLock);
+        if (m_state == State::CLOSED)
+            throw ProgramError("Socket is not connected.");
+        if (m_state == State::SHUTTING_DOWN)
+            throw ProgramError("Socket was closed from another thread.");
+
+        m_socket.ShutdownSend();
     }
     catch (ProgramError const&)
     {
-        if (ec)
-            *ec = ErrorCode(std::current_exception());
+        if (!ec)
+            throw;
+        *ec = ErrorCode(std::current_exception());
     }
 }
 
@@ -188,31 +174,74 @@ void TcpSocket::Close() noexcept
     }
 }
 
-void TcpSocket::Write(void const* src, size_t len)
-{
-    std::unique_lock<std::mutex> lock(m_socketLock);
-    if (m_state == State::CLOSED)
-        throw ProgramError("Socket is not connected.");
-    if (m_state == State::SHUTTING_DOWN)
-        throw ProgramError("Socket was closed from another thread.");
-
-    m_socket.Write(src, len);
-}
-
-void TcpSocket::Write(void const* src, size_t len, ErrorCode* ec)
+void TcpSocket::Write(void const* src, size_t len, ErrorCode* ec /* = nullptr */)
 {
     try
     {
-        Write(src, len);
+        std::unique_lock<std::mutex> lock(m_socketLock);
+        if (m_state == State::CLOSED)
+            throw ProgramError("Socket is not connected.");
+        if (m_state == State::SHUTTING_DOWN)
+            throw ProgramError("Socket was closed from another thread.");
+
+        m_socket.Write(src, len);
     }
     catch (ProgramError const&)
     {
-        if (ec)
-            *ec = ErrorCode(std::current_exception());
+        if (!ec)
+            throw;
+        *ec = ErrorCode(std::current_exception());
     }
 }
 
-bool TcpSocket::Read(void* dest, size_t len)
+bool TcpSocket::Read(void* dest, size_t len, ErrorCode* ec /* = nullptr */)
+{
+    try
+    {
+        return read(dest, len);
+    }
+    catch (ProgramError const&)
+    {
+        if (!ec)
+            throw;
+        *ec = ErrorCode(std::current_exception());
+        return false;
+    }
+}
+
+// returns the amount of bytes available in the stream
+// guaranteed not to be bigger than the actual number
+// you can read this many bytes without blocking
+// may be smaller than the actual number of bytes available
+unsigned TcpSocket::DataAvailable(ErrorCode* ec /* = nullptr */)
+{
+    try
+    {
+        std::lock_guard<std::mutex> lock(m_socketLock);
+        if (m_state == State::CLOSED)
+            throw ProgramError("Socket is not connected.");
+        if (m_state == State::READING)
+            throw ProgramError("Socket is already reading.");
+        if (m_state == State::SHUTTING_DOWN)
+            throw ProgramError("Socket was closed from another thread.");
+
+        return m_socket.DataAvailable();
+    }
+    catch (ProgramError const&)
+    {
+        if (!ec)
+            throw;
+        *ec = ErrorCode(std::current_exception());
+        return 0;
+    }
+}
+
+TcpSocket::operator bool() const
+{
+    return IsConnected();
+}
+
+bool TcpSocket::read(void* dest, size_t len)
 {
     {
         std::lock_guard<std::mutex> lock(m_socketLock);
@@ -241,56 +270,6 @@ bool TcpSocket::Read(void* dest, size_t len)
         m_readCancel.notify_all();
         throw;
     }
-}
-
-bool TcpSocket::Read(void* dest, size_t len, ErrorCode* ec)
-{
-    try
-    {
-        return Read(dest, len);
-    }
-    catch (ProgramError const&)
-    {
-        if (ec)
-            *ec = ErrorCode(std::current_exception());
-        return false;
-    }
-}
-
-// returns the amount of bytes available in the stream
-// guaranteed not to be bigger than the actual number
-// you can read this many bytes without blocking
-// may be smaller than the actual number of bytes available
-unsigned TcpSocket::DataAvailable()
-{
-    std::lock_guard<std::mutex> lock(m_socketLock);
-    if (m_state == State::CLOSED)
-        throw ProgramError("Socket is not connected.");
-    if (m_state == State::READING)
-        throw ProgramError("Socket is already reading.");
-    if (m_state == State::SHUTTING_DOWN)
-        throw ProgramError("Socket was closed from another thread.");
-
-    return m_socket.DataAvailable();
-}
-
-unsigned TcpSocket::DataAvailable(ErrorCode* ec)
-{
-    try
-    {
-        return DataAvailable();
-    }
-    catch (ProgramError const&)
-    {
-        if (ec)
-            *ec = ErrorCode(std::current_exception());
-        return 0;
-    }
-}
-
-TcpSocket::operator bool() const
-{
-    return IsConnected();
 }
 
 }}  // namespace strapper::net

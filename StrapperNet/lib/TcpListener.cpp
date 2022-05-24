@@ -24,24 +24,18 @@
 
 namespace strapper { namespace net {
 
-TcpListener::TcpListener(uint16_t port)
-    : m_listener(port)
-    , m_state(State::OPEN)
-{
-    assert(m_listener);
-}
-
-TcpListener::TcpListener(uint16_t port, ErrorCode* ec)
-    : TcpListener()
+TcpListener::TcpListener(uint16_t port, ErrorCode* ec /* = nullptr */)
 {
     try
     {
-        *this = TcpListener(port);
+        m_listener = TcpBasicListener(port);
+        m_state = State::OPEN;
     }
     catch (ProgramError const&)
     {
-        if (ec)
-            *ec = ErrorCode(std::current_exception());
+        if (!ec)
+            throw;
+        *ec = ErrorCode(std::current_exception());
     }
 }
 
@@ -116,7 +110,27 @@ void TcpListener::Close() noexcept
     }
 }
 
-TcpSocket TcpListener::Accept()
+TcpSocket TcpListener::Accept(ErrorCode* ec /* = nullptr*/)
+{
+    try
+    {
+        return accept();
+    }
+    catch (ProgramError const&)
+    {
+        if (!ec)
+            throw;
+        *ec = ErrorCode(std::current_exception());
+        return {};
+    }
+}
+
+TcpListener::operator bool() const
+{
+    return IsListening();
+}
+
+TcpSocket TcpListener::accept()
 {
     {
         std::lock_guard<std::mutex> lock(m_lock);
@@ -145,25 +159,6 @@ TcpSocket TcpListener::Accept()
         m_acceptCancel.notify_all();
         throw;
     }
-}
-
-TcpSocket TcpListener::Accept(ErrorCode* ec)
-{
-    try
-    {
-        return Accept();
-    }
-    catch (ProgramError const&)
-    {
-        if (ec)
-            *ec = ErrorCode(std::current_exception());
-        return {};
-    }
-}
-
-TcpListener::operator bool() const
-{
-    return IsListening();
 }
 
 }}  // namespace strapper::net

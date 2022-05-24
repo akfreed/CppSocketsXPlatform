@@ -17,7 +17,6 @@
 #pragma once
 
 #include <memory>
-#include <mutex>
 
 namespace strapper { namespace net {
 
