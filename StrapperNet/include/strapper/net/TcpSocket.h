@@ -40,7 +40,7 @@ public:
 
     friend void swap(TcpSocket& left, TcpSocket& right);
 
-    bool IsConnected() const;
+    bool IsOpen() const;
     void SetReadTimeout(unsigned milliseconds, ErrorCode* ec = nullptr);
 
     void ShutdownSend(ErrorCode* ec = nullptr);

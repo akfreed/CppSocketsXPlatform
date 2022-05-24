@@ -84,7 +84,7 @@ void swap(TcpSocket& left, TcpSocket& right)
     swap(left.m_state, right.m_state);
 }
 
-bool TcpSocket::IsConnected() const
+bool TcpSocket::IsOpen() const
 {
     std::lock_guard<std::mutex> lock(m_socketLock);
     return m_state != State::CLOSED;
@@ -238,7 +238,7 @@ unsigned TcpSocket::DataAvailable(ErrorCode* ec /* = nullptr */)
 
 TcpSocket::operator bool() const
 {
-    return IsConnected();
+    return IsOpen();
 }
 
 bool TcpSocket::read(void* dest, size_t len)

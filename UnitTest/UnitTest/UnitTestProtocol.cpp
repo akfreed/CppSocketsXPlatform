@@ -52,7 +52,7 @@ public:
         m_sender = TcpSocket(TestGlobals::localhost, TestGlobals::port);
         ASSERT_TRUE(m_sender);
         m_receiver = listener.Accept();
-        ASSERT_TRUE(m_receiver.IsConnected());
+        ASSERT_TRUE(m_receiver.IsOpen());
         ASSERT_EQ(m_receiver.DataAvailable(), 0u);
     }
 
