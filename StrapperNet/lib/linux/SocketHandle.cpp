@@ -56,12 +56,14 @@ void SocketHandle::Close() noexcept
 
 SocketFd const& SocketHandle::Get() const
 {
+    if (!m_socketId)
+        throw ProgramError("Socket handle is empty.");
     return *m_socketId;
 }
 
 SocketFd const& SocketHandle::operator*() const
 {
-    return *m_socketId;
+    return Get();
 }
 
 SocketHandle::operator bool() const
