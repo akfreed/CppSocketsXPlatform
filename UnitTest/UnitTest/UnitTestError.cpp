@@ -47,9 +47,9 @@ public:
     void SetUp() override
     {
         Timeout timeout{ std::chrono::seconds(3) };
-        TcpListener listener(TestGlobals::port);
+        TcpListener listener(TestGlobals::testPortA);
         ASSERT_TRUE(listener);
-        m_sender = TcpSocket(TestGlobals::localhost, TestGlobals::port);
+        m_sender = TcpSocket(TestGlobals::localhost, TestGlobals::testPortA);
         ASSERT_TRUE(m_sender);
         m_receiver = listener.Accept();
         ASSERT_TRUE(m_receiver.IsOpen());
@@ -104,7 +104,7 @@ TEST_F(UnitTestError, ReadTimeoutUdp)
 {
     Timeout timeout(std::chrono::seconds(3));
 
-    UdpSocket receiver(TestGlobals::port);
+    UdpSocket receiver(TestGlobals::testPortA);
     receiver.SetReadTimeout(500);
 
     auto const start = std::chrono::steady_clock::now();
@@ -123,7 +123,7 @@ TEST_F(UnitTestError, ReadTimeoutUdpEc)
     Timeout timeout(std::chrono::seconds(3));
 
     ErrorCode ec;
-    UdpSocket receiver(TestGlobals::port, &ec);
+    UdpSocket receiver(TestGlobals::testPortA, &ec);
     ASSERT_FALSE(ec);
     receiver.SetReadTimeout(500, &ec);
     ASSERT_FALSE(ec);
@@ -213,7 +213,7 @@ TEST_F(UnitTestError, UnblockReadUdp)
     Timeout timeout(std::chrono::seconds(3));
 
     // Read on a separate thread.
-    UdpSocket receiver(TestGlobals::port);
+    UdpSocket receiver(TestGlobals::testPortA);
     ASSERT_TRUE(receiver);
     auto task = std::async(std::launch::async, [&receiver]() -> bool {
         try
@@ -246,7 +246,7 @@ TEST_F(UnitTestError, UnblockReadUdpEc)
     Timeout timeout(std::chrono::seconds(3));
 
     // Read on a separate thread.
-    UdpSocket receiver(TestGlobals::port);
+    UdpSocket receiver(TestGlobals::testPortA);
     ASSERT_TRUE(receiver);
     auto task = std::async(std::launch::async, [&receiver]() -> bool {
         char buf[1];
@@ -282,7 +282,7 @@ TEST_F(UnitTestError, UnblockAccept)
     Timeout timeout(std::chrono::seconds(3));
 
     // Accept on a separate thread.
-    TcpListener listener(TestGlobals::port);
+    TcpListener listener(TestGlobals::testPortA);
     ASSERT_TRUE(listener);
     auto task = std::async(std::launch::async, [&listener]() -> bool {
         try
@@ -314,7 +314,7 @@ TEST_F(UnitTestError, UnblockAcceptEc)
     Timeout timeout(std::chrono::seconds(3));
 
     // Accept on a separate thread.
-    TcpListener listener(TestGlobals::port);
+    TcpListener listener(TestGlobals::testPortA);
     ASSERT_TRUE(listener);
     auto task = std::async(std::launch::async, [&listener]() -> bool {
         ErrorCode ec;

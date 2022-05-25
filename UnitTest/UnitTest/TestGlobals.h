@@ -23,8 +23,8 @@ namespace strapper { namespace net { namespace test {
 struct TestGlobals
 {
     static char constexpr localhost[] = "127.0.0.1";
-    static uint16_t constexpr port = 11111;
-    static uint16_t constexpr port2 = 11112;
+    static uint16_t constexpr testPortA = 11111;
+    static uint16_t constexpr testPortB = 11112;
 };
 
 }}}  // namespace strapper::net::test
