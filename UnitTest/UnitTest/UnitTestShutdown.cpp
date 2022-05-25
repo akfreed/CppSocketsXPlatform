@@ -39,9 +39,9 @@ public:
     void SetUp() override
     {
         Timeout timeout{ std::chrono::seconds(3) };
-        TcpBasicListener listener(TestGlobals::port);
+        TcpBasicListener listener(TestGlobals::testPortA);
         ASSERT_TRUE(listener);
-        m_sender = TcpBasicSocket(TestGlobals::localhost, TestGlobals::port);
+        m_sender = TcpBasicSocket(TestGlobals::localhost, TestGlobals::testPortA);
         ASSERT_TRUE(m_sender);
         m_receiver = listener.Accept();
         ASSERT_TRUE(m_receiver.IsOpen());

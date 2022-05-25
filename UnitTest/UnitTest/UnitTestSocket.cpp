@@ -44,9 +44,9 @@ TEST_F(UnitTestSocket, SelfConnectTcp)
 {
     Timeout timeout(std::chrono::seconds(3));
 
-    TcpListener listener(TestGlobals::port);
+    TcpListener listener(TestGlobals::testPortA);
     ASSERT_TRUE(listener);
-    TcpSocket client(TestGlobals::localhost, TestGlobals::port);
+    TcpSocket client(TestGlobals::localhost, TestGlobals::testPortA);
     ASSERT_TRUE(client.IsOpen());
     TcpSocket host = listener.Accept();
     ASSERT_TRUE(host.IsOpen());
@@ -57,10 +57,10 @@ TEST_F(UnitTestSocket, SelfConnectTcpEc)
     Timeout timeout(std::chrono::seconds(3));
 
     ErrorCode ec;
-    TcpListener listener(TestGlobals::port, &ec);
+    TcpListener listener(TestGlobals::testPortA, &ec);
     ASSERT_TRUE(listener);
     ASSERT_FALSE(ec);
-    TcpSocket client(TestGlobals::localhost, TestGlobals::port, &ec);
+    TcpSocket client(TestGlobals::localhost, TestGlobals::testPortA, &ec);
     ASSERT_TRUE(client.IsOpen());
     ASSERT_FALSE(ec);
     TcpSocket host = listener.Accept(&ec);
@@ -74,7 +74,7 @@ TEST_F(UnitTestSocket, CreateUdp)
 
     UdpSocket client(0);
     ASSERT_TRUE(client);
-    UdpSocket host(TestGlobals::port);
+    UdpSocket host(TestGlobals::testPortA);
     ASSERT_TRUE(host);
 }
 
@@ -86,7 +86,7 @@ TEST_F(UnitTestSocket, CreateUdpEc)
     UdpSocket client(0, &ec);
     ASSERT_TRUE(client);
     ASSERT_FALSE(ec);
-    UdpSocket host(TestGlobals::port, &ec);
+    UdpSocket host(TestGlobals::testPortA, &ec);
     ASSERT_TRUE(host);
     ASSERT_FALSE(ec);
 }
@@ -95,9 +95,9 @@ TEST_F(UnitTestSocket, SendRecvBufTcp)
 {
     Timeout timeout(std::chrono::seconds(3));
 
-    TcpListener listener(TestGlobals::port);
+    TcpListener listener(TestGlobals::testPortA);
     ASSERT_TRUE(listener);
-    TcpSocket sender(TestGlobals::localhost, TestGlobals::port);
+    TcpSocket sender(TestGlobals::localhost, TestGlobals::testPortA);
     ASSERT_TRUE(sender.IsOpen());
     TcpSocket receiver = listener.Accept();
     ASSERT_TRUE(receiver.IsOpen());
@@ -126,10 +126,10 @@ TEST_F(UnitTestSocket, SendRecvBufTcpEc)
     Timeout timeout(std::chrono::seconds(3));
 
     ErrorCode ec;
-    TcpListener listener(TestGlobals::port, &ec);
+    TcpListener listener(TestGlobals::testPortA, &ec);
     ASSERT_TRUE(listener);
     ASSERT_FALSE(ec);
-    TcpSocket sender(TestGlobals::localhost, TestGlobals::port, &ec);
+    TcpSocket sender(TestGlobals::localhost, TestGlobals::testPortA, &ec);
     ASSERT_TRUE(sender.IsOpen());
     ASSERT_FALSE(ec);
     TcpSocket receiver = listener.Accept(&ec);
@@ -165,24 +165,24 @@ TEST_F(UnitTestSocket, SendRecvUdpBuf)
 {
     Timeout timeout(std::chrono::seconds(3));
 
-    auto const port1 = TestGlobals::port;
-    auto const port2 = TestGlobals::port2;
+    auto const portA = TestGlobals::testPortA;
+    auto const portB = TestGlobals::testPortB;
 
     IpAddressV4 const ip(TestGlobals::localhost);
-    UdpSocket sender(port2);
+    UdpSocket sender(portB);
     ASSERT_TRUE(sender);
-    UdpSocket receiver(port1);
+    UdpSocket receiver(portA);
     ASSERT_TRUE(receiver);
 
     char const sentData[6] = { 1, 2, 3, 4, 5, 6 };
-    sender.Write(sentData, 5, ip, port1);
+    sender.Write(sentData, 5, ip, portA);
 
     char recvData[6] = { 0, 0, 0, 0, 0, 0 };
     ASSERT_EQ(receiver.Read(recvData, 5, nullptr, nullptr), 5u);
     ASSERT_TRUE(std::equal(recvData, recvData + 5, sentData));
 
-    sender.Write(sentData + 3, 3, ip, port1);
-    sender.Write(sentData, 3, ip, port1);
+    sender.Write(sentData + 3, 3, ip, portA);
+    sender.Write(sentData, 3, ip, portA);
 
     IpAddressV4 senderIp;
     uint16_t senderPort = 0;
@@ -190,41 +190,41 @@ TEST_F(UnitTestSocket, SendRecvUdpBuf)
     std::vector<char> expected = { 4, 5, 6, 4, 5, 0 };
     ASSERT_TRUE(std::equal(recvData, recvData + 6, expected.begin()));
     ASSERT_EQ(senderIp.ToString(), ip.ToString());
-    ASSERT_EQ(senderPort, port2);
+    ASSERT_EQ(senderPort, portB);
 
     ASSERT_EQ(receiver.Read(recvData, 40, &senderIp, &senderPort), 3u);
     expected = { 1, 2, 3, 4, 5, 0 };
     ASSERT_TRUE(std::equal(recvData, recvData + 6, expected.begin()));
     ASSERT_EQ(senderIp.ToString(), ip.ToString());
-    ASSERT_EQ(senderPort, port2);
+    ASSERT_EQ(senderPort, portB);
 
     std::fill(recvData, recvData + 6, '\0');
-    receiver.Write(sentData, 2, ip, port2);
+    receiver.Write(sentData, 2, ip, portB);
     ASSERT_EQ(sender.Read(recvData, 40, &senderIp, &senderPort), 2u);
     expected = { 1, 2, 0, 0, 0, 0 };
     ASSERT_TRUE(std::equal(recvData, recvData + 6, expected.begin()));
     ASSERT_EQ(senderIp.ToString(), ip.ToString());
-    ASSERT_EQ(senderPort, port1);
+    ASSERT_EQ(senderPort, portA);
 }
 
 TEST_F(UnitTestSocket, SendRecvBufUdpEc)
 {
     Timeout timeout(std::chrono::seconds(3));
 
-    auto const port1 = TestGlobals::port;
-    auto const port2 = TestGlobals::port2;
+    auto const portA = TestGlobals::testPortA;
+    auto const portB = TestGlobals::testPortB;
 
     IpAddressV4 const ip(TestGlobals::localhost);
     ErrorCode ec;
-    UdpSocket sender(port2, &ec);
+    UdpSocket sender(portB, &ec);
     ASSERT_TRUE(sender);
     ASSERT_FALSE(ec);
-    UdpSocket receiver(port1, &ec);
+    UdpSocket receiver(portA, &ec);
     ASSERT_TRUE(receiver);
     ASSERT_FALSE(ec);
 
     char const sentData[6] = { 1, 2, 3, 4, 5, 6 };
-    sender.Write(sentData, 5, ip, port1, &ec);
+    sender.Write(sentData, 5, ip, portA, &ec);
     ASSERT_FALSE(ec);
 
     char recvData[6] = { 0, 0, 0, 0, 0, 0 };
@@ -232,9 +232,9 @@ TEST_F(UnitTestSocket, SendRecvBufUdpEc)
     ASSERT_FALSE(ec);
     ASSERT_TRUE(std::equal(recvData, recvData + 5, sentData));
 
-    sender.Write(sentData + 3, 3, ip, port1, &ec);
+    sender.Write(sentData + 3, 3, ip, portA, &ec);
     ASSERT_FALSE(ec);
-    sender.Write(sentData, 3, ip, port1, &ec);
+    sender.Write(sentData, 3, ip, portA, &ec);
     ASSERT_FALSE(ec);
 
     IpAddressV4 senderIp;
@@ -244,24 +244,24 @@ TEST_F(UnitTestSocket, SendRecvBufUdpEc)
     std::vector<char> expected = { 4, 5, 6, 4, 5, 0 };
     ASSERT_TRUE(std::equal(recvData, recvData + 6, expected.begin()));
     ASSERT_EQ(senderIp.ToString(), ip.ToString());
-    ASSERT_EQ(senderPort, port2);
+    ASSERT_EQ(senderPort, portB);
 
     ASSERT_EQ(receiver.Read(recvData, 40, &senderIp, &senderPort, &ec), 3u);
     ASSERT_FALSE(ec);
     expected = { 1, 2, 3, 4, 5, 0 };
     ASSERT_TRUE(std::equal(recvData, recvData + 6, expected.begin()));
     ASSERT_EQ(senderIp.ToString(), ip.ToString());
-    ASSERT_EQ(senderPort, port2);
+    ASSERT_EQ(senderPort, portB);
 
     std::fill(recvData, recvData + 6, '\0');
-    receiver.Write(sentData, 2, ip, port2, &ec);
+    receiver.Write(sentData, 2, ip, portB, &ec);
     ASSERT_FALSE(ec);
     ASSERT_EQ(sender.Read(recvData, 40, &senderIp, &senderPort, &ec), 2u);
     ASSERT_FALSE(ec);
     expected = { 1, 2, 0, 0, 0, 0 };
     ASSERT_TRUE(std::equal(recvData, recvData + 6, expected.begin()));
     ASSERT_EQ(senderIp.ToString(), ip.ToString());
-    ASSERT_EQ(senderPort, port1);
+    ASSERT_EQ(senderPort, portA);
 }
 
 // Test the DataAvailable() function.
@@ -269,9 +269,9 @@ TEST_F(UnitTestSocket, DataAvailableTcp)
 {
     Timeout timeout(std::chrono::seconds(3));
 
-    TcpListener listener(TestGlobals::port);
+    TcpListener listener(TestGlobals::testPortA);
     ASSERT_TRUE(listener);
-    TcpSerializer sender(TcpSocket(TestGlobals::localhost, TestGlobals::port));
+    TcpSerializer sender(TcpSocket(TestGlobals::localhost, TestGlobals::testPortA));
     ASSERT_TRUE(sender.Socket().IsOpen());
     TcpSerializer receiver(TcpSocket(listener.Accept()));
     ASSERT_TRUE(receiver.Socket().IsOpen());
@@ -293,10 +293,10 @@ TEST_F(UnitTestSocket, DataAvailableTcpEc)
     Timeout timeout(std::chrono::seconds(3));
 
     ErrorCode ec;
-    TcpListener listener(TestGlobals::port, &ec);
+    TcpListener listener(TestGlobals::testPortA, &ec);
     ASSERT_TRUE(listener);
     ASSERT_FALSE(ec);
-    TcpSerializer sender(TcpSocket(TestGlobals::localhost, TestGlobals::port, &ec));
+    TcpSerializer sender(TcpSocket(TestGlobals::localhost, TestGlobals::testPortA, &ec));
     ASSERT_TRUE(sender.Socket().IsOpen());
     ASSERT_FALSE(ec);
     TcpSerializer receiver(TcpSocket(listener.Accept(&ec)));
@@ -322,12 +322,12 @@ TEST_F(UnitTestSocket, DataAvailableUdp)
 {
     Timeout timeout(std::chrono::seconds(3));
 
-    auto const port1 = TestGlobals::port;
-    auto const port2 = TestGlobals::port2;
+    auto const portA = TestGlobals::testPortA;
+    auto const portB = TestGlobals::testPortB;
 
-    UdpSocket sender(port2);
+    UdpSocket sender(portB);
     ASSERT_TRUE(sender);
-    UdpSocket receiver(port1);
+    UdpSocket receiver(portA);
     ASSERT_TRUE(receiver);
 
     IpAddressV4 senderIp;
@@ -337,7 +337,7 @@ TEST_F(UnitTestSocket, DataAvailableUdp)
         ASSERT_EQ(receiver.DataAvailable(), 0u);
 
         int const toWrite = 5;
-        sender.Write(&toWrite, sizeof(toWrite), IpAddressV4::Loopback, port1);
+        sender.Write(&toWrite, sizeof(toWrite), IpAddressV4::Loopback, portA);
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
         int toRead = 0;
@@ -347,14 +347,14 @@ TEST_F(UnitTestSocket, DataAvailableUdp)
         ASSERT_EQ(toRead, toWrite);
         ASSERT_EQ(receiver.DataAvailable(), 0u);
         ASSERT_EQ(senderIp.ToString(), IpAddressV4::Loopback.ToString());
-        ASSERT_EQ(senderPort, port2);
+        ASSERT_EQ(senderPort, portB);
     }
 
     {
         ASSERT_EQ(sender.DataAvailable(), 0u);
 
         double const toWrite = 5.1;
-        receiver.Write(&toWrite, sizeof(toWrite), IpAddressV4::Loopback, port2);
+        receiver.Write(&toWrite, sizeof(toWrite), IpAddressV4::Loopback, portB);
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
         double toRead = 0;
@@ -364,7 +364,7 @@ TEST_F(UnitTestSocket, DataAvailableUdp)
         ASSERT_EQ(toRead, toWrite);
         ASSERT_EQ(sender.DataAvailable(), 0u);
         ASSERT_EQ(senderIp.ToInt(), IpAddressV4::Loopback.ToInt());
-        ASSERT_EQ(senderPort, uint16_t(port1));
+        ASSERT_EQ(senderPort, uint16_t(portA));
     }
 }
 
@@ -373,14 +373,14 @@ TEST_F(UnitTestSocket, DataAvailableUdpEc)
 {
     Timeout timeout(std::chrono::seconds(3));
 
-    auto const port1 = TestGlobals::port;
-    auto const port2 = TestGlobals::port2;
+    auto const portA = TestGlobals::testPortA;
+    auto const portB = TestGlobals::testPortB;
 
     ErrorCode ec;
-    UdpSocket sender(port2, &ec);
+    UdpSocket sender(portB, &ec);
     ASSERT_TRUE(sender);
     ASSERT_FALSE(ec);
-    UdpSocket receiver(port1, &ec);
+    UdpSocket receiver(portA, &ec);
     ASSERT_TRUE(receiver);
     ASSERT_FALSE(ec);
 
@@ -392,7 +392,7 @@ TEST_F(UnitTestSocket, DataAvailableUdpEc)
         ASSERT_FALSE(ec);
 
         int const toWrite = 5;
-        sender.Write(&toWrite, sizeof(toWrite), IpAddressV4::Loopback, port1, &ec);
+        sender.Write(&toWrite, sizeof(toWrite), IpAddressV4::Loopback, portA, &ec);
         ASSERT_FALSE(ec);
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
@@ -406,7 +406,7 @@ TEST_F(UnitTestSocket, DataAvailableUdpEc)
         ASSERT_EQ(receiver.DataAvailable(&ec), 0u);
         ASSERT_FALSE(ec);
         ASSERT_EQ(senderIp.ToString(), IpAddressV4::Loopback.ToString());
-        ASSERT_EQ(senderPort, port2);
+        ASSERT_EQ(senderPort, portB);
     }
 
     {
@@ -414,7 +414,7 @@ TEST_F(UnitTestSocket, DataAvailableUdpEc)
         ASSERT_FALSE(ec);
 
         double const toWrite = 5.1;
-        receiver.Write(&toWrite, sizeof(toWrite), IpAddressV4::Loopback, port2, &ec);
+        receiver.Write(&toWrite, sizeof(toWrite), IpAddressV4::Loopback, portB, &ec);
         ASSERT_FALSE(ec);
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
@@ -428,7 +428,7 @@ TEST_F(UnitTestSocket, DataAvailableUdpEc)
         ASSERT_EQ(sender.DataAvailable(&ec), 0u);
         ASSERT_FALSE(ec);
         ASSERT_EQ(senderIp.ToInt(), IpAddressV4::Loopback.ToInt());
-        ASSERT_EQ(senderPort, port1);
+        ASSERT_EQ(senderPort, portA);
     }
 }
 
