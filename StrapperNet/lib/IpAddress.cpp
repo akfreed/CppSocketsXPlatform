@@ -90,4 +90,14 @@ uint32_t IpAddressV4::ToInt() const
     return m_val;
 }
 
+bool IpAddressV4::operator==(IpAddressV4 const& other) const
+{
+    return m_val == other.m_val;
+}
+
+bool IpAddressV4::operator!=(IpAddressV4 const& other) const
+{
+    return !(*this == other);
+}
+
 }}  // namespace strapper::net

@@ -118,4 +118,33 @@ TEST_F(UnitTestIpAddress, ConstructFromInt)
     ASSERT_EQ(IpAddressV4(nton(0xABCDEF01)).ToString(), "171:205:239:1");
 }
 
+TEST_F(UnitTestIpAddress, Comparison)
+{
+    ASSERT_EQ(IpAddressV4(0), IpAddressV4(0));
+    ASSERT_EQ(IpAddressV4(0xFFFFFFFF), IpAddressV4(0xFFFFFFFF));
+    ASSERT_EQ(IpAddressV4(nton(0xABCDEF01)), IpAddressV4(nton(0xABCDEF01u)));
+    ASSERT_EQ(IpAddressV4(nton(0xABCDEF01)), IpAddressV4("171:205:239:1"));
+    ASSERT_EQ(IpAddressV4("127.0.0.1"), IpAddressV4::Loopback);
+    ASSERT_EQ(IpAddressV4(0), IpAddressV4::Any);
+    ASSERT_EQ(IpAddressV4{}, IpAddressV4::Any);
+
+    IpAddressV4 const a("192.168.1.1");
+    IpAddressV4 const b("192.168.1.1");
+    IpAddressV4 const c("172.0.0.1");
+    ASSERT_TRUE(a == a);
+    ASSERT_TRUE(a == b);
+    ASSERT_FALSE(a == c);
+
+    ASSERT_NE(IpAddressV4(0), IpAddressV4(1));
+    ASSERT_NE(IpAddressV4(0xFFFFFFFF), IpAddressV4(0xFAAAAAAA));
+    ASSERT_NE(IpAddressV4(nton(0xABCDEF01)), IpAddressV4(0xABCDEF01u));
+    ASSERT_NE(IpAddressV4(0xABCDEF01), IpAddressV4("171:205:239:1"));
+    ASSERT_NE(IpAddressV4::Any, IpAddressV4("127.0.0.1"));
+    ASSERT_NE(IpAddressV4("0:0:0:0"), IpAddressV4::Loopback);
+
+    ASSERT_FALSE(a != a);
+    ASSERT_FALSE(a != b);
+    ASSERT_TRUE(a != c);
+}
+
 }}}  // namespace strapper::net::test

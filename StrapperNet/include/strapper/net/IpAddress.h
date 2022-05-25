@@ -38,6 +38,9 @@ public:
     //! @return The address as an int in network byte order.
     uint32_t ToInt() const;
 
+    bool operator==(IpAddressV4 const& other) const;
+    bool operator!=(IpAddressV4 const& other) const;
+
 private:
     uint32_t m_val = 0;
 };
