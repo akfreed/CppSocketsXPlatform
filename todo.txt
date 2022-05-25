@@ -1,31 +1,68 @@
-build a test suite
-    error handling / robustness
-        setreadtimeout (test with unplug test too)
-        closing from other thread (test with unplug test too)
-        sending to unopen port
-        receiving message bigger than buffer
-        data available
 
-    binding 2 sockets to same port
-        TCP listener
-        UDP
+0.8
+0.9
 
-    cross-language testing
-        int32 send/recv
-        double send/recv
+Functionality
+    Unify Udp/Tcp interfaces (address/port, Read return, Write(ipaddr))
+    test linux EINTR (looks like there may be a bug with len)
+    make all function's behavior consistent between windows and linux
+    check out ShutDownReceive...is that consistent between windows and linux regarding the read-canceling behavior? For one thing, the Errors thrown are different.
+    Check udp echo server strncmp condition
+    give exception guarantee for any exception
+    Is it ok if Write is locked?
+    look into what exception is thrown happens if the socket is Shutdown() (not closed) while reading/accepting
 
-host/client info
+Features
+    IpAddressV4 add ==
+    IpV6
+    fix windows shortcut permission issue
+    DNS
+    host/client info
+    hostname/ip
+    serializing for Udp
+    dlls
+    rename project
+    global setting that prevents throwing of ProgramErrors
+    connect UDP sockets
 
-hostname/ip
+Documentation
+    remove commented-out code
+    get rid of commented-out code in tcp listener
+    handle todos
+    doxygen
+    copyrights (check out old repos)
+    readme
 
+Tests
+    build a test suite
+        error handling / robustness
+            setreadtimeout (test with unplug test too)
+            closing from other thread (test with unplug test too)
+            sending to unopen port
+            receiving message bigger than buffer
+            data available
 
-IpAddresV6 / DNS
-Is it ok if Write is locked?
-doxygen
-get rid of commented-out code in tcp listener
-IsConnected() is not accurate, since the socket can be shutdown
-serializing for Udp
-give exception guarantee for any exception
-look into what exception is thrown happens if the socket is Shutdown() (not closed) while reading/accepting
-reorganize project
-dlls
+        binding 2 sockets to same port
+            TCP listener
+            UDP
+
+        cross-language testing
+            int32 send/recv
+            double send/recv
+
+    Tests:
+        WriteAfterSelfShutdownTcp
+        WriteAfterSelfShutdownTcpEc
+        WriteAfterSelfCloseTcp
+        WriteAfterSelfCloseTcpEc
+        WriteAfterSelfCloseUdp
+        WriteAfterSelfCloseUdpEc
+        ReadAfterSelfShutdownTcp
+        ReadAfterSelfShutdownTcpEc
+        ReadAfterSelfCloseTcp
+        ReadAfterSelfCloseTcpEc
+        ReadAfterSelfCloseUdp
+        ReadAfterSelfCloseUdpEc
+        Add a test that creates and error for every EC function
+    big transfer
+    call functions with default-constructed objects

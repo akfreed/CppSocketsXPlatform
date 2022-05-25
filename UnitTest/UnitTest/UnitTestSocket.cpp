@@ -189,13 +189,13 @@ TEST_F(UnitTestSocket, SendRecvUdpBuf)
     ASSERT_EQ(receiver.Read(recvData, 3, &senderIp, &senderPort), 3u);
     std::vector<char> expected = { 4, 5, 6, 4, 5, 0 };
     ASSERT_TRUE(std::equal(recvData, recvData + 6, expected.begin()));
-    ASSERT_EQ(senderIp.ToString(), ip.ToString());
+    ASSERT_EQ(senderIp, ip);
     ASSERT_EQ(senderPort, portB);
 
     ASSERT_EQ(receiver.Read(recvData, 40, &senderIp, &senderPort), 3u);
     expected = { 1, 2, 3, 4, 5, 0 };
     ASSERT_TRUE(std::equal(recvData, recvData + 6, expected.begin()));
-    ASSERT_EQ(senderIp.ToString(), ip.ToString());
+    ASSERT_EQ(senderIp, ip);
     ASSERT_EQ(senderPort, portB);
 
     std::fill(recvData, recvData + 6, '\0');
@@ -203,7 +203,7 @@ TEST_F(UnitTestSocket, SendRecvUdpBuf)
     ASSERT_EQ(sender.Read(recvData, 40, &senderIp, &senderPort), 2u);
     expected = { 1, 2, 0, 0, 0, 0 };
     ASSERT_TRUE(std::equal(recvData, recvData + 6, expected.begin()));
-    ASSERT_EQ(senderIp.ToString(), ip.ToString());
+    ASSERT_EQ(senderIp, ip);
     ASSERT_EQ(senderPort, portA);
 }
 
@@ -243,14 +243,14 @@ TEST_F(UnitTestSocket, SendRecvBufUdpEc)
     ASSERT_FALSE(ec);
     std::vector<char> expected = { 4, 5, 6, 4, 5, 0 };
     ASSERT_TRUE(std::equal(recvData, recvData + 6, expected.begin()));
-    ASSERT_EQ(senderIp.ToString(), ip.ToString());
+    ASSERT_EQ(senderIp, ip);
     ASSERT_EQ(senderPort, portB);
 
     ASSERT_EQ(receiver.Read(recvData, 40, &senderIp, &senderPort, &ec), 3u);
     ASSERT_FALSE(ec);
     expected = { 1, 2, 3, 4, 5, 0 };
     ASSERT_TRUE(std::equal(recvData, recvData + 6, expected.begin()));
-    ASSERT_EQ(senderIp.ToString(), ip.ToString());
+    ASSERT_EQ(senderIp, ip);
     ASSERT_EQ(senderPort, portB);
 
     std::fill(recvData, recvData + 6, '\0');
@@ -260,7 +260,7 @@ TEST_F(UnitTestSocket, SendRecvBufUdpEc)
     ASSERT_FALSE(ec);
     expected = { 1, 2, 0, 0, 0, 0 };
     ASSERT_TRUE(std::equal(recvData, recvData + 6, expected.begin()));
-    ASSERT_EQ(senderIp.ToString(), ip.ToString());
+    ASSERT_EQ(senderIp, ip);
     ASSERT_EQ(senderPort, portA);
 }
 
@@ -346,7 +346,7 @@ TEST_F(UnitTestSocket, DataAvailableUdp)
         ASSERT_EQ(receiver.Read(&toRead, 100, &senderIp, &senderPort), sizeof(toWrite));
         ASSERT_EQ(toRead, toWrite);
         ASSERT_EQ(receiver.DataAvailable(), 0u);
-        ASSERT_EQ(senderIp.ToString(), IpAddressV4::Loopback.ToString());
+        ASSERT_EQ(senderIp, IpAddressV4::Loopback);
         ASSERT_EQ(senderPort, portB);
     }
 
@@ -363,7 +363,7 @@ TEST_F(UnitTestSocket, DataAvailableUdp)
         ASSERT_EQ(sender.Read(&toRead, 1000, &senderIp, &senderPort), sizeof(toWrite));
         ASSERT_EQ(toRead, toWrite);
         ASSERT_EQ(sender.DataAvailable(), 0u);
-        ASSERT_EQ(senderIp.ToInt(), IpAddressV4::Loopback.ToInt());
+        ASSERT_EQ(senderIp, IpAddressV4::Loopback);
         ASSERT_EQ(senderPort, uint16_t(portA));
     }
 }
@@ -405,7 +405,7 @@ TEST_F(UnitTestSocket, DataAvailableUdpEc)
         ASSERT_EQ(toRead, toWrite);
         ASSERT_EQ(receiver.DataAvailable(&ec), 0u);
         ASSERT_FALSE(ec);
-        ASSERT_EQ(senderIp.ToString(), IpAddressV4::Loopback.ToString());
+        ASSERT_EQ(senderIp, IpAddressV4::Loopback);
         ASSERT_EQ(senderPort, portB);
     }
 
@@ -427,7 +427,7 @@ TEST_F(UnitTestSocket, DataAvailableUdpEc)
         ASSERT_EQ(toRead, toWrite);
         ASSERT_EQ(sender.DataAvailable(&ec), 0u);
         ASSERT_FALSE(ec);
-        ASSERT_EQ(senderIp.ToInt(), IpAddressV4::Loopback.ToInt());
+        ASSERT_EQ(senderIp, IpAddressV4::Loopback);
         ASSERT_EQ(senderPort, portA);
     }
 }
