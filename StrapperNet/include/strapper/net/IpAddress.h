@@ -29,7 +29,7 @@ public:
     static IpAddressV4 const Loopback;
 
     IpAddressV4() = default;
-    explicit IpAddressV4(std::string const& ip);
+    IpAddressV4(std::string const& ip);  // cppcheck-suppress[noExplicitConstructor] NOLINT: Intentional conversion constructor.
     //! @param[in] val An int (in network byte order) representation of an IP address.
     explicit IpAddressV4(uint32_t val);
 
