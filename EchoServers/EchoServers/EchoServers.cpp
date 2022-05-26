@@ -22,7 +22,6 @@
 #include <strapper/net/UdpSocket.h>
 
 #include <array>
-#include <cstring>
 #include <iostream>
 #include <string>
 
@@ -46,26 +45,29 @@ void TcpEchoServer(uint16_t port)
         std::cout << "> " << message << std::endl;
         client.Write(message);
     }
-    std::cout << "> Closing connection to client." << std::endl;
+
+    std::cout << "Closing echo server." << std::endl;
 }
 
 void UdpEchoServer(uint16_t port)
 {
     UdpSocket client(port);
 
-    unsigned constexpr MAX = 1000;
-    std::array<char, MAX + 1> message{};
+    std::array<char, 1000> message{};
 
-    while (strncmp(message.data(), "exit\0", 5) != 0)
+    while (std::string(message.data()) != "exit")
     {
         IpAddressV4 ip;
         uint16_t theirPort = 0;
-        unsigned const amountRead = client.Read(message.data(), MAX, &ip, &theirPort);
-        message[amountRead] = '\0';
+        unsigned const amountRead = client.Read(message.data(), message.size() - 1, &ip, &theirPort);
+        message.at(amountRead) = '\0';
+
         std::cout << "> " << message.data() << std::endl;
+
         client.Write(message.data(), amountRead, ip, theirPort);
     }
-    std::cout << "> Closing socket." << std::endl;
+
+    std::cout << "Closing echo server." << std::endl;
 }
 
 }}  // namespace strapper::net
