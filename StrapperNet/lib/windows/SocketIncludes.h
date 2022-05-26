@@ -29,7 +29,7 @@ static_assert(false, "This header must be included before windows.h");
 // Otherwise, use Windows XP as the version.
 #define NTDDI_VERSION NTDDI_VISTA
 #define WINVER _WIN32_WINNT_VISTA
-#define _WIN32_WINNT _WIN32_WINNT_VISTA
+#define _WIN32_WINNT _WIN32_WINNT_VISTA  // NOLINT(bugprone-reserved-identifier, cert-dcl37-c, cert-dcl51-cpp)
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 // prevent windows.h from including winsock.h
