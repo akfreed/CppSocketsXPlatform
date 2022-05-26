@@ -21,10 +21,15 @@ If you want to do it manually, install the linting tools and use pre-commit.
   * `choco install cppcheck`
   * `choco install llvm --version=14.0.3`
   * `pip install pre-commit cpplint`
-  * Open Developer Command Prompt for VS as an administrator
-    Create a second build folder
-    run `cmake .. -G "NMake Makefiles"` to generate a `compile_commands.json`
-    Ninja generates this as well if you're using Clang instead of MSVC
+  * Open *Developer Command Prompt for VS* as an administrator
+
+    * Run `VsDevCmd.bat -host_arch=amd64 -arch=amd64` to setup the console for 64-bit builds
+
+    * Create a second build folder
+
+    * Run `cmake .. -G "NMake Makefiles"` to generate a `compile_commands.json`
+
+    * Note: Ninja generates this as well if you're using Clang instead of MSVC
 
 `pre-commit run --all-files`
 
@@ -170,7 +175,7 @@ Clang-tidy needs a `compile_commands.json` file from the build system. On Linux 
 
 For Windows, you will need NMake or Ninja.  MSVC does not generate a `compile_commands.json`, but NMake does. NMake comes with Visual Studio.
 
-Open Developer Command Prompt for VS with administrative privileges. Create a `build_nmake` folder and run `cmake .. -G "NMake Makefiles"`. It is not required to build, just configure CMake. Of course, if you don't care about using the Visual Studio IDE, you can use this folder as your main build tree if you want, building with `cmake --build .`
+Open Developer Command Prompt for VS with administrative privileges. Run `VsDevCmd.bat -host_arch=amd64 -arch=amd64` to setup the console for 64-bit builds. Create a `build_nmake` folder and run `cmake .. -G "NMake Makefiles"`. It is not required to build, just configure CMake. Of course, if you don't care about using the Visual Studio IDE, you can use this folder as your main build tree if you want, building with `cmake --build .`
 
 An odd thing is that the console needs administrative privileges to create the shortcut to `compile_commands.json` in the source tree. You have four options: 1) run your prompt with admin privileges, 2) [set your repo folder's permissions to share](https://answers.microsoft.com/en-us/windows/forum/all/you-need-permission-to-perform-this-action-help/38dc9b82-522c-4bdd-a834-3fed96b78069), 3) manually copy the file from the build tree to the source tree, or 4) temporarily modify `.pre-commit-config.yaml` to call clang-tidy with the arg `-p=build_nmake`.
 
